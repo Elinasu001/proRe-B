@@ -1,0 +1,92 @@
+# =================
+# JAVA
+# =================
+
+# Compiled class files
+*.class
+
+# Log file
+*.log
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Private application config
+application-private.yml
+
+
+# ====================
+# IDEs and Editors
+# ====================
+
+# Eclipse specific files
+.project
+.classpath
+.settings/
+.metadata/
+bin/
+tmp/
+
+# VS Code specific files
+.vscode/
+
+# IntelliJ IDEA specific files
+.idea/
+*.iml
+
+
+# =================
+# Others
+# =================
+
+# Environment variables
+.env
+.env.*
+
+# Backup files
+*.bak
+*swp
+
+
+# =================
+# Spring Boot Specific
+# =================
+
+# Spring Boot logs
+logs/
+
+# AWS Lambda
+/Lambda/**
+
+
+# =================
+# Server Configuration
+# =================
+
+# macOS files
+.DS_Store
+
+# Windows files
+Thumbs.db
+
+
+# =================
+# Build Artifacts
+# =================
+
+# Maven build output
+target/
+
+# Gradle build output
+build/
+
+# YML files (if needed)
+# Ignore only private configs
+application-*.yml
+!application.yml

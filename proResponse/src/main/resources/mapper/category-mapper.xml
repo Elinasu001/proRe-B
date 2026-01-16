@@ -26,7 +26,10 @@
 		  JOIN
 		       TB_EXPERT_DETAIL_CATEGORY d USING (CATEGORY_NO)
 		 WHERE
-		       EXPERT_TYPE_NO = #{expertTypeNo}	
+		       EXPERT_TYPE_NO = #{categoryNo}	
+		 ORDER
+		    BY
+		       CATEGORY_DETAIL_NO  
 	</select>
 	
 </mapper>

@@ -9,5 +9,5 @@ public interface CategoryService {
 
 	List<CategoryEntity> getCategoryEntities();
 
-	List<CategoryDTO> getCategoryDetails(Long expertTypeNo);
+	List<CategoryDTO> getCategoryDetails(Long categoryNo);
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.kh.even.back.category.model.mapper.CategoryMapper">
+
+	<resultMap id="categoryMap" type="CategoryDTO">
+		<id property="categoryName" column="CATEGORY_NAME"/>
+		<collection property="details" ofType="DetailCategoryDTO">
+			<result property="categoryDetailNo" column="CATEGORY_DETAIL_NO"/>
+			<result property="categoryName" column="CATEGORY_DETAIL_NAME"/>
+		</collection>
+		
+		
+	</resultMap>
+
+
+	<select id="getCategoryDetails" parameterType="Long" resultMap="categoryMap">
+		SELECT  
+		       e.CATEGORY_NAME     as CATEGORY_NAME
+		     , d.CATEGORY_DETAIL_NO as CATEGORY_DETAIL_NO
+		     , d.CATEGORY_NAME  as CATEGORY_DETAIL_NAME
+		  FROM
+		       TB_EXPERT_CATEGORY e
+		  LEFT
+		  JOIN
+		       TB_EXPERT_DETAIL_CATEGORY d USING (CATEGORY_NO)
+		 WHERE
+		       EXPERT_TYPE_NO = #{categoryNo}	
+		 ORDER
+		    BY
+		       CATEGORY_DETAIL_NO  
+	</select>
+	
+</mapper>

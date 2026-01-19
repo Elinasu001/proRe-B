@@ -23,8 +23,6 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @RequiredArgsConstructor
 public class S3ServiceImpl implements S3Service {
 
-
-
 	private final S3Client s3Client;
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -34,18 +32,15 @@ public class S3ServiceImpl implements S3Service {
 
 	// 업로드 메소드
 	@Override
-	public String store(MultipartFile file , String folderName) {
+	public String store(MultipartFile file, String folderName) {
 
 		if (file == null || file.isEmpty()) {
 			return null;
 		}
-		
-		
-		
+
 		String fileName = changeName(file.getOriginalFilename());
-		
+
 		String key = folderName + "/" + fileName;
-		
 
 		// s3에 업로드
 		PutObjectRequest request = PutObjectRequest.builder().bucket(bucketName).key(key)
@@ -75,7 +70,8 @@ public class S3ServiceImpl implements S3Service {
 	@Override
 	public void deleteFile(String filePath) {
 		// https://butcket-name.s3.region.amazonaws.com/넘겨받은filePath
-		if(filePath == null || filePath.isEmpty()) return;
+		if (filePath == null || filePath.isEmpty())
+			return;
 		String key = filePath.substring(filePath.indexOf(".com/") + 5);
 
 		try {
@@ -106,21 +102,19 @@ public class S3ServiceImpl implements S3Service {
 		}
 		return "";
 	}
-	
+
 	private String changeName(String origin) {
 
 		if (origin == null || !origin.contains(".")) {
-		    throw new IllegalArgumentException("잘못된 파일명");
+			throw new IllegalArgumentException("잘못된 파일명");
 		}
 
-        String time = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        int rand = (int)(Math.random() * 900) + 100;
+		String time = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+		int rand = (int) (Math.random() * 900) + 100;
 
-        String ext = origin.substring(origin.lastIndexOf("."));
+		String ext = origin.substring(origin.lastIndexOf("."));
 
-        return "PR_" + time + "_" + rand + ext;
-    }
-	
-
+		return "PR_" + time + "_" + rand + ext;
+	}
 
 }

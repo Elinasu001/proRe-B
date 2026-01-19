@@ -43,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
 		if(file != null && !file.isEmpty()) {
-			 fileUrl = s3Service.store(file);
+			 fileUrl = s3Service.store(file, "member");
 			// log.info("파일명 : {}", fileUrl);
 		}
 			
@@ -75,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
 		   
 		   // log.info("{}" , memberVO);	   
 		   
-		int locationResult = memberMapper.insertLocation(memberVO);
+		int locationResult = memberMapper.saveLocation(memberVO);
 			if (locationResult != 1) {
 				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
 			}

@@ -56,7 +56,7 @@
 	           )	            
 	</insert>
 	
-	<insert id="insertLocation" parameterType="MemberVO">
+	<insert id="saveLocation" parameterType="MemberVO">
 		INSERT
 		  INTO
 		       TB_MEMBER_LOCATION

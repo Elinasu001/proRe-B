@@ -19,13 +19,13 @@ public interface MemberMapper {
 	 * 회원가입
 	 * @param member
 	 */
-	int  signUp(MemberVO member);
+	int signUp(MemberVO member);
 	
 	/**
 	 * 회원 위도/경도 추가
 	 * @param member
 	 * @return
 	 */
-	int insertLocation(MemberVO member);
+	int saveLocation(MemberVO member);
 
 }

@@ -2,11 +2,17 @@ package com.kh.even.back.chat.model.vo;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Value
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@ToString
 public class ChatMessageVO {
     private Long messageNo;				// 메시지 번호
     private String content;				// 메시지 내용

@@ -1,11 +1,10 @@
 
 package com.kh.even.back.chat.model.service;
 
-import com.kh.even.back.exception.ChatException;
-
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kh.even.back.chat.model.dto.ChatDetailDTO;
+import com.kh.even.back.chat.model.dto.ChatRoomDTO;
+import com.kh.even.back.exception.ChatException;
 
 public class ChatValidator {
 
@@ -20,7 +19,7 @@ public class ChatValidator {
     /*
         캠페인 DTO 유효성 검사
     */
-    public void validateChatDetailDTO(ChatDetailDTO dto) {
+    public void validateChatDetailDTO(ChatRoomDTO dto) {
         if(dto == null) {
             throw new ChatException("채팅 정보가 없습니다.");
         }

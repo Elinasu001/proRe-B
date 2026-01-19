@@ -1,4 +1,4 @@
-package com.kh.even.back.review.controller;
+package com.kh.even.back.payment.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -9,29 +9,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
-import com.kh.even.back.review.model.dto.ReviewDetailDTO;
-import com.kh.even.back.review.model.service.ReviewService;
+import com.kh.even.back.payment.model.dto.PaymentDetailDTO;
+import com.kh.even.back.payment.model.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/reviews")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
-public class ReviewController {
+public class PaymentController {
 
-    private final ReviewService reviewService;
-    
-    /**
-    * 리뷰 정보 조회
-    */
-    @GetMapping("/{roomNo}/review")
-    public ResponseEntity<ResponseData<ReviewDetailDTO>> getReview(
+    private final PaymentService paymentService;
+
+    @GetMapping("/{roomNo}")
+    public ResponseEntity<ResponseData<PaymentDetailDTO>> getPayment(
             @PathVariable Long roomNo,
             @AuthenticationPrincipal CustomUserDetails user) {
-        
-        ReviewDetailDTO review = reviewService.getReview(roomNo, user.getUserNo());
-        return ResponseData.ok(review, "리뷰 정보 조회 성공");
+
+        PaymentDetailDTO payment = paymentService.getPayment(roomNo, user.getUserNo());
+        return ResponseData.ok(payment, "결제 정보 조회 성공");
     }
 }

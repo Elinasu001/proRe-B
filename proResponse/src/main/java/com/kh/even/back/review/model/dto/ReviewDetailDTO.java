@@ -15,11 +15,11 @@ import lombok.ToString;
 @NoArgsConstructor 
 @ToString
 public class ReviewDetailDTO {
-    private Long reviewNo;
+    //private Long reviewNo;  // 조건부 (리뷰 있을 때만)
     private String content;
     private Integer starScore;
     private LocalDateTime createDate;
-    private String status;
+    //private String status;
     private Long estimateNo;
 
     // 첨부파일 목록

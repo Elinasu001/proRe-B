@@ -2,11 +2,17 @@ package com.kh.even.back.payment.model.vo;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Value
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@ToString
 public class PaymentVO {
 	private Long paymentNo;				// 결제 번호 (PK)
 	private Integer amount;				// 결제 금액

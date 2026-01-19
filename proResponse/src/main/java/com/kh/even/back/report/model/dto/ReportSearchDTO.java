@@ -1,4 +1,4 @@
-package com.kh.even.back.chat.model.dto;
+package com.kh.even.back.report.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor 
 @ToString
-public class ChatRoomUserDTO {
-    private Long roomNo;	  // 채팅방 번호
-    private Long userNo;	  // 회원 번호
+public class ReportSearchDTO {
+    private Long roomNo;     // 채팅방 번호
+    private Long userNo;        // 신고한 사용자 번호
 }

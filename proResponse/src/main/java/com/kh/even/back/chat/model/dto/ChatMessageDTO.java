@@ -15,16 +15,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class ChatMessageDTO {
+
     private Long messageNo;				// 메시지 번호 (PK)
     private String content;				// 메시지 내용
-    private LocalDateTime sentDate;		// 보낸 시간
-    private String status;				// 확인 여부
-    private Long roomNo;				// 채팅방 번호
-    private Long userNo;				// 회원 번호
+    private Long amount;                // 결제 메시지일 때만 값 (null 가능)
 
-    // 계산 필드
-    private Boolean isMine;  // 내 메시지인지 (UI용)
-    
-    // 첨부파일 목록 (이 메시지의 첨부파일들)
-    private List<ChatRoomMessageAttachmentDTO> attachments;
+    private LocalDateTime sentDate;		// 보낸 시간
+
+    private Long senderUserNo;          // 보낸 사람
+    private boolean read;               // 읽음 여부 (status Y/N 변환)
+    private boolean isMine;             // 내 메시지인지 (UI용)
+
+    private List<ChatRoomMessageAttachmentDTO> attachments; // 첨부파일 목록
 }

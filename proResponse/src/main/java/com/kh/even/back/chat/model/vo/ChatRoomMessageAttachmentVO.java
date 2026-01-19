@@ -2,11 +2,17 @@ package com.kh.even.back.chat.model.vo;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Value
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@ToString
 public class ChatRoomMessageAttachmentVO {
     private Long fileNo;				// 파일번호 (PK)
 	private String originName;			// 원본 파일명

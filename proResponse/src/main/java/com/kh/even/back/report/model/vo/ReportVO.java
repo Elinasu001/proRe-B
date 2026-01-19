@@ -3,12 +3,17 @@ package com.kh.even.back.report.model.vo;
 import java.sql.Date;
 import java.time.LocalDateTime;
 
-
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@Value
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@ToString
 public class ReportVO {
     private Long reportNo;            // 신고번호
     private String reportContent;     // 신고내용

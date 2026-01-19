@@ -33,7 +33,7 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 이메일 중복 검사 (프론트 + 백엔드)
 		int count = memberMapper.countByEmail(member.getEmail());
-		log.info("이메일 중복여부 : {}", count);
+		// log.info("이메일 중복여부 : {}", count);
 			
 		
 		if(count >= 1) {
@@ -44,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
 		if(file != null && !file.isEmpty()) {
 			 fileUrl = s3Service.store(file);
-			log.info("파일명 : {}", fileUrl);
+			// log.info("파일명 : {}", fileUrl);
 		}
 			
 		
@@ -73,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
 	        }
 		
 		   
-		   log.info("{}" , memberVO);	   
+		   // log.info("{}" , memberVO);	   
 		   
 		int locationResult = memberMapper.insertLocation(memberVO);
 			if (locationResult != 1) {

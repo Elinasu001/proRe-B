@@ -21,8 +21,11 @@ public interface MemberMapper {
 	 */
 	int  signUp(MemberVO member);
 	
-	
-	@Insert("INSERT INTO TB_MEMBER_LOCATION (USER_NO,LAT,LNG) VALUES(#{userNo},#{latitude},#{longitude})")
+	/**
+	 * 회원 위도/경도 추가
+	 * @param member
+	 * @return
+	 */
 	int insertLocation(MemberVO member);
 
 }

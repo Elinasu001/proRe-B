@@ -56,4 +56,21 @@
 	           )	            
 	</insert>
 	
+	<insert id="insertLocation" parameterType="MemberVO">
+		INSERT
+		  INTO
+		       TB_MEMBER_LOCATION
+		       (
+		       USER_NO
+		     , LAT
+		     , LNG  
+		       )
+		VALUES
+		       (
+		       #{userNo}
+		     , #{latitude}
+		     , #{longitude} 
+		       )      
+	</insert>
+	
 </mapper>

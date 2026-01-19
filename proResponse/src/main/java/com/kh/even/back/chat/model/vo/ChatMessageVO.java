@@ -12,6 +12,6 @@ public class ChatMessageVO {
     private String content;				// 메시지 내용
     private LocalDateTime sentDate;		// 보낸 시간
     private String status;				// 확인 여부
-    private Long roomNo;				// 채팅방 번호
     private Long userNo;				// 회원 번호
+    private Long roomNo;				// 채팅방 번호
 }

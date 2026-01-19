@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.kh.even.back.common.ResponseData;
 
+import io.portone.sdk.server.common.Country.Re;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
 	    log.warn("로그인 실패: {}", e.getMessage());
 	    return ResponseData.failure(e.getMessage(), HttpStatus.UNAUTHORIZED);
 	}
+
+	@ExceptionHandler(ChatException.class)
+	public ResponseEntity<ResponseData<Object>> handleChatException(ChatException e) {
+	    log.warn("채팅 오류: {}", e.getMessage());
+	    return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
 	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
 
 	/* ===================== 공통 Runtime / Exception ===================== */

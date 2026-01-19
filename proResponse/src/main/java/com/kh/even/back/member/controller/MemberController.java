@@ -26,7 +26,7 @@ public class MemberController {
 	private final MemberService memberService;
 	
 	@PostMapping
-	public ResponseEntity<ResponseData<Object>> signUp(@Valid @ModelAttribute MemberSignUpDTO member, @RequestParam(name = "profileImg", required = false) MultipartFile file) {
+	public ResponseEntity<ResponseData<Void>> signUp(@Valid @ModelAttribute MemberSignUpDTO member, @RequestParam(name = "profileImg", required = false) MultipartFile file) {
 		log.info("회원가입 요청 진위여부 : {}", member);
 		
 		memberService.signUp(member, file);

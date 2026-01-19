@@ -1,14 +1,17 @@
 package com.kh.even.back.member.model.vo;
 
 import java.sql.Date;
-
-import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Value;
 
 @Getter
 @AllArgsConstructor
+@Value
+@Builder
 public class MemberVO {
 	
 	private Long userNo;
@@ -18,14 +21,18 @@ public class MemberVO {
 	private String nickname;
 	private String profileImgPath;
 	private String phone;
-	private Date birthday;
+	private String birthday;
 	private char gender;
 	private String postcode;
 	private String address;
 	private String addressDetail;
-	private double latitude;
-	private double longitude;
-	private char status;
+	private Double latitude;
+	private Double longitude;
 	private Date createDate;
-	private String role;
+	private Date updateDate;
+	private Date updatePwdDate;
+	private Date deleteDate;
+	private String userRole;
+	private String penaltyStatus;
+	private char status;
 }

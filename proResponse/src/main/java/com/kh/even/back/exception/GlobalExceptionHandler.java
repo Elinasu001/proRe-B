@@ -67,5 +67,22 @@ public class GlobalExceptionHandler {
 
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ResponseData<Object>> handleNotFound(NotFoundException e) {
+
+		log.error("조회 결과를 못찾음 : {}", e.getMessage());
+
+		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(EmailDuplicateException.class)
+	public ResponseEntity<ResponseData<Object>> handleEmailDuplicateException(EmailDuplicateException e) {
+		
+		log.error("이메일 중복 : {}", e.getMessage());
+		
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+		
+	}
 
 }

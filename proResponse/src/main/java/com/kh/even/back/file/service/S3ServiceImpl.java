@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -21,6 +22,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class S3ServiceImpl implements S3Service {
 
 
@@ -40,7 +42,7 @@ public class S3ServiceImpl implements S3Service {
 			return null;
 		}
 		
-		
+		log.info(" 파일 확인 로그 : {}" , file.getOriginalFilename());
 		
 		String fileName = changeName(file.getOriginalFilename());
 		

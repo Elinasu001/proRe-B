@@ -1,26 +1,83 @@
 package com.kh.even.back.member.model.service;
 
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.even.back.exception.EmailDuplicateException;
+import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.mapper.MemberMapper;
+import com.kh.even.back.member.model.vo.MemberVO;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 	
+	private final MemberMapper memberMapper;
+	private final PasswordEncoder passwordEncoder;
+	private final S3Service s3Service;
+	
 	@Override
-	public void signUp(MemberSignUpDTO member) {
+	@Transactional
+	public void signUp(MemberSignUpDTO member, MultipartFile file) {
+		String fileUrl = null;
 		
-		// 유효성 검사
+		// 유효성 검사 => Validator에게 위임
 		
-		// 아이디 중복 검사 (프론트 + 백엔드)
+		// 이메일 중복 검사 (프론트 + 백엔드)
+		int count = memberMapper.countByEmail(member.getEmail());
+		log.info("이메일 중복여부 : {}", count);
+			
 		
-		// 비밀번호 암호화
+		if(count >= 1) {
+			throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
+		}
 		
-		// ROLE 추가
+		
+		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
+		if(file != null && !file.isEmpty()) {
+			 fileUrl = s3Service.store(file);
+			log.info("파일명 : {}", fileUrl);
+		}
+			
+		
+		
+		MemberVO memberVO = MemberVO.builder()
+				                         .email(member.getEmail())
+				                         .userPwd(passwordEncoder.encode(member.getUserPwd())) // 비밀번호 암호화
+				                         .userName(member.getUserName())
+				                         .nickname(member.getNickname())
+				                         .phone(member.getPhone())
+				                         .birthday(member.getBirthday())
+				                         .gender(member.getGender().charAt(0)) // DTO에서는 String -> VO에는 char
+				                         .postcode(member.getPostcode())
+				                         .address(member.getAddress())
+				                         .addressDetail(member.getAddressDetail())
+				                         .latitude(member.getLatitude())
+				                         .longitude(member.getLongitude())
+				                         .profileImgPath(fileUrl) // 프로필 이미지 URL 또는 KEY
+				                         .build();
+				                         
 		
 		// 매퍼 호출
+		int memberResult = memberMapper.signUp(memberVO);
+		   if (memberResult != 1) {
+	            throw new IllegalStateException("회원가입 처리에 실패했습니다.");
+	        }
 		
-		
+		   
+		   log.info("{}" , memberVO);	   
+		   
+		int locationResult = memberMapper.insertLocation(memberVO);
+			if (locationResult != 1) {
+				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
+			}
 	}
-
 }

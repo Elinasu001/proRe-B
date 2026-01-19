@@ -2,7 +2,7 @@ package com.kh.even.back.member.model.dto;
 
 import java.time.LocalDate;
 
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -51,9 +51,7 @@ public class MemberSignUpDTO {
 	private String phone;
 	
 	@NotNull(message = "생년월일은 필수입니다.")
-	@Past(message = "생년월일은 과거 날짜여야 합니다.")
-	@JsonFormat(pattern = "yyyyMMdd")
-	private LocalDate birthday;
+	private String birthday;
 	
 	@NotBlank(message = "성별은 필수입니다.")
 	@Pattern(regexp = "^[MF]$", message = "성별은 M 또는 F만 가능합니다.")

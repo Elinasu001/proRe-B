@@ -34,7 +34,7 @@ public class S3ServiceImpl implements S3Service {
 
 	// 업로드 메소드
 	@Override
-	public String store(MultipartFile file) {
+	public String store(MultipartFile file , String folderName) {
 
 		if (file == null || file.isEmpty()) {
 			return null;
@@ -44,9 +44,11 @@ public class S3ServiceImpl implements S3Service {
 		
 		String fileName = changeName(file.getOriginalFilename());
 		
+		String key = folderName + "/" + fileName;
+		
 
 		// s3에 업로드
-		PutObjectRequest request = PutObjectRequest.builder().bucket(bucketName).key(fileName)
+		PutObjectRequest request = PutObjectRequest.builder().bucket(bucketName).key(key)
 				.contentType(file.getContentType()).build();
 
 		try {
@@ -65,7 +67,7 @@ public class S3ServiceImpl implements S3Service {
 			throw new RuntimeException("S3 업로드 실패 IOE", e);
 		}
 
-		String filePath = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
+		String filePath = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
 
 		return filePath;
 	}
@@ -73,10 +75,11 @@ public class S3ServiceImpl implements S3Service {
 	@Override
 	public void deleteFile(String filePath) {
 		// https://butcket-name.s3.region.amazonaws.com/넘겨받은filePath
-		String objectKey = getObjectKeyFromUrl(filePath);
+		if(filePath == null || filePath.isEmpty()) return;
+		String key = filePath.substring(filePath.indexOf(".com/") + 5);
 
 		try {
-			DeleteObjectRequest request = DeleteObjectRequest.builder().bucket(bucketName).key(objectKey).build();
+			DeleteObjectRequest request = DeleteObjectRequest.builder().bucket(bucketName).key(key).build();
 
 			s3Client.deleteObject(request);
 		} catch (Exception e) {

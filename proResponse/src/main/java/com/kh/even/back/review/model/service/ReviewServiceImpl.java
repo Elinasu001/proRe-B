@@ -8,13 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.exception.ReviewException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.review.model.dao.ReviewMapper;
-import com.kh.even.back.review.model.dto.ReviewDetailDTO;
 import com.kh.even.back.review.model.dto.ReviewDTO;
+import com.kh.even.back.review.model.dto.ReviewDetailDTO;
 import com.kh.even.back.review.model.dto.ReviewTagDTO;
 import com.kh.even.back.review.model.vo.ReviewAttachmentVO;
 import com.kh.even.back.review.model.vo.ReviewMapVO;
 import com.kh.even.back.review.model.vo.ReviewVO;
-
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +31,12 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewDetailDTO getReview(Long estimateNo
         //, Long userNo
     ) {
-        // userNo가 필요 없다면 파라미터에서 제거
+        // 1. 리뷰 조회
         ReviewDetailDTO reviewDetailDTO = reviewMapper.getByEstimateNo(estimateNo);
+        // 2. 리뷰가 없는 경우 예외 처리
+        if (reviewDetailDTO == null) {
+            throw new ReviewException("해당 견적에 대한 리뷰가 존재하지 않습니다");
+        }
         return reviewDetailDTO;
     }
 
@@ -52,12 +55,12 @@ public class ReviewServiceImpl implements ReviewService {
         // 1. 견적 응답 확인
         EstimateResponseVO estimate = estimateMapper.selectEstimateByNo(reviewDTO.getEstimateNo());
         if (estimate == null) {
-            throw new BusinessException("존재하지 않는 견적입니다");
+            throw new ReviewException("존재하지 않는 견적입니다");
         }
         
         // 2. 견적 상태 확인
         if (!"ACCEPTED".equals(estimate.getStatus())) {
-            throw new BusinessException("수락된 견적만 리뷰 작성이 가능합니다");
+            throw new ReviewException("수락된 견적만 리뷰 작성이 가능합니다");
         }
         
         */
@@ -66,14 +69,13 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 3. 이미 리뷰가 있는 지 확인
         boolean exists = reviewMapper.existsReviewByEstimateNo(reviewDTO.getEstimateNo());
-
         if (exists) {
-            throw new RuntimeException("이미 작성된 리뷰가 있습니다");
+            throw new ReviewException("이미 리뷰가 작성된 견적서입니다");
         }
 
         // 4. 태그 개수 검증
         if(reviewDTO.getTagNos() != null && reviewDTO.getTagNos().size() > 4) {
-            throw new RuntimeException("태그는 최대 4개까지 선택 가능합니다");
+            throw new ReviewException("태그는 최대 4개까지 선택 가능합니다");
         }
 
         // 리뷰 등록
@@ -96,7 +98,8 @@ public class ReviewServiceImpl implements ReviewService {
                 
                 reviewMapper.saveReviewMap(mapVO);
             }
-            log.info("태그 {}개 등록 완료 - reviewNo: {}", reviewDTO.getTagNos().size(), reviewNo);
+            
+            //log.info("태그 {}개 등록 완료 - reviewNo: {}", reviewDTO.getTagNos().size(), reviewNo);
         }
         
         // 첨부파일 등록
@@ -135,8 +138,12 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewVO == null) {
             throw new ReviewException("존재하지 않는 리뷰입니다");
         }
-        // 상태 변경만 수행 (setStatus 필요 없음)
-        reviewMapper.updateReviewStatus(reviewVO.getReviewNo());
+        // 상태 변경만 수행
+        int updated = reviewMapper.updateReviewStatus(reviewVO.getReviewNo());
+
+        if (updated == 0) {
+            throw new ReviewException("리뷰 삭제에 실패했습니다.");
+        }
         return reviewVO;
     }
 

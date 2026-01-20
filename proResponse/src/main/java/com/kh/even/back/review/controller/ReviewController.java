@@ -32,7 +32,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     
     /**
-    * 리뷰 정보 조회
+    * 리뷰 조회
     */
     @GetMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewDetailDTO>> getReview(
@@ -45,6 +45,16 @@ public class ReviewController {
         );
         return ResponseData.ok(review, "리뷰 정보 조회 성공");
     }
+
+    /**
+	 * 태그 조회
+	 * @return
+	 */
+    @GetMapping("/tags")
+	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getReviewTags() {
+		List<ReviewTagDTO> categories = reviewService.getReviewTags();
+		return ResponseData.ok(categories, "리뷰 태그 목록 조회 성공");
+	}
 
     /**
      * 리뷰 등록
@@ -68,24 +78,13 @@ public class ReviewController {
         return ResponseData.ok(saved, "리뷰가 성공적으로 등록되었습니다");
     }
 
-
-    /**
-	 * 등록 가능한 리뷰 태그 전체 목록을 반환
-	 * @return 
-	 */
-    @GetMapping("/categories")
-	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getReviewTags() {
-		List<ReviewTagDTO> categories = reviewService.getReviewTags();
-		return ResponseData.ok(categories, "리뷰 태그 목록 조회 성공");
-	}
-
     /**
 	 * 리뷰 삭제
-	 * @return 
+	 * @return
 	 */
-   @PutMapping("/{estimateNo}")
+    @PutMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewVO>> deleteByEstimateNo(
-        @PathVariable Long estimateNo
+        @PathVariable(name="estimateNo") Long estimateNo
         //, @AuthenticationPrincipal CustomUserDetails user
     ) {
         ReviewVO deleted = reviewService.deleteByEstimateNo(

@@ -20,5 +20,4 @@ public class ReviewAttachmentDTO {
 	private Date uploadDate;           // 파일 업로드 날짜
 	private String status;             // STATUS (Y/N)
 	private Long reviewNo;             // 리뷰 번호 (FK)
-	private Long estimateNo;           // 견적 번호 (추가)
 }

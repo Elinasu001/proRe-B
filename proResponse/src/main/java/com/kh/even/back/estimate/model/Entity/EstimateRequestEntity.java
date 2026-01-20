@@ -26,35 +26,30 @@ public class EstimateRequestEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "estimate_request_seq")
-	@Column(name = "REQUEST_NO" , nullable = false)
+	@Column(name = "REQUEST_NO", nullable = false)
 	private Long requestNo;
-	
-	@Column(name = "REQUEST_DATE" , nullable = false)
+
+	@Column(name = "REQUEST_DATE", nullable = false)
 	private LocalDateTime requestDate;
-	
-	@Column(name = "REQUEST_TYPE" , nullable = false) 
+
+	@Column(name = "REQUEST_TYPE", nullable = false)
 	private String requestType;
-	
-	@Column(name = "REQUEST_SERVICE" , nullable = false )
+
+	@Column(name = "REQUEST_SERVICE", nullable = false)
 	private String requestService;
-	
-	@Column(name = "CONTENT" , nullable = false )
+
+	@Column(name = "CONTENT", nullable = false)
 	private String content;
-	
-	@Column(name = "USER_NO" , nullable = false )
+
+	@Column(name = "USER_NO", nullable = false)
 	private Long userNo;
-	
-	@Column(name = "EXPERT_NO" , nullable = false )
+
+	@Column(name = "EXPERT_NO", nullable = false)
 	private Long expertNo;
-	
-	@Column(name = "CATEGORY_DETAIL_NO" , nullable = false )
+
+	@Column(name = "CATEGORY_DETAIL_NO", nullable = false)
 	private Long categoryDetailNo;
 
-	
-	@Column(
-		    name = "STATUS",
-		    nullable = false,
-		    insertable = false
-		)
-		private String status;
+	@Column(name = "STATUS", nullable = false, insertable = false)
+	private String status;
 }

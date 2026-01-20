@@ -11,16 +11,12 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ExpertDTO {
+public class ResponseEstimateDTO {
 
-	private Long requestNo;
 	private Long expertNo;
 	private String nickName;
 	private double starScore;
 	private int reviewCount;
-	private String address;
-	private String startTime;
-	private String endTime;
-    private String requestStatus;
-    
+	private int price;
+	private String status;
 }

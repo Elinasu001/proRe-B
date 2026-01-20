@@ -24,9 +24,17 @@
 	</insert>
 	
 	
+	<select id="getMyEstimateCount" resultType="int">
+	SELECT COUNT(*)
+	FROM TB_ESTIMATE_REQUEST
+	WHERE USER_NO = #{userNo}
+	  AND STATUS = 'REQUESTED'
+	</select>
+	
 	<select id="getMyEstimate" resultType="ExpertDTO">
 	SELECT
-	       r.REQUEST_NO
+	       r.REQUEST_NO		   AS requestNo
+	     , r.EXPERT_NO         AS expertNo 
 	     , r.STATUS            AS requestStatus
 	     , m.NICKNAME          AS nickName
 	     , m.ADDRESS
@@ -59,7 +67,7 @@
 	  AND r.STATUS = 'REQUESTED'     
 	ORDER 
 	   BY r.REQUEST_NO DESC
-	OFFSET #{offset} ROWS FETCH NEXT 4 ROWS ONLY;
+	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
 	
 </mapper>

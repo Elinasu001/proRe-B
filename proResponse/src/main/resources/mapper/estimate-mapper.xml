@@ -40,7 +40,7 @@
 	     , m.ADDRESS
 	     , e.START_TIME        AS startTime
 	     , e.END_TIME          AS endTime
-	     , rs.AVG_STAR_SCORE   AS starScore
+	     , NVL(rs.AVG_STAR_SCORE,0)   AS starScore
 	     , rs.REVIEW_COUNT     AS reviewCount
 	 FROM TB_ESTIMATE_REQUEST r
 	 JOIN TB_EXPERT e

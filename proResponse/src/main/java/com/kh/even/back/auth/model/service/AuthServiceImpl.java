@@ -35,14 +35,27 @@ public class AuthServiceImpl implements AuthService {
 		
 		
 		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
-		if(user.getStatus() != 'Y') {
+		
+		log.info(" user 들어옴 ? : {} " , user );
+		
+		if(user.getStatus().equals("N")) {
 			throw new CustomAuthenticationException("비활성화된 계정입니다.");
 		}
 		
+		if(user.getPenaltyStatus().equals("Y")) {
+			log.info(" 패널티 검증 : {} " , user);
+			throw new CustomAuthenticationException("정지된 계정입니다.");
+		}
+		log.info(" 패널티 검증 : {} " , user);
 		// log.info("로그인 성공~!");
 		// log.info("인증에 성공한 사용자 정보 : {}", user);
 		
-		TokensDTO tokens = tokenService.generateToken(user.getUsername(), user.getUserNo(), user.getUserRole());
+		TokensDTO tokens = tokenService.generateToken(user.getUsername(), user.getUserNo(), user.getAuthorities());
+		
+		String role = user.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
 		
 		return LoginResponseDTO.builder().tokens(tokens)
 								      .userNo(user.getUserNo())
@@ -50,8 +63,9 @@ public class AuthServiceImpl implements AuthService {
 				                      .userName(user.getRealName())
 				                      .nickname(user.getNickname())
 				                      .profileImgPath(user.getProfileImgPath())
-				                      .userRole(user.getUserRole())
+				                      .userRole(role)
 				                      .status(user.getStatus())
+				                      .penaltyStatus(user.getPenaltyStatus())
 				                      .build();
 		
 		} catch (CustomAuthenticationException e) {

@@ -1,7 +1,9 @@
 package com.kh.even.back.token.model.service;
 
+import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +33,9 @@ public class TokenServiceImpl implements TokenService {
 	 */
 	@Transactional
 	@Override
-	public TokensDTO generateToken(String username, Long userNo, String role) {
+	public TokensDTO generateToken(String username, Long userNo, Collection<? extends GrantedAuthority> role) {
 		// 1. Access Token, Refresh Token 생성
-		TokensDTO tokens = createTokens(username, role);
+		TokensDTO tokens = createTokens(username, role.toString());
 		
 		// 2. Refresh Token DB에 저장
 		saveToken(tokens.getRefreshToken(), userNo);

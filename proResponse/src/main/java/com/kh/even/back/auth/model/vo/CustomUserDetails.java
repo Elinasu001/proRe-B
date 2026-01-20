@@ -18,8 +18,8 @@ public class CustomUserDetails implements UserDetails {
 	private String realName; // 실명
 	private String nickname;
 	private String profileImgPath;
-	private char status;
-	private String userRole;
+	private String status;
+	private String penaltyStatus;
 	private Collection<? extends GrantedAuthority> authorities;
 
 }

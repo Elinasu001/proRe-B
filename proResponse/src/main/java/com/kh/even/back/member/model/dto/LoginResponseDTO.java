@@ -18,7 +18,8 @@ public class LoginResponseDTO {
 	private String nickname;
 	private String profileImgPath;
 	private String userRole;
-	private char status;
+	private String status;
+	private String penaltyStatus;
 		
 	
 }

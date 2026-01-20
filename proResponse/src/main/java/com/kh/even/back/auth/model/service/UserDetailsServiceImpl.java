@@ -42,7 +42,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 				                          .nickname(member.getNickname())
 				                          .profileImgPath(member.getProfileImgPath())
 				                          .status(member.getStatus())
-				                          .userRole(member.getUserRole())
+				                          //.userRole(member.getUserRole())
+				                          .penaltyStatus(member.getPenaltyStatus())
 				                          .authorities(Collections.singletonList(new SimpleGrantedAuthority(member.getUserRole())))
 				                          .build();
 		

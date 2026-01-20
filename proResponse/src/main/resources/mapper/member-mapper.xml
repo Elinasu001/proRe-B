@@ -85,6 +85,7 @@
 		     , PROFILE_IMG profileImg
 		     , USER_ROLE userRole
 		     , STATUS 
+		     , PENALTY_STATUS penaltyStatus
 		  FROM
 		       TB_MEMBER
 		 WHERE

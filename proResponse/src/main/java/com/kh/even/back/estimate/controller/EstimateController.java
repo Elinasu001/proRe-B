@@ -31,9 +31,9 @@ public class EstimateController {
 	private final EstimateService estimateService;
 
 	@GetMapping("/me")
-	public ResponseEntity<ResponseData<List<ExpertDTO>>> getEstimate(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+	public ResponseEntity<ResponseData<List<ExpertDTO>>> getEstimate(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam(defaultValue = "1") int page) {
 
-		return ResponseData.ok(estimateService.getEstimate(customUserDetails), "조회에 성공했습니다.");
+		return ResponseData.ok(estimateService.getEstimate(customUserDetails,page), "조회에 성공했습니다.");
 		
 	}
 

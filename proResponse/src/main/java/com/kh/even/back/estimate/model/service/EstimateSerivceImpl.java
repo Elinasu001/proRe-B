@@ -30,16 +30,17 @@ public class EstimateSerivceImpl implements EstimateService {
 
 	@Override
 	@Transactional
-	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files , CustomUserDetails customUserDetails) {
+	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files,
+			CustomUserDetails customUserDetails) {
 
-	    if (files != null && files.size() > 4) {
-	        throw new InvalidFileException("첨부파일은 최대 4개까지 업로드할 수 있습니다.");
-	    }
-		
-		EstimateRequestEntity entity = toEntity(estimateReqeust , customUserDetails);
+		if (files != null && files.size() > 4) {
+			throw new InvalidFileException("첨부파일은 최대 4개까지 업로드할 수 있습니다.");
+		}
+
+		EstimateRequestEntity entity = toEntity(estimateReqeust, customUserDetails);
 
 		EstimateRequestEntity savedEntity = repository.save(entity);
-		
+
 		if (files != null && !files.isEmpty()) {
 
 			for (MultipartFile file : files) {
@@ -58,29 +59,24 @@ public class EstimateSerivceImpl implements EstimateService {
 	}
 
 	// EstimateRequesdto -> entity
-	private EstimateRequestEntity toEntity(EstimateRequestDTO dto,CustomUserDetails customUserDetails) {
+	private EstimateRequestEntity toEntity(EstimateRequestDTO dto, CustomUserDetails customUserDetails) {
 
-		EstimateRequestEntity entity = EstimateRequestEntity.builder()
-				        .requestDate(dto.getRequestDate())
-						.requestType(dto.getRequestType())
-						.requestService(dto.getRequestService())
-						.content(dto.getContent())
-						.expertNo(dto.getExpertNo())
-						.categoryDetailNo(dto.getCategoryDetailNo())
-						.userNo(customUserDetails.getUserNo())
-						.build();
-
+		EstimateRequestEntity entity = EstimateRequestEntity.builder().requestDate(dto.getRequestDate())
+				.requestType(dto.getRequestType()).requestService(dto.getRequestService()).content(dto.getContent())
+				.expertNo(dto.getExpertNo()).categoryDetailNo(dto.getCategoryDetailNo())
+				.userNo(customUserDetails.getUserNo()).build();
 
 		return entity;
 	}
 
 	@Override
-	public List<ExpertDTO> getEstimate(CustomUserDetails customUserDetails) {
-	
-		return mapper.getMyEstimate(customUserDetails.getUserNo());
+	public List<ExpertDTO> getEstimate(CustomUserDetails customUserDetails,int page) {
+
+		   int size = 4; // 한 페이지당 4개
+		   int offset = (page - 1) * size;
 		
-		
-		
+		return mapper.getMyEstimate(customUserDetails.getUserNo(),offset);
+
 	}
 
 }

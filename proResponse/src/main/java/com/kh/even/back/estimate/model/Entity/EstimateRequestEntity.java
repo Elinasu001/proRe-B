@@ -54,8 +54,7 @@ public class EstimateRequestEntity {
 	@Column(
 		    name = "STATUS",
 		    nullable = false,
-		    insertable = false,
-		    updatable = false
+		    insertable = false
 		)
 		private String status;
 }

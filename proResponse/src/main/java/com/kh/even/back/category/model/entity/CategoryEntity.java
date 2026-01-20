@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name= "TB_EXPERT_TYPE")
+@Table(name = "TB_EXPERT_TYPE")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,7 +22,7 @@ public class CategoryEntity {
 	@Id
 	@Column(name = "EXPERT_TYPE_NO")
 	private Long categoryNo;
-	
+
 	@Column(name = "EXPERT_NAME")
 	private String expertName;
 }

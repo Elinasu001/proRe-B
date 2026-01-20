@@ -11,6 +11,8 @@ import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
+import com.kh.even.back.exception.InvalidFileException;
+import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.file.model.vo.FileVO;
 import com.kh.even.back.file.service.S3Service;
 
@@ -30,10 +32,14 @@ public class EstimateSerivceImpl implements EstimateService {
 	@Transactional
 	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files , CustomUserDetails customUserDetails) {
 
+	    if (files != null && files.size() > 4) {
+	        throw new InvalidFileException("첨부파일은 최대 4개까지 업로드할 수 있습니다.");
+	    }
+		
 		EstimateRequestEntity entity = toEntity(estimateReqeust , customUserDetails);
 
 		EstimateRequestEntity savedEntity = repository.save(entity);
-
+		
 		if (files != null && !files.isEmpty()) {
 
 			for (MultipartFile file : files) {
@@ -51,6 +57,7 @@ public class EstimateSerivceImpl implements EstimateService {
 
 	}
 
+	// EstimateRequesdto -> entity
 	private EstimateRequestEntity toEntity(EstimateRequestDTO dto,CustomUserDetails customUserDetails) {
 
 		EstimateRequestEntity entity = EstimateRequestEntity.builder()
@@ -65,6 +72,15 @@ public class EstimateSerivceImpl implements EstimateService {
 
 
 		return entity;
+	}
+
+	@Override
+	public List<ExpertDTO> getEstimate(CustomUserDetails customUserDetails) {
+	
+		return mapper.getMyEstimate(customUserDetails.getUserNo());
+		
+		
+		
 	}
 
 }

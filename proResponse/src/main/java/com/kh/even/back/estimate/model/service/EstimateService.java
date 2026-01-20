@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
+import com.kh.even.back.expert.model.dto.ExpertDTO;
 
 public interface EstimateService {
 
@@ -17,4 +18,9 @@ public interface EstimateService {
 	 */
 	void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files , CustomUserDetails customUserDetails);
 
+	/**
+	 * @param customUserDetails 현재 로그인한 유저의 정보
+	 * @return List<ExpertDTO> 회원이 견적 요청했던 목록 리턴
+	 */
+	List<ExpertDTO> getEstimate(CustomUserDetails customUserDetails);
 }

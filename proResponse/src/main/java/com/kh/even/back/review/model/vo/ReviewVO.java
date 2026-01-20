@@ -2,17 +2,11 @@ package com.kh.even.back.review.model.vo;
 
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Value;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 @Builder
-@ToString
 public class ReviewVO {
 	private Long reviewNo;				// 리뷰 번호 (PK)
 	private String content;				// 리뷰 내용

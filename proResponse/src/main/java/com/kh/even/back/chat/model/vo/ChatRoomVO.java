@@ -2,17 +2,11 @@ package com.kh.even.back.chat.model.vo;
 
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Value;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 @Builder
-@ToString
 public class ChatRoomVO {
     private Long roomNo;				// 채팅방 번호 (PK)
     private String status;				// 상태

@@ -27,9 +27,12 @@ public class ReportController {
      */
     @GetMapping("/{roomNo}/status")
     public  ResponseEntity<ResponseData<Boolean>> getReportStatus(
-            @PathVariable Long roomNo,
-            @AuthenticationPrincipal CustomUserDetails user) {
-        boolean canReport = reportService.getReportStatus(roomNo, user.getUserNo());
+            @PathVariable Long roomNo
+            //, @AuthenticationPrincipal CustomUserDetails user
+            ) {
+        boolean canReport = reportService.getReportStatus(roomNo
+        		//, user.getUserNo()
+        		);
         return ResponseData.ok(canReport, "신고 가능 여부 조회 성공");
     }
 

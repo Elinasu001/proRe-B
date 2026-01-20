@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.even.back.review.model.dao.ReviewMapper">
+
+    <!-- 리뷰 상세 ResultMap -->
+	<resultMap id="reviewDetailResultMap" type="ReviewDetailDTO">
+		<id property="reviewNo" column="REVIEW_NO"/>
+		<result property="content" column="CONTENT"/>
+		<result property="starScore" column="STAR_SCORE"/>
+		<result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP"/>
+		<result property="estimateNo" column="ESTIMATE_NO"/>
+
+		<collection property="attachments"
+					ofType="ReviewAttachmentDTO"
+					select="findAttachmentsByReviewNo"
+					column="REVIEW_NO"/>
+
+		<collection property="selectedTags"
+					ofType="ReviewTagDTO"
+					select="findTagsByReviewNo"
+					column="REVIEW_NO"/>
+	</resultMap>
+
+    <!-- 첨부파일 ResultMap -->
+    <resultMap id="reviewAttachmentResultMap" type="ReviewAttachmentDTO">
+        <id property="fileNo" column="FILE_NO"/>
+        <result property="reviewNo" column="REVIEW_NO"/>
+        <result property="originName" column="ORIGIN_NAME"/>
+        <result property="filePath" column="FILE_PATH"/>
+        <result property="status" column="STATUS"/>
+        <result property="uploadDate" column="UPLOAD_DATE"/>
+    </resultMap>
+
+    <!-- 태그 ResultMap -->
+    <resultMap id="reviewTagResultMap" type="ReviewTagDTO">
+        <id property="tagNo" column="TAG_NO"/>
+        <result property="tagName" column="TAG_NAME"/>
+    </resultMap>
+
+    <!-- 리뷰 상세 조회 -->
+	<select id="getByEstimateNo" parameterType="Long" resultMap="reviewDetailResultMap">
+		SELECT
+			  r.REVIEW_NO
+			, r.ESTIMATE_NO
+			, r.CONTENT
+			, r.STAR_SCORE
+			, r.CREATE_DATE
+		 FROM 
+		      TB_REVIEW r
+		WHERE 
+		      r.ESTIMATE_NO = #{estimateNo}
+	</select>
+
+    <!-- 첨부파일 목록 조회 -->
+    <select id="findAttachmentsByReviewNo" resultMap="reviewAttachmentResultMap">
+       SELECT
+              FILE_NO
+            , REVIEW_NO
+            , ORIGIN_NAME
+            , FILE_PATH
+            , STATUS
+            , UPLOAD_DATE
+        FROM 
+		      TB_REVIEW_ATTACHMENT
+        WHERE 
+		      REVIEW_NO = #{value}
+    </select>
+
+    <!-- 태그 목록 조회 -->
+    <select id="findTagsByReviewNo" resultMap="reviewTagResultMap">
+        SELECT
+               t.TAG_NO
+             , t.TAG_NAME
+         FROM 
+		      TB_REVIEW_TAG t
+         JOIN 
+		      TB_REVIEW_MAP m ON t.TAG_NO = m.TAG_NO
+        WHERE 
+		      m.REVIEW_NO = #{value}
+    </select>
+
+    <!-- 리뷰 등록 -->
+    <insert id="saveReview" parameterType="ReviewVO">
+        <selectKey keyProperty="reviewNo" resultType="long" order="BEFORE">
+		    SELECT SEQ_REVIEW.NEXTVAL FROM DUAL
+		</selectKey>
+       INSERT 
+		 INTO 
+		      TB_REVIEW 
+			  (
+              REVIEW_NO
+            , ESTIMATE_NO
+            , CONTENT
+            , STAR_SCORE
+            , STATUS
+            , CREATE_DATE
+              )
+			  VALUES 
+			  (
+              #{reviewNo}
+            , #{estimateNo}
+            , #{content}
+            , #{starScore}
+            , #{status}
+            , SYSDATE
+              )
+    </insert>
+
+    <!-- 첨부파일 등록 -->
+    <insert id="saveReviewAttachment" parameterType="ReviewAttachmentVO">
+        <selectKey keyProperty="fileNo" resultType="Long" order="BEFORE">
+            SELECT SEQ_REVIEW_ATTACHMENT.NEXTVAL FROM DUAL
+        </selectKey>
+       INSERT 
+		 INTO 
+		      TB_REVIEW_ATTACHMENT 
+			  (
+              FILE_NO
+            , REVIEW_NO
+            , ORIGIN_NAME
+            , FILE_PATH
+            , STATUS
+            , UPLOAD_DATE
+              ) 
+			  VALUES 
+			  (
+              #{fileNo}
+            , #{reviewNo}
+            , #{originName}
+            , #{filePath}
+            , #{status}
+            , SYSDATE
+              )
+    </insert>
+
+    <!-- 태그 매핑 등록 -->
+    <insert id="saveReviewMap" parameterType="ReviewMapVO">
+       INSERT 
+		 INTO 
+		      TB_REVIEW_MAP 
+			  (
+              REVIEW_NO
+            , TAG_NO
+              ) 
+			  VALUES 
+			  (
+              #{reviewNo}
+            , #{tagNo}
+              )
+    </insert>
+
+    <!-- 태그 전체 조회 -->
+    <select id="getAllReviewTags" resultMap="reviewTagResultMap">
+        SELECT
+               TAG_NO
+             , TAG_NAME
+          FROM 
+		       TB_REVIEW_TAG
+        ORDER BY TAG_NO
+    </select>
+
+    <!-- 리뷰 중복 체크 -->
+	<select id="existsReviewByEstimateNo"
+			parameterType="Long"
+			resultType="boolean">
+		SELECT
+			CASE
+				WHEN COUNT(*) > 0 THEN 1
+				ELSE 0
+			END
+		FROM TB_REVIEW
+		WHERE ESTIMATE_NO = #{value}
+	</select>
+
+	<select id="getReviewByEstimateNo" parameterType="Long" resultType="ReviewVO">
+    	SELECT * FROM TB_REVIEW WHERE ESTIMATE_NO = #{estimateNo} AND STATUS = 'Y'
+	</select>
+
+	<update id="updateReviewStatus">
+		UPDATE TB_REVIEW SET STATUS = 'N' WHERE REVIEW_NO = #{reviewNo}
+	</update>
+
+</mapper>

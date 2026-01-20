@@ -15,18 +15,17 @@ import lombok.ToString;
 @NoArgsConstructor 
 @ToString
 public class ReviewDetailDTO {
-    //private Long reviewNo;  // 조건부 (리뷰 있을 때만)
+    private Long reviewNo;
     private String content;
     private Integer starScore;
     private LocalDateTime createDate;
-    //private String status;
     private Long estimateNo;
 
     // 첨부파일 목록
     private List<ReviewAttachmentDTO> attachments;
     
     // 선택된 태그 목록
-    private List<ReviewTagDTO> tags;
+    private List<ReviewTagDTO> selectedTags;
     
     // 계산 필드 (프론트엔드용)
     private Boolean hasReview;      // 리뷰 존재 여부

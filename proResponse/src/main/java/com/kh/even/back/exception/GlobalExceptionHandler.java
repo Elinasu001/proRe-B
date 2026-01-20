@@ -46,6 +46,12 @@ public class GlobalExceptionHandler {
 	    return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(ReviewException.class)
+	public ResponseEntity<ResponseData<Object>> handleReviewException(ReviewException e) {
+	    log.warn("리뷰 오류: {}", e.getMessage());
+	    return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
 	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
 
 	/* ===================== 공통 Runtime / Exception ===================== */

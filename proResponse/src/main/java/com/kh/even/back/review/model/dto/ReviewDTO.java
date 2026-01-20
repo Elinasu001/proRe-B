@@ -1,6 +1,5 @@
 package com.kh.even.back.review.model.dto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;

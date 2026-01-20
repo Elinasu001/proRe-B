@@ -1,6 +1,6 @@
 package com.kh.even.back.chat.model.vo;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
 
 import lombok.Builder;
 import lombok.Value;
@@ -10,6 +10,6 @@ import lombok.Value;
 public class ChatRoomVO {
     private Long roomNo;				// 채팅방 번호 (PK)
     private String status;				// 상태
-    private LocalDateTime createdDate;	// 생성 일자
+    private Date createdDate;	        // 생성 일자
     private Long estimateNo;			// 견적 번호 (FK)
 }

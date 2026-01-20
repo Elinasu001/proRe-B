@@ -1,6 +1,5 @@
 package com.kh.even.back.review.model.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -34,8 +33,8 @@ public class ReviewServiceImpl implements ReviewService {
         //, Long userNo
     ) {
         // userNo가 필요 없다면 파라미터에서 제거
-        ReviewDetailDTO reviewDTO = reviewMapper.getByEstimateNo(estimateNo);
-        return reviewDTO;
+        ReviewDetailDTO reviewDetailDTO = reviewMapper.getByEstimateNo(estimateNo);
+        return reviewDetailDTO;
     }
 
 
@@ -83,7 +82,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .content(reviewDTO.getContent())
                 .starScore(reviewDTO.getStarScore())
                 .status("Y")
-                .createDate(LocalDateTime.now())
                 .build();
         reviewMapper.saveReview(reviewVO);
         Long reviewNo = reviewVO.getReviewNo();

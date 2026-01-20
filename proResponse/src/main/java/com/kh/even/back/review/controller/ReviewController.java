@@ -39,7 +39,6 @@ public class ReviewController {
             @PathVariable(name="estimateNo") Long estimateNo
             //, @AuthenticationPrincipal CustomUserDetails user
         ) {
-        
         ReviewDetailDTO review = reviewService.getReview(
             estimateNo
             // , user.getUserNo()

@@ -10,7 +10,7 @@
 		<id property="reviewNo" column="REVIEW_NO"/>
 		<result property="content" column="CONTENT"/>
 		<result property="starScore" column="STAR_SCORE"/>
-		<result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP"/>
+		<result property="createDate" column="CREATE_DATE"/>
 		<result property="estimateNo" column="ESTIMATE_NO"/>
 
 		<collection property="attachments"
@@ -38,6 +38,7 @@
     <resultMap id="reviewTagResultMap" type="ReviewTagDTO">
         <id property="tagNo" column="TAG_NO"/>
         <result property="tagName" column="TAG_NAME"/>
+		<result property="selected" column="SELECTED"/>
     </resultMap>
 
     <!-- 리뷰 상세 조회 -->
@@ -74,6 +75,7 @@
         SELECT
                t.TAG_NO
              , t.TAG_NAME
+			 , 1 AS SELECTED
          FROM 
 		      TB_REVIEW_TAG t
          JOIN 

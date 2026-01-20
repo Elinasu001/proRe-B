@@ -1,7 +1,7 @@
 package com.kh.even.back.chat.model.dto;
 
 
-import java.time.LocalDateTime;
+import java.sql.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import lombok.ToString;
 public class ChatRoomDTO {
     private Long roomNo;
     private String status;
-    private LocalDateTime createdDate;
+    private Date createdDate;
     private Long estimateNo;
     private Long userNo;   // 상대방 정보 (JOIN)
     private String userName;

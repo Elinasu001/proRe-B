@@ -5,7 +5,7 @@
 <mapper namespace="com.kh.even.back.member.model.mapper.MemberMapper">
 	
 	
-	
+	<!-- 이메일 중복여부를 확인합니다. -->
 	<select id="countByEmail">
 		SELECT
 		       COUNT(*)
@@ -15,7 +15,7 @@
 		       email = #{email}           
 	</select>
 	
-	
+	<!-- 회원가입을 합니다. -->
 	<insert id="signUp" parameterType="MemberVO">
 	<selectKey keyProperty="userNo" order="BEFORE" resultType="long">
 		select SEQ_MEMBER.nextval FROM DUAL
@@ -56,6 +56,7 @@
 	           )	            
 	</insert>
 	
+	<!-- 회원의 위도/경도를 추가합니다. -->
 	<insert id="saveLocation" parameterType="MemberVO">
 		INSERT
 		  INTO
@@ -72,5 +73,22 @@
 		     , #{longitude} 
 		       )      
 	</insert>
+	
+	<!-- 로그인을 위해 유저정보를 불러옵니다. -->
+	<select id="loadUser" resultType="MemberAuthDTO">
+		SELECT
+		       USER_NO userNo
+		     , EMAIL email
+		     , USER_PWD userPwd
+		     , USER_NAME userName
+		     , NICKNAME
+		     , PROFILE_IMG profileImg
+		     , USER_ROLE userRole
+		     , STATUS 
+		  FROM
+		       TB_MEMBER
+		 WHERE
+		       EMAIL = #{email}            
+	</select>
 	
 </mapper>

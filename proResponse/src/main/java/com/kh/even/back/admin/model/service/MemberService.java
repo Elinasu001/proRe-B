@@ -2,8 +2,10 @@ package com.kh.even.back.admin.model.service;
 
 import java.util.List;
 import com.kh.even.back.admin.model.dto.MemberDTO;
-import com.kh.even.back.member.model.vo.MemberVO;
 
+/**
+ * 관리자 - 회원 관리 서비스
+ */
 public interface MemberService {
     
     /**
@@ -12,27 +14,37 @@ public interface MemberService {
     List<MemberDTO> getMemberList(int currentPage, String keyword);
     
     /**
-     * 회원 전체 개수 (검색 포함)
+     * 회원 전체 개수 조회 (검색 포함)
      */
     int getMemberCount(String keyword);
     
     /**
-     * 회원 상세 조회
+     * 회원 상세 정보 조회
      */
     MemberDTO getMemberDetail(Long userNo);
     
     /**
-     * 회원 상태 변경 (활성/탈퇴)
+     * 회원 활성화 (비즈니스 의도 명확)
      */
-    boolean updateMemberStatus(Long userNo, char status);
+    boolean activateMember(Long userNo);
     
     /**
-     * 권한 변경 (일반/전문가/관리자)
+     * 회원 비활성화 (비즈니스 의도 명확)
      */
-    boolean updateUserRole(Long userNo, String userRole);
+    boolean deactivateMember(Long userNo);
     
     /**
-     * 징계 상태 변경
+     * 회원 권한 변경
      */
-    boolean updatePenaltyStatus(Long userNo, char penaltyStatus);
+    boolean changeMemberRole(Long userNo, String newRole);
+    
+    /**
+     * 징계 적용
+     */
+    boolean applyPenaltyToMember(Long userNo);
+    
+    /**
+     * 징계 해제
+     */
+    boolean removePenaltyFromMember(Long userNo);
 }

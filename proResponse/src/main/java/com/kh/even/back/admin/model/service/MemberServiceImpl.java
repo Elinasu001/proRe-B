@@ -19,9 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class MemberServiceImpl implements MemberService {
     
-    private final MemberMapper memberMapper;  // ✅ Mapper 주입
+    private final MemberMapper memberMapper;
+    private final MemberValidator memberValidator;
+    private final MemberStatusManager statusManager;
     
-    private static final int BOARD_LIMIT = 10; // 페이지당 회원 수
+    private static final int BOARD_LIMIT = 10;
     
     @Override
     public List<MemberDTO> getMemberList(int currentPage, String keyword) {
@@ -47,25 +49,115 @@ public class MemberServiceImpl implements MemberService {
     }
     
     @Override
-    public boolean updateMemberStatus(Long userNo, char status) {
-        int result = memberMapper.updateMemberStatus(userNo, status);
-        log.info("회원 상태 변경 - userNo: {}, status: {}, result: {}", userNo, status, result);
+    public boolean activateMember(Long userNo) {
+        log.info("회원 활성화 시작 - userNo: {}", userNo);
+        
+        // 1. 현재 회원 정보 조회
+        MemberVO currentMember = memberMapper.getMemberDetail(userNo);
+        if (currentMember == null) {
+            log.warn("회원을 찾을 수 없음 - userNo: {}", userNo);
+            return false;
+        }
+        
+        // 2. 검증
+        String currentStatus = String.valueOf(currentMember.getStatus());
+        String newStatus = statusManager.activateMember();
+        memberValidator.validateStatusChange(currentStatus, newStatus);
+        
+        // 3. 상태 변경
+        char statusChar = statusManager.toStatusChar(newStatus);
+        int result = memberMapper.updateMemberStatus(userNo, statusChar);
+        
+        log.info("회원 활성화 완료 - userNo: {}, result: {}", userNo, result);
         return result > 0;
     }
     
     @Override
-    public boolean updateUserRole(Long userNo, String userRole) {
-        int result = memberMapper.updateUserRole(userNo, userRole);
-        log.info("회원 권한 변경 - userNo: {}, userRole: {}, result: {}", userNo, userRole, result);
+    public boolean deactivateMember(Long userNo) {
+        log.info("회원 비활성화 시작 - userNo: {}", userNo);
+        
+        // 1. 현재 회원 정보 조회
+        MemberVO currentMember = memberMapper.getMemberDetail(userNo);
+        if (currentMember == null) {
+            log.warn("회원을 찾을 수 없음 - userNo: {}", userNo);
+            return false;
+        }
+        
+        // 2. 검증
+        String currentStatus = String.valueOf(currentMember.getStatus());
+        String newStatus = statusManager.deactivateMember();
+        memberValidator.validateStatusChange(currentStatus, newStatus);
+        
+        // 3. 상태 변경
+        char statusChar = statusManager.toStatusChar(newStatus);
+        int result = memberMapper.updateMemberStatus(userNo, statusChar);
+        
+        log.info("회원 비활성화 완료 - userNo: {}, result: {}", userNo, result);
         return result > 0;
     }
     
     @Override
-    public boolean updatePenaltyStatus(Long userNo, char penaltyStatus) {
-        // DTO의 char를 VO의 String으로 변환
-        String penaltyStatusStr = String.valueOf(penaltyStatus);
-        int result = memberMapper.updatePenaltyStatus(userNo, penaltyStatusStr);
-        log.info("징계 상태 변경 - userNo: {}, penaltyStatus: {}, result: {}", userNo, penaltyStatus, result);
+    public boolean changeMemberRole(Long userNo, String newRole) {
+        log.info("회원 권한 변경 시작 - userNo: {}, newRole: {}", userNo, newRole);
+        
+        // 1. 현재 회원 정보 조회
+        MemberVO currentMember = memberMapper.getMemberDetail(userNo);
+        if (currentMember == null) {
+            log.warn("회원을 찾을 수 없음 - userNo: {}", userNo);
+            return false;
+        }
+        
+        // 2. 검증
+        memberValidator.validateRoleChange(currentMember.getUserRole(), newRole);
+        
+        // 3. 권한 변경
+        int result = memberMapper.updateUserRole(userNo, newRole);
+        
+        log.info("회원 권한 변경 완료 - userNo: {}, newRole: {}, result: {}", userNo, newRole, result);
+        return result > 0;
+    }
+    
+    @Override
+    public boolean applyPenaltyToMember(Long userNo) {
+        log.info("징계 적용 시작 - userNo: {}", userNo);
+        
+        // 1. 현재 회원 정보 조회
+        MemberVO currentMember = memberMapper.getMemberDetail(userNo);
+        if (currentMember == null) {
+            log.warn("회원을 찾을 수 없음 - userNo: {}", userNo);
+            return false;
+        }
+        
+        // 2. 검증
+        String newPenalty = statusManager.applyPenalty();
+        memberValidator.validatePenaltyChange(currentMember.getPenaltyStatus(), newPenalty);
+        
+        // 3. 징계 적용
+        int result = memberMapper.updatePenaltyStatus(userNo, newPenalty);
+        
+        log.info("징계 적용 완료 - userNo: {}, result: {}", userNo, result);
+        return result > 0;
+    }
+    
+    @Override
+    public boolean removePenaltyFromMember(Long userNo) {
+        log.info("징계 해제 시작 - userNo: {}", userNo);
+        
+        // 1. 현재 회원 정보 조회
+        MemberVO currentMember = memberMapper.getMemberDetail(userNo);
+        if (currentMember == null) {
+            log.warn("회원을 찾을 수 없음 - userNo: {}", userNo);
+            return false;
+        }
+        
+        // 2. 검증
+        String newPenalty = statusManager.removePenalty();
+        memberValidator.validatePenaltyChange(currentMember.getPenaltyStatus(), newPenalty);
+        
+        // 3. 징계 해제
+        int result = memberMapper.updatePenaltyStatus(userNo, newPenalty);
+        
+        log.info("징계 해제 완료 - userNo: {}, result: {}", userNo, result);
         return result > 0;
     }
     
@@ -84,12 +176,12 @@ public class MemberServiceImpl implements MemberService {
             vo.getPostcode(),
             vo.getAddress(),
             vo.getAddressDetail(),
-            vo.getStatus(),
+            String.valueOf(vo.getStatus()),
             vo.getCreateDate(),
             vo.getDeleteDate(),
             vo.getUpdateDate(),
             vo.getUserRole(),
-            vo.getPenaltyStatus() != null ? vo.getPenaltyStatus().charAt(0) : 'N'  // String -> char 변환
+            vo.getPenaltyStatus()
         );
     }
 }

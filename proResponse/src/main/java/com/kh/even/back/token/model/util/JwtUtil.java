@@ -22,7 +22,7 @@ public class JwtUtil {
 
 	@Value("${jwt.secret}")
 	private String secretKey;
-	private SecretKey key;
+	private SecretKey key; // (시그니처 만들기 용도)
 
 	@PostConstruct
 	public void init() {

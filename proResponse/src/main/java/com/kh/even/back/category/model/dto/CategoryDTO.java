@@ -17,5 +17,5 @@ public class CategoryDTO {
 
 	private String categoryName;
 	private List<DetailCategoryDTO> details;
-	
+
 }

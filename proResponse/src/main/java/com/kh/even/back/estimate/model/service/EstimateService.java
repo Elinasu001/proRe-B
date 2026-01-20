@@ -20,6 +20,7 @@ public interface EstimateService {
 
 	/**
 	 * @param customUserDetails 현재 로그인한 유저의 정보
+	 * @param page 현재 페이지 넘버 
 	 * @return List<ExpertDTO> 회원이 견적 요청했던 목록 리턴
 	 */
 	List<ExpertDTO> getEstimate(CustomUserDetails customUserDetails,int page);

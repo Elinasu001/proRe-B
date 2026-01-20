@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class MemberServiceImpl implements MemberService {
     
-    private final MemberMapper memberMapper;
+    private final MemberMapper memberMapper;  // ✅ Mapper 주입
     
     private static final int BOARD_LIMIT = 10; // 페이지당 회원 수
     
@@ -62,7 +62,9 @@ public class MemberServiceImpl implements MemberService {
     
     @Override
     public boolean updatePenaltyStatus(Long userNo, char penaltyStatus) {
-        int result = memberMapper.updatePenaltyStatus(userNo, penaltyStatus);
+        // DTO의 char를 VO의 String으로 변환
+        String penaltyStatusStr = String.valueOf(penaltyStatus);
+        int result = memberMapper.updatePenaltyStatus(userNo, penaltyStatusStr);
         log.info("징계 상태 변경 - userNo: {}, penaltyStatus: {}, result: {}", userNo, penaltyStatus, result);
         return result > 0;
     }
@@ -83,11 +85,11 @@ public class MemberServiceImpl implements MemberService {
             vo.getAddress(),
             vo.getAddressDetail(),
             vo.getStatus(),
-            vo.getCreateDate(),              // java.sql.Date -> java.util.Date (자동 변환됨)
+            vo.getCreateDate(),
             vo.getDeleteDate(),
             vo.getUpdateDate(),
             vo.getUserRole(),
-            vo.getPenaltyStatus().charAt(0)  // String -> char 변환 필요!
+            vo.getPenaltyStatus() != null ? vo.getPenaltyStatus().charAt(0) : 'N'  // String -> char 변환
         );
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.token.model.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
@@ -53,7 +54,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
 			CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
-			
+			if(user.getPenaltyStatus().equals("Y")) {
+				throw new CustomAuthenticationException("정지된 계정입니다.");
+			}
 			
 			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null,
 					user.getAuthorities());

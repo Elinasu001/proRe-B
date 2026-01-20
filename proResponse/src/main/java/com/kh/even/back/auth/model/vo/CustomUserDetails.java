@@ -16,10 +16,10 @@ public class CustomUserDetails implements UserDetails {
 	private String username; // ID로 쓰는거 이메일로 바꾸시면됨 
 	private String password;
 	private String realName; // 실명
-	private String birthDay;
-	private String email;
-	private String phone;
-	private String licenseUrl;
+	private String nickname;
+	private String profileImgPath;
+	private String status;
+	private String penaltyStatus;
 	private Collection<? extends GrantedAuthority> authorities;
 
 }

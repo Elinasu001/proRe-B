@@ -29,20 +29,23 @@ public class CategoryController {
 
 		List<CategoryEntity> categories = categorySerivce.getCategoryEntities();
 
-		//log.info(" controller : {}", categories);
+		// log.info(" controller : {}", categories);
 
 		return ResponseData.ok(categories, "카테고리 조회에 성공했습니다.");
 
 	}
-	
+
 	@GetMapping("/{categoryNo}")
-	public ResponseEntity<ResponseData<List<CategoryDTO>>> getCategories(@PathVariable("categoryNo") Long categoryNo){
-		
-		//log.info("{}",expertTypeNo);
-		
+	public ResponseEntity<ResponseData<List<CategoryDTO>>> getCategories(@PathVariable("categoryNo") Long categoryNo) {
+
+		// log.info("{}",expertTypeNo);
+
 		List<CategoryDTO> categoryDetails = categorySerivce.getCategoryDetails(categoryNo);
-		
+
 		return ResponseData.ok(categoryDetails, "조회에 성공했습니다.");
 	}
- 
+
+//	@GetMapping("/experts/{categoryDetailNo}")
+//	public ResponseEntity<ResponseData<List<>>>
+
 }

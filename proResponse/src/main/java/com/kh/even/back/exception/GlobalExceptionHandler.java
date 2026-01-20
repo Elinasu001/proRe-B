@@ -98,5 +98,14 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 		
 	}
+	
+	@ExceptionHandler(InvalidFileException.class)
+	public ResponseEntity<ResponseData<Object>> handleInvalidFileExceptiona(InvalidFileException e) {
+		
+		log.error("파일 4개 이상 업로드 : {}", e.getMessage());
+		
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+		
+	}
 
 }

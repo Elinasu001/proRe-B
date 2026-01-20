@@ -20,11 +20,11 @@ import lombok.NoArgsConstructor;
 	    private String postcode;
 	    private String address;
 	    private String addressDetail;
-	    private char status;           // Y/N (관리자가 변경 가능)
+	    private String status;           // Y/N (관리자가 변경 가능)
 	    private Date createDate;
 	    private Date deleteDate;
 	    private Date updateDate;
 	    private String userRole;       // ROLE_USER/ROLE_EXPERT/ROLE_ADMIN
-	    private char penaltyStatus;    // Y/N (관리자가 변경 가능)
+	    private String penaltyStatus;    // Y/N (관리자가 변경 가능)
 	    
 }

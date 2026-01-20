@@ -9,7 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-
+import com.kh.even.back.member.model.dto.MemberAuthDTO;
+import com.kh.even.back.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,26 +19,34 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
+	
+	private final MemberMapper memberMapper;
 	// AuthenticationManger가 실질적으로 사용자의 정보를 조회할 때 메소드를 호출하는 클래스
 
 	// 멤버 맵퍼 들어가야함
 
 	@Override
-	public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-
-		// log.info("userId : {}" , userId);
-
-		//MemberDTO user = mapper.loadUser(userId);
-
-//		if (user == null) {
-//			throw new UsernameNotFoundException("유저 결과가 없습니다.");
-//		}
-//		return CustomUserDetails.builder().userNo(user.getUserNo()).username(user.getMemberId())
-//				.password(user.getMemberPwd()).realName(user.getMemberName()).birthDay(user.getBirthDay())
-//				.email(user.getEmail()).phone(user.getPhone()).licenseUrl(user.getLicenseUrl())
-//				.authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))).build();
-		return null;
-
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		
+		MemberAuthDTO member = memberMapper.loadUser(email);
+		// log.info("매퍼 호출 후 결과 : {}", member);
+		
+		if(member == null) {
+			throw new UsernameNotFoundException("회원정보가 존재하지 않습니다.");
+		}
+		
+		return CustomUserDetails.builder().userNo(member.getUserNo())
+				                          .username(member.getEmail())
+				                          .password(member.getUserPwd())
+				                          .realName(member.getUserName())
+				                          .nickname(member.getNickname())
+				                          .profileImgPath(member.getProfileImgPath())
+				                          .status(member.getStatus())
+				                          //.userRole(member.getUserRole())
+				                          .penaltyStatus(member.getPenaltyStatus())
+				                          .authorities(Collections.singletonList(new SimpleGrantedAuthority(member.getUserRole())))
+				                          .build();
+		
 	}
 
 }

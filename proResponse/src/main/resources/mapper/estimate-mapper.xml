@@ -56,6 +56,7 @@
 			   ) rs ON rs.EXPERT_NO = r.EXPERT_NO
 	WHERE 
 	      r.USER_NO = #{userNo}
+	  AND r.STATUS = 'REQUESTED'     
 	ORDER 
 	   BY r.REQUEST_NO DESC
 	OFFSET #{offset} ROWS FETCH NEXT 4 ROWS ONLY;

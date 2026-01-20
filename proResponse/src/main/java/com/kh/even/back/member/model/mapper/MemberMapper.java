@@ -35,6 +35,6 @@ public interface MemberMapper {
 	 * @param email
 	 * @return PK / 이메일 / 패스워드 / 이름 / 닉네임 / 프로필 이미지 / 권한 / 상태를 DTO 형태로 반환해줍니다.
 	 */
-	MemberAuthDTO loadUser(@Param("email") String email);
+	MemberAuthDTO loadUser(String email);
 
 }

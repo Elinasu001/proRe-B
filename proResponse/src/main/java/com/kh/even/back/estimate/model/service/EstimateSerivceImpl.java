@@ -53,16 +53,16 @@ public class EstimateSerivceImpl implements EstimateService {
 
 	private EstimateRequestEntity toEntity(EstimateRequestDTO dto,CustomUserDetails customUserDetails) {
 
-		EstimateRequestEntity entity = new EstimateRequestEntity();
+		EstimateRequestEntity entity = EstimateRequestEntity.builder()
+				        .requestDate(dto.getRequestDate())
+						.requestType(dto.getRequestType())
+						.requestService(dto.getRequestService())
+						.content(dto.getContent())
+						.expertNo(dto.getExpertNo())
+						.categoryDetailNo(dto.getCategoryDetailNo())
+						.userNo(customUserDetails.getUserNo())
+						.build();
 
-		entity.setRequestDate(dto.getRequestDate());
-		entity.setRequestType(dto.getRequestType());
-		entity.setRequestService(dto.getRequestService());
-		entity.setContent(dto.getContent());
-		entity.setExpertNo(dto.getExpertNo());
-		entity.setCategoryDetailNo(dto.getCategoryDetailNo());
-		// 로그인 유저 No
-		entity.setUserNo(customUserDetails.getUserNo());
 
 		return entity;
 	}

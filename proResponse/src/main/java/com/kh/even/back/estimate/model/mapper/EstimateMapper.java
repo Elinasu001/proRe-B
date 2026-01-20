@@ -17,8 +17,9 @@ public interface EstimateMapper {
 	List<ExpertDTO> getMyEstimate(Map<String, Object> params);
 
 	int getMyEstimateCount(Long userNo);
-	
+
 	int getResponseEstimateCount(Long userNo);
-	
+
 	List<ResponseEstimateDTO> getResponseEstimateDetails(Map<String, Object> params);
+
 }

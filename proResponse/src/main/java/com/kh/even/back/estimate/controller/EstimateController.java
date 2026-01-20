@@ -46,7 +46,8 @@ public class EstimateController {
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
 
-		return ResponseData.ok(estimateService.getReceivedEstimates(pageNo,customUserDetails), "조회에 성공 했습니다.");
+		return ResponseData.ok(estimateService.getReceivedEstimates(pageNo, customUserDetails), "조회에 성공 했습니다.");
+
 	}
 
 	@PostMapping

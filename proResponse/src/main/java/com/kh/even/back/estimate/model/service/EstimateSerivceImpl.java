@@ -96,23 +96,21 @@ public class EstimateSerivceImpl implements EstimateService {
 	}
 
 	@Override
-	public PageResponse<ResponseEstimateDTO> getReceivedEstimates(int pageNo , CustomUserDetails customUserDetails) {
+	public PageResponse<ResponseEstimateDTO> getReceivedEstimates(int pageNo, CustomUserDetails customUserDetails) {
 
 		Long userNo = customUserDetails.getUserNo();
-		
+
 		int listCount = mapper.getResponseEstimateCount(userNo);
-		
+
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-		
+
 		params.put("userNo", userNo);
-		
+
 		List<ResponseEstimateDTO> list = mapper.getResponseEstimateDetails(params);
 		PageInfo pageInfo = (PageInfo) params.get("pi");
-		
+
 		return new PageResponse<ResponseEstimateDTO>(list, pageInfo);
-		
-		
-		
+
 	}
 
 }

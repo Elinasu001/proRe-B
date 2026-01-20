@@ -17,20 +17,20 @@ public class EstimateRequestDTO {
 
 	@NotNull
 	private LocalDateTime requestDate;
-	
-    @NotNull
-    private String requestType;
 
-    @NotNull
-    private String requestService;
+	@NotNull
+	private String requestType;
 
-    @NotNull
-    private String content;
+	@NotNull
+	private String requestService;
 
-    @NotNull
-    private Long expertNo;
+	@NotNull
+	private String content;
 
-    @NotNull
-    private Long categoryDetailNo;
-    
+	@NotNull
+	private Long expertNo;
+
+	@NotNull
+	private Long categoryDetailNo;
+
 }

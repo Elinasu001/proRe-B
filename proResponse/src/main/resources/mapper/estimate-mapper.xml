@@ -24,9 +24,17 @@
 	</insert>
 	
 	
+	<select id="getMyEstimateCount" resultType="int">
+	SELECT COUNT(*)
+	FROM TB_ESTIMATE_REQUEST
+	WHERE USER_NO = #{userNo}
+	  AND STATUS = 'REQUESTED'
+	</select>
+	
 	<select id="getMyEstimate" resultType="ExpertDTO">
 	SELECT
-	       r.REQUEST_NO
+	       r.REQUEST_NO		   AS requestNo
+	     , r.EXPERT_NO         AS expertNo 
 	     , r.STATUS            AS requestStatus
 	     , m.NICKNAME          AS nickName
 	     , m.ADDRESS
@@ -59,7 +67,57 @@
 	  AND r.STATUS = 'REQUESTED'     
 	ORDER 
 	   BY r.REQUEST_NO DESC
-	OFFSET #{offset} ROWS FETCH NEXT 4 ROWS ONLY;
+	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
+	
+	
+	<select id="getResponseEstimateCount" resultType="int">
+    SELECT COUNT(*) AS responseCount
+      FROM TB_ESTIMATE_RESPONSE er
+      JOIN TB_ESTIMATE_REQUEST r
+        ON er.REQUEST_NO = r.REQUEST_NO
+     WHERE r.USER_NO = #{userNo}
+       AND er.STATUS IN ('SENT', 'ACCEPTED')
+	</select>
+	
+	
+	<select id="getResponseEstimateDetails" resultType="ResponseEstimateDTO">
+    SELECT
+           r.EXPERT_NO               AS expertNo,
+           m.NICKNAME                AS nickName,
+           NVL(rs.AVG_STAR_SCORE, 0) AS starScore,
+           NVL(rs.REVIEW_COUNT, 0)   AS reviewCount,
+           er.PRICE                  AS price,
+           er.STATUS                 AS status
+      FROM TB_ESTIMATE_REQUEST r
+      JOIN TB_ESTIMATE_RESPONSE er
+        ON er.REQUEST_NO = r.REQUEST_NO
+       AND er.DELETE_AT = 'N'
+       AND er.STATUS IN ('SENT', 'ACCEPTED')
+      JOIN TB_EXPERT e
+        ON e.USER_NO = r.EXPERT_NO
+       AND e.STATUS = 'Y'
+      JOIN TB_MEMBER m
+        ON m.USER_NO = e.USER_NO
+       AND m.STATUS = 'Y'
+      LEFT JOIN (
+            SELECT
+                   r2.EXPERT_NO,
+                   ROUND(AVG(rv.STAR_SCORE), 2) AS AVG_STAR_SCORE,
+                   COUNT(rv.REVIEW_NO)          AS REVIEW_COUNT
+              FROM TB_ESTIMATE_REQUEST r2
+              JOIN TB_ESTIMATE_RESPONSE er2
+                ON er2.REQUEST_NO = r2.REQUEST_NO
+               AND er2.DELETE_AT = 'N'
+              LEFT JOIN TB_REVIEW rv
+                ON rv.ESTIMATE_NO = er2.ESTIMATE_NO
+               AND rv.STATUS = 'Y'
+             GROUP BY r2.EXPERT_NO
+      ) rs
+        ON rs.EXPERT_NO = r.EXPERT_NO
+     WHERE r.USER_NO = #{userNo}
+     ORDER BY er.ESTIMATE_DATE DESC
+     OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+</select>
 	
 </mapper>

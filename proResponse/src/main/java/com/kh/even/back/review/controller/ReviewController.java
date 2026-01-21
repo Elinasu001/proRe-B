@@ -43,17 +43,17 @@ public class ReviewController {
             estimateNo
             // , user.getUserNo()
         );
-        return ResponseData.ok(review, "리뷰 정보 조회 성공");
+        return ResponseData.ok(review, "리뷰 조회에 성공했습니다");
     }
 
     /**
-	 * 태그 조회
+	 * 태그 전체 조회 (등록 시 필요)
 	 * 
 	 */
     @GetMapping("/tags")
-	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getReviewTags() {
-		List<ReviewTagDTO> categories = reviewService.getReviewTags();
-		return ResponseData.ok(categories, "리뷰 태그 목록 조회 성공");
+	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getAllReviewTags() {
+		List<ReviewTagDTO> categories = reviewService.getAllReviewTags();
+		return ResponseData.ok(categories, "전체 태그 목록 조회에 성공했습니다");
 	}
 
     /**
@@ -75,7 +75,7 @@ public class ReviewController {
             //, user.getUserNo()
         );
         
-        return ResponseData.ok(saved, "리뷰가 성공적으로 등록되었습니다");
+        return ResponseData.created(saved, "리뷰가 성공적으로 등록되었습니다");
     }
 
     /**
@@ -91,6 +91,6 @@ public class ReviewController {
             estimateNo
             //, user.getUserNo()
         );
-        return ResponseData.ok(deleted, "리뷰 삭제 성공");
+        return ResponseData.created(deleted, "리뷰가 삭제되었습니다");
     }
 }

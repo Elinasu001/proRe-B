@@ -135,8 +135,11 @@ public class MemberServiceImpl implements MemberService {
 	 * 비밀번호 검증
 	 */
 	private String validatePassword(String password) {
+		
 		CustomUserDetails user = getCurrentUser();
+		
 		String currentPassword = password.getCurrentPassword();
+		String encodedPassword = user.getPassword();
 		
 		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
 			throw new CustomAuthenticationException("일치하지 않는 비밀번호");

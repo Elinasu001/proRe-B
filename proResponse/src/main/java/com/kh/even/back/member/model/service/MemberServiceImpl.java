@@ -1,6 +1,5 @@
 package com.kh.even.back.member.model.service;
 
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
-import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
@@ -139,7 +137,7 @@ public class MemberServiceImpl implements MemberService {
 				  										 .build();
 		int result = memberMapper.withdrawMember(wmv);
 		if(result != 1) {
-			throw new Exception("회원탈퇴 요청에 실패했습니다.");
+			
 		}
 		
 		

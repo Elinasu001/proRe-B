@@ -3,6 +3,7 @@ package com.kh.even.back.member.model.service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
@@ -17,8 +18,6 @@ public interface MemberService {
 	
 	void sendCodeToEmail(String toEmail);
 	
-	String createCode();
-	
-	EmailVerificationResult verificatedCode(String email, String authCode);
+	EmailVerificationResult verifiedCode(String email, String authCode);
 	
 }

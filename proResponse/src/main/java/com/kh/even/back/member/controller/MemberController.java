@@ -2,6 +2,7 @@ package com.kh.even.back.member.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,16 +16,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
+import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.service.MemberService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/members")
@@ -60,18 +65,19 @@ public class MemberController {
 	}
 	
 	@PostMapping("/emails/verification-requests")
-	public ResponseEntity<ResponseData<Void>> sendMessage(@RequestParam("email") @Valid @CustomEmail String email) {
+	public ResponseEntity<ResponseData<Void>> sendMessage(@RequestParam("email") @NotBlank @Email String email) {
 		memberService.sendCodeToEmail(email);
 		
 		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
 	}
 	
 	@GetMapping("/emails/verifications")
-	public ResponseEntity<ResponseData<Void>> verificationEmail(@RequestParam("email") @Valid @CustomEmail String email,
+	public ResponseEntity<ResponseData<EmailVerificationResult>> verificationEmail(@RequestParam("email") @NotBlank @Email String email,
 															   @RequestParam("code") String authCode) {
 		EmailVerificationResult response = memberService.verifiedCode(email, authCode);
 		
-		return ResponseData.ok(null, authCode);
+		return ResponseData.ok(response, "성공");
 	}
+	
 	
 }

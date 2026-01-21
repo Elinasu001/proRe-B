@@ -1,5 +1,10 @@
 package com.kh.even.back.member.model.service;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -7,12 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-import com.kh.even.back.auth.redis.RedisService;
+import com.kh.even.back.exception.BusinessLogicException;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.mail.MailService;
+import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
@@ -20,6 +26,7 @@ import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
+import com.kh.even.back.redis.RedisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,14 +57,7 @@ public class MemberServiceImpl implements MemberService {
 		// 유효성 검사 => Validator에게 위임
 		
 		// 이메일 중복 검사 (프론트 + 백엔드)
-		int count = memberMapper.countByEmail(member.getEmail());
-		// log.info("이메일 중복여부 : {}", count);
-			
-		
-		if(count >= 1) {
-			throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
-		}
-		
+		checkDuplicatedEmail(member.getEmail());
 		
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
 		if(file != null && !file.isEmpty()) {
@@ -185,6 +185,57 @@ public class MemberServiceImpl implements MemberService {
 		
 	}
 	
-	public void sendCodeToEmail(String to)
+	@Override
+	public void sendCodeToEmail(String toEmail) {
+		String title = "Join with us 이메일 인증번호";
+		String authCode = this.createCode();
+		mailService.sendEmail(toEmail, title, authCode);
+		// 이메일 인증 요청 시 인증번호 redis에 저장 ( key = "AuthCode " + Email + value = AuthCode )
+		redisService.setValues(AUTH_CODE_PREFIX + toEmail, authCode, Duration.ofMillis(this.authCodeExpirationMillis));
+	}
+	
+	private String createCode() {
+		
+		int lenth = 6;
+		
+		try {
+			Random random = SecureRandom.getInstanceStrong();
+			StringBuilder builder = new StringBuilder();
+			for(int i = 0; i < lenth; i++) {
+				builder.append(random.nextInt(10));
+			}
+			return builder.toString();
+		} catch(NoSuchAlgorithmException e) {
+			throw new BusinessLogicException("이메일 인증에 실패했습니다.");
+		}
+	}
+	
+	@Override
+	public EmailVerificationResult verifiedCode(String email, String authCode) {
+	    String key = AUTH_CODE_PREFIX + email;
+	    String redisAuthCode = redisService.getValues(key);
+
+	    boolean authResult =
+	            redisService.checkExistsValue(redisAuthCode) && redisAuthCode.equals(authCode);
+
+	    if (authResult) {
+	        redisService.deleteValues(key); // 1회용 처리
+	    }
+
+	    return EmailVerificationResult.of(authResult);
+	}
+	
+	/**
+	 * 이메일 중복 검사
+	 * @param email
+	 */
+	private void checkDuplicatedEmail(String email) {
+				
+				int count = memberMapper.countByEmail(email);
+					
+				if(count >= 1) {
+					throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
+				}
+	}
 	
 }

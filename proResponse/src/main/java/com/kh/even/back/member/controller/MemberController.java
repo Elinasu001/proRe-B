@@ -49,7 +49,9 @@ public class MemberController {
 	
 	@DeleteMapping
 	public ResponseEntity<ResponseData<Void>> withdrawMember(@Valid @RequestBody WithdrawMemberDTO request) {
-		log.info("회원탈퇴 요청 진위여부 : {}", request);
+		// log.info("회원탈퇴 요청 진위여부 : {}", request);
+		
+		memberService.withdrawMember(request);
 		
 		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
 	}

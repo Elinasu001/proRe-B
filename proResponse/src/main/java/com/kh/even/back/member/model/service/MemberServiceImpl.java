@@ -14,6 +14,7 @@ import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
@@ -129,4 +130,25 @@ public class MemberServiceImpl implements MemberService {
 		return user;
 		
 	}
+	
+	/**
+	 * 비밀번호 검증
+	 */
+	private String validatePassword(String password) {
+		CustomUserDetails user = getCurrentUser();
+		String currentPassword = password.getCurrentPassword();
+		
+		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
+			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
+		}
+		
+	}
+	
+	/**
+	 * 회원탈퇴
+	 */
+	public void withdrawMember(WithdrawMemberDTO request) {
+		CustomUserDetails user = getCurrentUser();
+	}
+	
 }

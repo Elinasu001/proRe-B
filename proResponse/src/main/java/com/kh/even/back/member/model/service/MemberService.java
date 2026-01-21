@@ -4,6 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 
 public interface MemberService {
 	
@@ -11,4 +12,5 @@ public interface MemberService {
 	
 	void changePassword(ChangePasswordDTO password);
 	
+	void withdrawMember(WithdrawMemberDTO request);
 }

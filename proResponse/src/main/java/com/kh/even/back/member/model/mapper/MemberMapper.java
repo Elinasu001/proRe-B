@@ -49,12 +49,12 @@ public interface MemberMapper {
 	 * @param wmv
 	 * @return TB_MEMBER_WITHDRAW에 새로 추가된 행의 개수를 반환해줍니다.
 	 */
-	int saveWithdrawRequest(WithdrawMemberVO wmv);
+	int saveWithdrawRequest(WithdrawMemberVO withdrawMember);
 	
 	/**
 	 * 회원탈퇴(논리 삭제)
 	 * @param userNo
 	 * @return TB_MEMBER에 업데이트된 행의 개수를 반환해줍니다.
 	 */
-	int updateMemberStatus(WithdrawMemberVO wmv);
+	int updateMemberStatus(WithdrawMemberVO withdrawMember);
 }

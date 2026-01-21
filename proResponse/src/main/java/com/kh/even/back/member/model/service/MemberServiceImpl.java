@@ -130,8 +130,8 @@ public class MemberServiceImpl implements MemberService {
 	 */
 	@Transactional
 	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
-		WithdrawMemberVO wmv = saveWithdrawRequest(request, user);
-		updateMemberStatus(wmv);
+		WithdrawMemberVO withdrawMember = saveWithdrawRequest(request, user);
+		updateMemberStatus(withdrawMember);
 	}
 	
 	
@@ -144,7 +144,7 @@ public class MemberServiceImpl implements MemberService {
 	private WithdrawMemberVO saveWithdrawRequest(WithdrawMemberDTO request, CustomUserDetails user) {
 		validatePassword(request.getPassword(), user);
 		
-		WithdrawMemberVO wmv = WithdrawMemberVO.builder().userNo(user.getUserNo())
+		WithdrawMemberVO withdrawMember = WithdrawMemberVO.builder().userNo(user.getUserNo())
 				  										 .reasonNo(request.getReasonNo())
 				  										 .reasonDetail(request.getReasonDetail())
 				  										 .build();
@@ -155,21 +155,21 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomAuthenticationException("비활성화된 계정입니다.");
 		}
 		
-		int insertRows = memberMapper.saveWithdrawRequest(wmv);
+		int insertRows = memberMapper.saveWithdrawRequest(withdrawMember);
 		if(insertRows == 0) {
 			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
 		}
 		
-		return wmv;
+		return withdrawMember;
 	}
 	
 	/**
 	 * 회원 상태 수정(논리 삭제)
-	 * @param wmv (회원탈퇴용 VO)
+	 * @param withdrawMember (회원탈퇴용 VO)
 	 */
-	private void updateMemberStatus(WithdrawMemberVO wmv) {
+	private void updateMemberStatus(WithdrawMemberVO withdrawMember) {
 		
-		int updateRows = memberMapper.updateMemberStatus(wmv);
+		int updateRows = memberMapper.updateMemberStatus(withdrawMember);
 		if(updateRows == 0) {
 			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
 		}

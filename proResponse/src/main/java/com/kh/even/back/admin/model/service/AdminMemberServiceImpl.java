@@ -1,85 +1,79 @@
 package com.kh.even.back.admin.model.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.even.back.admin.model.dto.AdminMemberDTO;
-import com.kh.even.back.admin.model.mapper.AdminMemberMapper;  // ✅ 수정
+import com.kh.even.back.admin.model.dto.AdminMemberListResponse;
+import com.kh.even.back.admin.model.mapper.AdminMemberMapper;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.util.PageInfo;
+import com.kh.even.back.util.Pagenation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service  // ✅ Bean 이름 제거
-@RequiredArgsConstructor
-@Transactional
-public class AdminMemberServiceImpl implements AdminMemberService {  // ✅ 클래스명 변경
-    
-    private final AdminMemberMapper adminMemberMapper;  // ✅ 변경
-    
+@Service
+@RequiredArgsConstructor  // ✅ @Builder 제거됨
+public class AdminMemberServiceImpl implements AdminMemberService {
+
+    private final AdminMemberMapper adminMemberMapper;
+    private final Pagenation pagenation;
+
     private static final int BOARD_LIMIT = 10;
-    
+
     @Override
-    public List<AdminMemberDTO> getMemberList(int currentPage, String keyword) {
+    public AdminMemberListResponse getMemberListWithPaging(int currentPage, String keyword) {
+        int totalCount = adminMemberMapper.getMemberCount(keyword);
+        PageInfo pageInfo = pagenation.getPageInfo(totalCount, currentPage, 5, BOARD_LIMIT);
+        
         int startRow = (currentPage - 1) * BOARD_LIMIT + 1;
         int endRow = currentPage * BOARD_LIMIT;
         
-        List<MemberVO> memberList = adminMemberMapper.getMemberList(startRow, endRow, keyword);  // ✅ 변경
+        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword);
         
-        return memberList.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<AdminMemberDTO> memberList = memberVOList.stream()
+            .map(this::convertToDTO)
+            .toList();
+        
+        return new AdminMemberListResponse(memberList, totalCount, currentPage, pageInfo);
+    }
+
+    private AdminMemberDTO convertToDTO(MemberVO vo) {
+        return AdminMemberDTO.builder()
+            .userNo(vo.getUserNo())
+            .email(vo.getEmail())
+            .userName(vo.getUserName())
+            .nickname(vo.getNickname())
+            .phone(vo.getPhone())
+            .createDate(vo.getCreateDate())
+            .userRole(vo.getUserRole())
+            .penaltyStatus(vo.getPenaltyStatus())
+            .status(String.valueOf(vo.getStatus()))  // ✅ char → String 변환
+            .build();
     }
     
-    @Override
-    public int getMemberCount(String keyword) {
-        return adminMemberMapper.getMemberCount(keyword);  // ✅ 변경
-    }
-    
+    // ✅ 나머지 메서드들도 구현 필요
     @Override
     public AdminMemberDTO getMemberDetail(Long userNo) {
-        MemberVO member = adminMemberMapper.getMemberDetail(userNo);  // ✅ 변경
-        return member != null ? convertToDTO(member) : null;
+        MemberVO vo = adminMemberMapper.getMemberDetail(userNo);
+        return convertToDTO(vo);
     }
-    
+
     @Override
     public boolean updateMemberStatus(Long userNo, char status) {
-        return adminMemberMapper.updateMemberStatus(userNo, status) > 0;  // ✅ 변경
+        return adminMemberMapper.updateMemberStatus(userNo, status) > 0;
     }
-    
+
     @Override
     public boolean updatePenaltyStatus(Long userNo, String penaltyStatus) {
-        return adminMemberMapper.updatePenaltyStatus(userNo, penaltyStatus) > 0;  // ✅ 변경
+        return adminMemberMapper.updatePenaltyStatus(userNo, penaltyStatus) > 0;
     }
-    
+
     @Override
     public boolean updateUserRole(Long userNo, String userRole) {
-        return adminMemberMapper.updateUserRole(userNo, userRole) > 0;  // ✅ 변경
-    }
-    
-    // DTO 변환 메서드
-    private AdminMemberDTO convertToDTO(MemberVO vo) {
-        AdminMemberDTO dto = new AdminMemberDTO();
-        dto.setUserNo(vo.getUserNo());
-        dto.setEmail(vo.getEmail());
-        dto.setUserName(vo.getUserName());
-        dto.setNickname(vo.getNickname());
-        dto.setPhone(vo.getPhone());
-        dto.setBirthday(vo.getBirthday());
-        dto.setGender(vo.getGender());
-        dto.setPostcode(vo.getPostcode());
-        dto.setAddress(vo.getAddress());
-        dto.setAddressDetail(vo.getAddressDetail());
-        dto.setStatus(String.valueOf(vo.getStatus()));  // ✅ char → String 변환
-        dto.setCreateDate(vo.getCreateDate());
-        dto.setDeleteDate(vo.getDeleteDate());
-        dto.setUpdateDate(vo.getUpdateDate());
-        dto.setUserRole(vo.getUserRole());
-        dto.setPenaltyStatus(vo.getPenaltyStatus());
-        return dto;
+        return adminMemberMapper.updateUserRole(userNo, userRole) > 0;
     }
 }

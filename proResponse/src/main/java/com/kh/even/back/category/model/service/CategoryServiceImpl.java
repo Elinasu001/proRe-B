@@ -51,15 +51,16 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
-	public PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo , CustomUserDetails userDetails) {
+	public PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails userDetails) {
 
 		Long userNo = null;
-		if(userDetails != null) {
+
+		if (userDetails != null) {
 			userNo = userDetails.getUserNo();
 		}
 
 		int listCount = categoryMapper.getExpertListCount(categoryDetailNo);
-		
+
 		AssertUtil.notFound(listCount, "해당 카테고리의 전문가 조회를 실패했습니다.");
 
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 6, listCount);
@@ -70,12 +71,10 @@ public class CategoryServiceImpl implements CategoryService {
 		// log.info(" params 데이터 : {}" , params);
 
 		List<ExpertListDTO> list = categoryMapper.getExpertList(params);
-		
+
 		PageInfo pageInfo = (PageInfo) params.get("pi");
 
-		return new PageResponse<ExpertListDTO>(list,pageInfo);
-
-		
+		return new PageResponse<ExpertListDTO>(list, pageInfo);
 
 	}
 

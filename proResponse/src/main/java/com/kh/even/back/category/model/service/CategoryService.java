@@ -26,6 +26,6 @@ public interface CategoryService {
 	 *         이름(categoryName)과 참조 테이블인 List<DetailCategoryDTO>를 포함합니다.
 	 */
 	List<CategoryDTO> getCategoryDetails(Long categoryNo);
-	
-	PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo , int pageNo , CustomUserDetails customUserDetails);
+
+	PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails customUserDetails);
 }

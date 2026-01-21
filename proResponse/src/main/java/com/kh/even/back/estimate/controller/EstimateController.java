@@ -32,7 +32,7 @@ public class EstimateController {
 
 	private final EstimateService estimateService;
 
-	@GetMapping("/me")
+	@GetMapping
 	public ResponseEntity<ResponseData<PageResponse<ExpertDTO>>> getEstimate(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
@@ -49,9 +49,7 @@ public class EstimateController {
 		return ResponseData.ok(estimateService.getReceivedEstimates(pageNo, customUserDetails), "조회에 성공 했습니다.");
 
 	}
-	
-	
-	
+
 	@PostMapping
 	public ResponseEntity<ResponseData<Void>> saveEstimate(@Valid @ModelAttribute EstimateRequestDTO estimateRequest,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
@@ -62,6 +60,5 @@ public class EstimateController {
 		return ResponseData.created(null, "견적 요청에 성공했습니다.");
 
 	}
-	
-	
+
 }

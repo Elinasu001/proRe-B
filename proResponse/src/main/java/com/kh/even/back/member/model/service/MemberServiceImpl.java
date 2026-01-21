@@ -1,6 +1,5 @@
 package com.kh.even.back.member.model.service;
 
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
+import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
@@ -16,6 +16,7 @@ import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,12 +128,52 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 * 회원탈퇴
 	 */
+	@Transactional
 	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
-		
+		WithdrawMemberVO withdrawMember = saveWithdrawRequest(request, user);
+		updateMemberStatus(withdrawMember);
+	}
+	
+	
+	/**
+	 * 회원탈퇴 요청 저장하기
+	 * @param request (PK / 회원탈퇴사유번호 / 상세사유)
+	 * @param user (회원정보)
+	 * @return 회원탈퇴용 VO 반환
+	 */
+	private WithdrawMemberVO saveWithdrawRequest(WithdrawMemberDTO request, CustomUserDetails user) {
 		validatePassword(request.getPassword(), user);
 		
-		// INSERT INTO TB_MEMBER_WITHDRAW (WITHDRAW_NO, USER_NO, REASON_NO, REASON_DETAIL) VALUES (SEQ.NEXTVAL, #{userNo}, #{reasonNo}, #{reasonDetail}
-		memberMapper.withdrawMember(request)
+		WithdrawMemberVO withdrawMember = WithdrawMemberVO.builder().userNo(user.getUserNo())
+				  										 .reasonNo(request.getReasonNo())
+				  										 .reasonDetail(request.getReasonDetail())
+				  										 .build();
+		if(!"Y".equals(user.getStatus())) {
+			throw new CustomAuthenticationException("이미 탈퇴 처리된 회원입니다.");
+		}
+		if(!"N".equals(user.getPenaltyStatus())) {
+			throw new CustomAuthenticationException("비활성화된 계정입니다.");
+		}
+		
+		int insertRows = memberMapper.saveWithdrawRequest(withdrawMember);
+		if(insertRows == 0) {
+			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
+		}
+		
+		return withdrawMember;
+	}
+	
+	/**
+	 * 회원 상태 수정(논리 삭제)
+	 * @param withdrawMember (회원탈퇴용 VO)
+	 */
+	private void updateMemberStatus(WithdrawMemberVO withdrawMember) {
+		
+		int updateRows = memberMapper.updateMemberStatus(withdrawMember);
+		if(updateRows == 0) {
+			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
+		}
+		
 	}
 	
 }

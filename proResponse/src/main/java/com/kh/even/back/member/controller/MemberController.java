@@ -41,7 +41,7 @@ public class MemberController {
 	}
 	
 	@PutMapping("/me/password")
-	public ResponseEntity<ResponseData<Void>> changePassword(@Valid @RequestBody ChangePasswordDTO password , @AuthenticationPrincipal CustomUserDetails user) {
+	public ResponseEntity<ResponseData<Void>> changePassword(@Valid @RequestBody ChangePasswordDTO password, @AuthenticationPrincipal CustomUserDetails user) {
 		// log.info("비밀번호 정보 : {}", password);
 		
 		memberService.changePassword(password, user);
@@ -50,10 +50,10 @@ public class MemberController {
 	}
 	
 	@DeleteMapping
-	public ResponseEntity<ResponseData<Void>> withdrawMember(@Valid @RequestBody WithdrawMemberDTO request) {
+	public ResponseEntity<ResponseData<Void>> withdrawMember(@Valid @RequestBody WithdrawMemberDTO request, @AuthenticationPrincipal CustomUserDetails user) {
 		// log.info("회원탈퇴 요청 진위여부 : {}", request);
 		
-		memberService.withdrawMember(request);
+		memberService.withdrawMember(request, user);
 		
 		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
 	}

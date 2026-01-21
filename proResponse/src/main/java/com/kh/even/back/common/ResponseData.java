@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import com.kh.even.back.review.model.vo.ReviewVO;
-
 import lombok.Builder;
 import lombok.Data;
 

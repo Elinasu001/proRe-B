@@ -89,8 +89,7 @@ public class MemberServiceImpl implements MemberService {
 	
 	@Override
 	public void changePassword(ChangePasswordDTO password) {
-		// 현재 비밀번호가 맞는지 검증 -> passwordEncoder.matches(평문, 암호문)
-		// Authentication에서 현재 인증된 사용자의 정보 뽑아오기
+	
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
 		
@@ -99,10 +98,9 @@ public class MemberServiceImpl implements MemberService {
 		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
 			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
 		}
-		// 현재 비밀번호가 맞다면 새 비밀번호를 암호화
+		
 		String newPassword = passwordEncoder.encode(password.getNewPassword());
 		
-		// UPDATE TB_MEMBER MEMBER_PWD = #{newpassword} WHERE USER_NO = #{userNo}
 		ChangePasswordVO passwordVO = ChangePasswordVO.builder().userNo(user.getUserNo())
 							                          .newPassword(newPassword)
 							                          .build();

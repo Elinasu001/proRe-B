@@ -1,15 +1,21 @@
 package com.kh.even.back.member.model.service;
 
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
+import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
+import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +30,9 @@ public class MemberServiceImpl implements MemberService {
 	private final PasswordEncoder passwordEncoder;
 	private final S3Service s3Service;
 	
+	/**
+	 * 회원가입
+	 */
 	@Override
 	@Transactional
 	public void signUp(MemberSignUpDTO member, MultipartFile file) {
@@ -79,5 +88,45 @@ public class MemberServiceImpl implements MemberService {
 			if (locationResult != 1) {
 				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
 			}
+	}
+	
+	/**
+	 * 비밀번호 변경
+	 */
+	@Override
+	public void changePassword(ChangePasswordDTO password) {
+	
+		CustomUserDetails user = getCurrentUser();
+		
+		String currentPassword = password.getCurrentPassword();
+		String encodedPassword = user.getPassword();
+		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
+			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
+		}
+		
+		String newPassword = passwordEncoder.encode(password.getNewPassword());
+		
+		ChangePasswordVO passwordVO = ChangePasswordVO.builder().userNo(user.getUserNo())
+							                          .newPassword(newPassword)
+							                          .build();
+		
+		memberMapper.changePassword(passwordVO);
+		
+	}
+	
+	/**
+	 * 로그인된 사용자 정보를 꺼내오는 메서드
+	 * @return CustomUserDetails 타입의 user(회원정보)를 반환
+	 */
+	private CustomUserDetails getCurrentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
+		
+		if (auth == null || !auth.isAuthenticated()) {
+	        throw new CustomAuthenticationException("인증 정보가 없습니다.");
+	    }
+		
+		return user;
+		
 	}
 }

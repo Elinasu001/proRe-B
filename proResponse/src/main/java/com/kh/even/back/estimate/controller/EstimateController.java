@@ -17,6 +17,7 @@ import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.service.EstimateService;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
+import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import jakarta.validation.Valid;
@@ -31,7 +32,7 @@ public class EstimateController {
 
 	private final EstimateService estimateService;
 
-	@GetMapping("/me")
+	@GetMapping
 	public ResponseEntity<ResponseData<PageResponse<ExpertDTO>>> getEstimate(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
@@ -41,10 +42,12 @@ public class EstimateController {
 	}
 
 	@GetMapping("/receive")
-	public ResponseEntity<ResponseData<List<EstimateRequestDTO>>> getReceivedEstimates(
-			@RequestParam(defaultValue = "1") int page) {
+	public ResponseEntity<ResponseData<PageResponse<ResponseEstimateDTO>>> getReceivedEstimates(
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
 
-		return ResponseData.ok(estimateService.getReceivedEstimates(page), "조회에 성공 했습니다.");
+		return ResponseData.ok(estimateService.getReceivedEstimates(pageNo, customUserDetails), "조회에 성공 했습니다.");
+
 	}
 
 	@PostMapping
@@ -57,4 +60,5 @@ public class EstimateController {
 		return ResponseData.created(null, "견적 요청에 성공했습니다.");
 
 	}
+
 }

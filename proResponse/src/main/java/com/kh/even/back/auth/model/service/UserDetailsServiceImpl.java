@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-import com.kh.even.back.member.model.dto.MemberAuthDTO;
+import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		
-		MemberAuthDTO member = memberMapper.loadUser(email);
+		MemberAuthVO member = memberMapper.loadUser(email);
 		// log.info("매퍼 호출 후 결과 : {}", member);
 		
 		if(member == null) {

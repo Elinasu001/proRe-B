@@ -1,9 +1,9 @@
 package com.kh.even.back.member.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
-import com.kh.even.back.member.model.dto.MemberAuthDTO;
+import com.kh.even.back.member.model.vo.ChangePasswordVO;
+import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 
 @Mapper
@@ -31,10 +31,15 @@ public interface MemberMapper {
 	int saveLocation(MemberVO member);
 	
 	/**
-	 * 로그인 요청 시 회원정보를 가져옵니다.
+	 * 로그인 요청 시 회원정보 조회
 	 * @param email
 	 * @return PK / 이메일 / 패스워드 / 이름 / 닉네임 / 프로필 이미지 / 권한 / 상태를 DTO 형태로 반환해줍니다.
 	 */
-	MemberAuthDTO loadUser(String email);
+	MemberAuthVO loadUser(String email);
 
+	/**
+	 * 비밀번호 변경
+	 * @param passwordVO
+	 */
+	void changePassword(ChangePasswordVO passwordVO);
 }

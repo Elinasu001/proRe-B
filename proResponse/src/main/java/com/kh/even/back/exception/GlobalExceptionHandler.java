@@ -106,5 +106,13 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 		
 	}
+	
+	@ExceptionHandler(CustomServerException.class)
+	public ResponseEntity<ResponseData<Object>> handleServerException(CustomServerException e) {
+		
+		log.error("서버 오류 발생 : {}", e.getMessage());
+		
+		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
 }

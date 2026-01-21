@@ -39,7 +39,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files,
 			CustomUserDetails customUserDetails) {
 
-		AssertUtil.checkFileSize(files);
+		AssertUtil.validateImageFiles(files);
 
 		EstimateRequestEntity entity = toEntity(estimateReqeust, customUserDetails);
 

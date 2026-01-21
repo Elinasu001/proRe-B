@@ -38,7 +38,6 @@ public class ExpertServiceImpl implements ExpertService {
 
 		param.put("userNo", userNo);
 
-
 		ExpertDetailDTO expertDetail = mapper.getExpertDetails(param);
 
 		// log.info("expertDetail 체크 : {} " , expertDetail);

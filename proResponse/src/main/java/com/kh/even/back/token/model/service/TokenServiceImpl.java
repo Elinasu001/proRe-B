@@ -1,7 +1,6 @@
 package com.kh.even.back.token.model.service;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;

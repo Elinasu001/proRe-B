@@ -3,6 +3,7 @@ package com.kh.even.back.member.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -56,6 +57,21 @@ public class MemberController {
 		memberService.withdrawMember(request, user);
 		
 		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
+	}
+	
+	@PostMapping("/emails/verification-requests")
+	public ResponseEntity<ResponseData<Void>> sendMessage(@RequestParam("email") @Valid @CustomEmail String email) {
+		memberService.sendCodeToEmail(email);
+		
+		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
+	}
+	
+	@GetMapping("/emails/verifications")
+	public ResponseEntity<ResponseData<Void>> verificationEmail(@RequestParam("email") @Valid @CustomEmail String email,
+															   @RequestParam("code") String authCode) {
+		EmailVerificationResult response = memberService.verifiedCode(email, authCode);
+		
+		return ResponseData.ok(null, authCode);
 	}
 	
 }

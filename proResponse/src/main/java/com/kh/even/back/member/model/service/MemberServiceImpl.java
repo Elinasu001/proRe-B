@@ -1,15 +1,18 @@
 package com.kh.even.back.member.model.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.auth.redis.RedisService;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
+import com.kh.even.back.mail.MailService;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
@@ -25,10 +28,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
-	
+
 	private final MemberMapper memberMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final S3Service s3Service;
+	private static final String AUTH_CODE_PREFIX = "AuthCode";
+	private final MailService mailService;
+	private final RedisService redisService;
+	
+	@Value("${spring.mail.auth-code-expiration-millis}")
+	private long authCodeExpirationMillis;
 	
 	/**
 	 * 회원가입
@@ -175,5 +184,7 @@ public class MemberServiceImpl implements MemberService {
 		}
 		
 	}
+	
+	public void sendCodeToEmail(String to)
 	
 }

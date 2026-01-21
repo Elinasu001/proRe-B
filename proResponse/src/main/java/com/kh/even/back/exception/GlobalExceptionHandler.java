@@ -114,5 +114,13 @@ public class GlobalExceptionHandler {
 		
 		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	
+	@ExceptionHandler(BusinessLogicException.class)
+	public ResponseEntity<ResponseData<Object>> handleBusinessLogicException(BusinessLogicException e) {
+		
+		log.error("비즈니스 로직 오류 발생 : {}", e.getMessage());
+		
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
 
 }

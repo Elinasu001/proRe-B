@@ -14,4 +14,11 @@ public interface MemberService {
 	void changePassword(ChangePasswordDTO password, CustomUserDetails user);
 	
 	void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user);
+	
+	void sendCodeToEmail(String toEmail);
+	
+	String createCode();
+	
+	EmailVerificationResult verificatedCode(String email, String authCode);
+	
 }

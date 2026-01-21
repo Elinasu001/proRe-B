@@ -45,6 +45,7 @@ dependencies {
 	implementation "io.portone:server-sdk:0.15.0"
 	implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.25"
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {

@@ -75,7 +75,7 @@
 	</insert>
 	
 	<!-- 로그인을 위해 유저정보를 불러옵니다. -->
-	<select id="loadUser" resultType="MemberAuthDTO">
+	<select id="loadUser" resultType="MemberAuthVO">
 		SELECT
 		       USER_NO userNo
 		     , EMAIL email
@@ -92,4 +92,13 @@
 		       EMAIL = #{email}            
 	</select>
 	
+	<!-- 비밀번호를 변경합니다. -->
+	<update id="changePassword" parameterType="ChangePasswordVO">
+	UPDATE
+	       TB_MEMBER
+	   SET
+	       USER_PWD = #{newPassword}
+	 WHERE
+	       USER_NO = #{userNo}          
+	</update>
 </mapper>

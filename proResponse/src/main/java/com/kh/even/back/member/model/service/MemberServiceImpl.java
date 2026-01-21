@@ -1,15 +1,21 @@
 package com.kh.even.back.member.model.service;
 
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
+import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
+import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 
 import lombok.RequiredArgsConstructor;
@@ -79,5 +85,34 @@ public class MemberServiceImpl implements MemberService {
 			if (locationResult != 1) {
 				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
 			}
+	}
+	
+	@Override
+	public void changePassword(ChangePasswordDTO password) {
+		// 현재 비밀번호가 맞는지 검증 -> passwordEncoder.matches(평문, 암호문)
+		// Authentication에서 현재 인증된 사용자의 정보 뽑아오기
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
+		
+		String currentPassword = password.getCurrentPassword();
+		String encodedPassword = user.getPassword();
+		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
+			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
+		}
+		// 현재 비밀번호가 맞다면 새 비밀번호를 암호화
+		String newPassword = passwordEncoder.encode(password.getNewPassword());
+		
+		// UPDATE TB_MEMBER MEMBER_PWD = #{newpassword} WHERE USER_NO = #{userNo}
+		ChangePasswordVO passwordVO = ChangePasswordVO.builder().userNo(user.getUserNo())
+							                          .newPassword(newPassword)
+							                          .build();
+		
+		memberMapper.changePassword(passwordVO);
+		
+	}
+	
+	@Override
+	public void deleteByPassword(String password) {
+		
 	}
 }

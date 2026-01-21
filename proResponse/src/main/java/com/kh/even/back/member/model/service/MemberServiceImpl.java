@@ -1,8 +1,5 @@
 package com.kh.even.back.member.model.service;
 
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,13 +7,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
+import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,15 +94,13 @@ public class MemberServiceImpl implements MemberService {
 	 * 비밀번호 변경
 	 */
 	@Override
-	public void changePassword(ChangePasswordDTO password) {
+	public void changePassword(ChangePasswordDTO password, CustomUserDetails user) {
 	
-		CustomUserDetails user = getCurrentUser();
+		validatePassword(password.getCurrentPassword(), user);
 		
-		String currentPassword = password.getCurrentPassword();
-		String encodedPassword = user.getPassword();
-		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
-			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
-		}
+		if (passwordEncoder.matches(password.getNewPassword(), user.getPassword())) {
+	        throw new CustomAuthenticationException("새 비밀번호는 기존 비밀번호와 달라야 합니다.");
+	    }
 		
 		String newPassword = passwordEncoder.encode(password.getNewPassword());
 		
@@ -115,18 +113,67 @@ public class MemberServiceImpl implements MemberService {
 	}
 	
 	/**
-	 * 로그인된 사용자 정보를 꺼내오는 메서드
-	 * @return CustomUserDetails 타입의 user(회원정보)를 반환
+	 * 비밀번호 검증
 	 */
-	private CustomUserDetails getCurrentUser() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
+	private void validatePassword(String password, CustomUserDetails user) {
 		
-		if (auth == null || !auth.isAuthenticated()) {
-	        throw new CustomAuthenticationException("인증 정보가 없습니다.");
-	    }
+		String encodedPassword = user.getPassword();
 		
-		return user;
+		if(!passwordEncoder.matches(password, encodedPassword)) {
+			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
+		}
 		
 	}
+	
+	/**
+	 * 회원탈퇴
+	 */
+	@Transactional
+	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
+		WithdrawMemberVO withdrawMember = saveWithdrawRequest(request, user);
+		updateMemberStatus(withdrawMember);
+	}
+	
+	
+	/**
+	 * 회원탈퇴 요청 저장하기
+	 * @param request (PK / 회원탈퇴사유번호 / 상세사유)
+	 * @param user (회원정보)
+	 * @return 회원탈퇴용 VO 반환
+	 */
+	private WithdrawMemberVO saveWithdrawRequest(WithdrawMemberDTO request, CustomUserDetails user) {
+		validatePassword(request.getPassword(), user);
+		
+		WithdrawMemberVO withdrawMember = WithdrawMemberVO.builder().userNo(user.getUserNo())
+				  										 .reasonNo(request.getReasonNo())
+				  										 .reasonDetail(request.getReasonDetail())
+				  										 .build();
+		if(!"Y".equals(user.getStatus())) {
+			throw new CustomAuthenticationException("이미 탈퇴 처리된 회원입니다.");
+		}
+		if(!"N".equals(user.getPenaltyStatus())) {
+			throw new CustomAuthenticationException("비활성화된 계정입니다.");
+		}
+		
+		int insertRows = memberMapper.saveWithdrawRequest(withdrawMember);
+		if(insertRows == 0) {
+			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
+		}
+		
+		return withdrawMember;
+	}
+	
+	/**
+	 * 회원 상태 수정(논리 삭제)
+	 * @param withdrawMember (회원탈퇴용 VO)
+	 */
+	private void updateMemberStatus(WithdrawMemberVO withdrawMember) {
+		
+		int updateRows = memberMapper.updateMemberStatus(withdrawMember);
+		if(updateRows == 0) {
+			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
+		}
+		
+	}
+	
 }

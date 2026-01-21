@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 @Mapper
 public interface MemberMapper {
@@ -42,4 +43,18 @@ public interface MemberMapper {
 	 * @param passwordVO
 	 */
 	void changePassword(ChangePasswordVO passwordVO);
+	
+	/**
+	 * 회원탈퇴 요청
+	 * @param wmv
+	 * @return TB_MEMBER_WITHDRAW에 새로 추가된 행의 개수를 반환해줍니다.
+	 */
+	int saveWithdrawRequest(WithdrawMemberVO withdrawMember);
+	
+	/**
+	 * 회원탈퇴(논리 삭제)
+	 * @param userNo
+	 * @return TB_MEMBER에 업데이트된 행의 개수를 반환해줍니다.
+	 */
+	int updateMemberStatus(WithdrawMemberVO withdrawMember);
 }

@@ -1,4 +1,4 @@
-package com.kh.even.back.expert.model.dto;
+package com.kh.even.back.category.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,20 +8,21 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
-public class ExpertDTO {
+public class ExpertListDTO {
 
-	private Long requestNo;
 	private Long expertNo;
-	private String profileImg;
 	private String nickName;
+	private String profileImg;
+	private int career;
+	private String startTime;
+	private String endTime;
 	private double starScore;
 	private int reviewCount;
 	private String address;
-	private String startTime;
-	private String endTime;
-    private String requestStatus;
-    
+	private int userLiked;
+	private int totalLikes;
+
 }

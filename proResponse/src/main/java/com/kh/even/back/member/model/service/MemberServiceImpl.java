@@ -1,8 +1,6 @@
 package com.kh.even.back.member.model.service;
 
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,10 +93,8 @@ public class MemberServiceImpl implements MemberService {
 	 * 비밀번호 변경
 	 */
 	@Override
-	public void changePassword(ChangePasswordDTO password) {
+	public void changePassword(ChangePasswordDTO password, CustomUserDetails user) {
 	
-		CustomUserDetails user = getCurrentUser();
-		
 		validatePassword(password.getCurrentPassword(), user);
 		
 		if (passwordEncoder.matches(password.getNewPassword(), user.getPassword())) {
@@ -112,22 +108,6 @@ public class MemberServiceImpl implements MemberService {
 							                          .build();
 		
 		memberMapper.changePassword(passwordVO);
-		
-	}
-	
-	/**
-	 * 로그인된 사용자 정보를 꺼내오는 메서드
-	 * @return CustomUserDetails 타입의 user(회원정보)를 반환
-	 */
-	private CustomUserDetails getCurrentUser() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
-		
-		if (auth == null || !auth.isAuthenticated()) {
-	        throw new CustomAuthenticationException("인증 정보가 없습니다.");
-	    }
-		
-		return user;
 		
 	}
 	
@@ -147,8 +127,12 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 * 회원탈퇴
 	 */
-	public void withdrawMember(WithdrawMemberDTO request) {
-		CustomUserDetails user = getCurrentUser();
+	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
+		
+		validatePassword(request.getPassword(), user);
+		
+		// INSERT INTO TB_MEMBER_WITHDRAW (WITHDRAW_NO, USER_NO, REASON_NO, REASON_DETAIL) VALUES (SEQ.NEXTVAL, #{userNo}, #{reasonNo}, #{reasonDetail}
+		memberMapper.withdrawMember(request)
 	}
 	
 }

@@ -1,6 +1,7 @@
 package com.kh.even.back.member.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
@@ -39,10 +41,10 @@ public class MemberController {
 	}
 	
 	@PutMapping("/me/password")
-	public ResponseEntity<ResponseData<Void>> changePassword(@Valid @RequestBody ChangePasswordDTO password) {
+	public ResponseEntity<ResponseData<Void>> changePassword(@Valid @RequestBody ChangePasswordDTO password , @AuthenticationPrincipal CustomUserDetails user) {
 		// log.info("비밀번호 정보 : {}", password);
 		
-		memberService.changePassword(password);
+		memberService.changePassword(password, user);
 		
 		return ResponseData.ok(null, "비밀번호 변경에 성공했습니다.");
 	}

@@ -11,6 +11,4 @@ public interface MemberService {
 	
 	void changePassword(ChangePasswordDTO password);
 	
-	void deleteByPassword(String password);
-
 }

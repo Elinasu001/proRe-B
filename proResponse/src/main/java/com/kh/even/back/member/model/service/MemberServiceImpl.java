@@ -30,6 +30,9 @@ public class MemberServiceImpl implements MemberService {
 	private final PasswordEncoder passwordEncoder;
 	private final S3Service s3Service;
 	
+	/**
+	 * 회원가입
+	 */
 	@Override
 	@Transactional
 	public void signUp(MemberSignUpDTO member, MultipartFile file) {
@@ -87,11 +90,13 @@ public class MemberServiceImpl implements MemberService {
 			}
 	}
 	
+	/**
+	 * 비밀번호 변경
+	 */
 	@Override
 	public void changePassword(ChangePasswordDTO password) {
 	
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
+		CustomUserDetails user = getCurrentUser();
 		
 		String currentPassword = password.getCurrentPassword();
 		String encodedPassword = user.getPassword();
@@ -109,8 +114,19 @@ public class MemberServiceImpl implements MemberService {
 		
 	}
 	
-	@Override
-	public void deleteByPassword(String password) {
+	/**
+	 * 로그인된 사용자 정보를 꺼내오는 메서드
+	 * @return CustomUserDetails 타입의 user(회원정보)를 반환
+	 */
+	private CustomUserDetails getCurrentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
+		
+		if (auth == null || !auth.isAuthenticated()) {
+	        throw new CustomAuthenticationException("인증 정보가 없습니다.");
+	    }
+		
+		return user;
 		
 	}
 }

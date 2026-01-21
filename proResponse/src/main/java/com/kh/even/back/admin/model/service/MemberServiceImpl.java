@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
+@Service("adminMemberService") // Bean 명칭 중복 피하기 위해 별도 정의
 @RequiredArgsConstructor
 @Transactional
 public class MemberServiceImpl implements MemberService {

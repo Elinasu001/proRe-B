@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.even.back.admin.model.mapper.MemberMapper">
+
+<resultMap id="memberResultMap" type="com.kh.even.back.member.model.vo.MemberVO">
+    <constructor>
+        <idArg column="USER_NO" javaType="Long"/>
+        <arg column="EMAIL" javaType="String"/>
+        <arg column="USER_PWD" javaType="String"/>
+        <arg column="USER_NAME" javaType="String"/>
+        <arg column="NICKNAME" javaType="String"/>
+        <arg column="PROFILE_IMG" javaType="String"/>
+        <arg column="PHONE" javaType="String"/>
+        <arg column="BIRTHDAY" javaType="String"/>
+        <arg column="GENDER" javaType="_char"/>  <!-- ✅ char로 변경 -->
+        <arg column="POSTCODE" javaType="String"/>
+        <arg column="ADDRESS" javaType="String"/>
+        <arg column="ADDRESS_DETAIL" javaType="String"/>
+        <arg column="LATITUDE" javaType="Double"/>
+        <arg column="LONGITUDE" javaType="Double"/>
+        <arg column="CREATE_DATE" javaType="java.sql.Date"/>
+        <arg column="UPDATE_DATE" javaType="java.sql.Date"/>
+        <arg column="UPDATE_PWD_DATE" javaType="java.sql.Date"/>
+        <arg column="DELETE_DATE" javaType="java.sql.Date"/>
+        <arg column="USER_ROLE" javaType="String"/>
+        <arg column="PENALTY_STATUS" javaType="String"/>
+        <arg column="STATUS" javaType="_char"/>  <!-- ✅ char로 변경 -->
+    </constructor>
+</resultMap>
+
+<select id="getMemberList" resultMap="memberResultMap">
+    SELECT
+        USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
+        PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
+        ADDRESS, ADDRESS_DETAIL,
+        NULL AS LATITUDE,   <!-- ✅ NULL 컬럼 추가 -->
+        NULL AS LONGITUDE,  <!-- ✅ NULL 컬럼 추가 -->
+        CREATE_DATE, UPDATE_DATE, UPDATE_PWD_DATE, DELETE_DATE,
+        USER_ROLE, PENALTY_STATUS, STATUS
+   FROM (
+        SELECT ROWNUM AS RN, A.* FROM (
+            SELECT
+                USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
+                PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
+                ADDRESS, ADDRESS_DETAIL,
+                CREATE_DATE, UPDATE_DATE, UPDATE_PWD_DATE, DELETE_DATE,
+                USER_ROLE, PENALTY_STATUS, STATUS
+            FROM TB_MEMBER
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    AND (USER_NAME LIKE '%' || #{keyword} || '%'
+                     OR EMAIL LIKE '%' || #{keyword} || '%'
+                     OR NICKNAME LIKE '%' || #{keyword} || '%')
+                </if>
+            </where>
+            ORDER BY CREATE_DATE DESC
+        ) A
+    )
+    WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
+<!-- 회원 전체 인원수 조회 -->
+<select id="getMemberCount" resultType="int">
+    SELECT COUNT(*)
+    FROM TB_MEMBER
+    <where>
+        <if test="keyword != null and keyword != ''">
+            AND (USER_NAME LIKE '%' || #{keyword} || '%'
+             OR EMAIL LIKE '%' || #{keyword} || '%'
+             OR NICKNAME LIKE '%' || #{keyword} || '%')
+        </if>
+    </where>
+</select>
+
+<!-- 회원 상세 조회 -->
+<select id="getMemberDetail" resultMap="memberResultMap">
+    SELECT
+        USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
+        PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
+        ADDRESS, ADDRESS_DETAIL,
+        NULL AS LATITUDE,
+        NULL AS LONGITUDE,
+        CREATE_DATE, UPDATE_DATE, UPDATE_PWD_DATE, DELETE_DATE,
+        USER_ROLE, PENALTY_STATUS, STATUS
+    FROM TB_MEMBER
+    WHERE USER_NO = #{userNo}
+</select>
+<!-- 회원 상태 변경 -->
+<update id="updateMemberStatus">
+    UPDATE TB_MEMBER
+    SET STATUS = #{status}
+    WHERE USER_NO = #{userNo}
+</update>
+
+<!-- 징계 상태 변경 -->
+<update id="updatePenaltyStatus">
+    UPDATE TB_MEMBER
+    SET PENALTY_STATUS = #{penaltyStatus}
+    WHERE USER_NO = #{userNo}
+</update>
+
+<!-- 권한 변경 -->
+<update id="updateUserRole">
+    UPDATE TB_MEMBER
+    SET USER_ROLE = #{userRole}
+    WHERE USER_NO = #{userNo}
+</update>
+</mapper>

@@ -2,79 +2,27 @@ package com.kh.even.back.admin.model.mapper;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Param;  // ← 추가
+import org.springframework.stereotype.Component;
 import com.kh.even.back.member.model.vo.MemberVO;
 
 @Mapper
+@Component("adminMemberMapper")
 public interface MemberMapper {
-
-    /**
-     * 회원 목록 조회 (페이징 + 검색)
-     */
-    @Select("""
-        <script>
-        SELECT * FROM (
-            SELECT ROWNUM AS RN, A.* FROM (
-                SELECT *
-                FROM TB_MEMBER
-                <if test="keyword != null and keyword != ''">
-                WHERE 
-                    EMAIL LIKE '%' || #{keyword} || '%'
-                    OR USER_NAME LIKE '%' || #{keyword} || '%'
-                    OR NICKNAME LIKE '%' || #{keyword} || '%'
-                </if>
-                ORDER BY CREATE_DATE DESC
-            ) A
-        )
-        WHERE RN BETWEEN #{startRow} AND #{endRow}
-        </script>
-    """)
+    
     List<MemberVO> getMemberList(
-        @Param("startRow") int startRow,
-        @Param("endRow") int endRow,
-        @Param("keyword") String keyword
+        @Param("startRow") int startRow,    // ← 추가
+        @Param("endRow") int endRow,        // ← 추가
+        @Param("keyword") String keyword    // ← 추가
     );
-
-    /**
-     * 회원 전체 개수 (검색 포함)
-     */
-    @Select("""
-        <script>
-        SELECT COUNT(*) 
-        FROM TB_MEMBER
-        <if test="keyword != null and keyword != ''">
-        WHERE 
-            EMAIL LIKE '%' || #{keyword} || '%'
-            OR USER_NAME LIKE '%' || #{keyword} || '%'
-            OR NICKNAME LIKE '%' || #{keyword} || '%'
-        </if>
-        </script>
-    """)
-    int getMemberCount(@Param("keyword") String keyword);
-
-    /**
-     * 회원 상세 조회
-     */
-    @Select("SELECT * FROM TB_MEMBER WHERE USER_NO = #{userNo}")
-    MemberVO getMemberDetail(@Param("userNo") Long userNo);
-
-    /**
-     * 회원 상태 변경 (활성/탈퇴)
-     */
-    @Update("UPDATE TB_MEMBER SET STATUS = #{status}, UPDATE_DATE = SYSDATE WHERE USER_NO = #{userNo}")
-    int updateMemberStatus(@Param("userNo") Long userNo, @Param("status") char status);
-
-    /**
-     * 징계 상태 변경
-     */
-    @Update("UPDATE TB_MEMBER SET PENALTY_STATUS = #{penaltyStatus}, UPDATE_DATE = SYSDATE WHERE USER_NO = #{userNo}")
-    int updatePenaltyStatus(@Param("userNo") Long userNo, @Param("penaltyStatus") String penaltyStatus);
-
-    /**
-     * 권한 변경
-     */
-    @Update("UPDATE TB_MEMBER SET USER_ROLE = #{userRole}, UPDATE_DATE = SYSDATE WHERE USER_NO = #{userNo}")
-    int updateUserRole(@Param("userNo") Long userNo, @Param("userRole") String userRole);
+    
+    int getMemberCount(@Param("keyword") String keyword);  // ← 추가
+    
+    MemberVO getMemberDetail(@Param("userNo") Long userNo);  // ← 추가
+    
+    int updateMemberStatus(@Param("userNo") Long userNo, @Param("status") char status);  // ← 추가
+    
+    int updatePenaltyStatus(@Param("userNo") Long userNo, @Param("penaltyStatus") String penaltyStatus);  // ← 추가
+    
+    int updateUserRole(@Param("userNo") Long userNo, @Param("userRole") String userRole);  // ← 추가
 }

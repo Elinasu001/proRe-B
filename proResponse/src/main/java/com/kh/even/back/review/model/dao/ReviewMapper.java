@@ -22,7 +22,7 @@ public interface ReviewMapper {
     /**
      * 전체 태그 목록 조회
      */
-    List<ReviewTagDTO> getReviewTags();
+    List<ReviewTagDTO> getAllReviewTags();
 
     /**
      * 견적 번호로 리뷰 조회
@@ -48,7 +48,7 @@ public interface ReviewMapper {
     // === 리뷰 삭제 ===
 
     /**
-     * 견적 번호로 리뷰 조회 (리뷰 상태변경용)
+     *  견적 번호로 리뷰 조회 (리뷰 상태변경용)
      */
     ReviewVO getReviewByEstimateNo(Long estimateNo);
 

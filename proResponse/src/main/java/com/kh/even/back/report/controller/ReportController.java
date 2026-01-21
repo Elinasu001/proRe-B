@@ -25,7 +25,11 @@ public class ReportController {
     /**
      * 신고 여부 조회
      */
+
     /* @GetMapping("/{roomNo}/status")
+=======
+    @GetMapping("/{roomNo}")
+>>>>>>> e1a430e22cf2bda4c90d8303b8dc6f0144dd4c55
     public  ResponseEntity<ResponseData<Boolean>> getReportStatus(
             @PathVariable Long roomNo
             //, @AuthenticationPrincipal CustomUserDetails user

@@ -1,13 +1,13 @@
 package com.kh.even.back.estimate.model.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
+import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface EstimateService {
@@ -28,5 +28,11 @@ public interface EstimateService {
 	 */
 	PageResponse<ExpertDTO> getMyEstimate(int pageNo, CustomUserDetails customUserDetails);
 
-	List<EstimateRequestDTO> getReceivedEstimates(int page);
+	/**
+	 * 
+	 * @param pageNo 앞에서 넘겨주는 페이지 넘버
+	 * @param customUserDetails 인증유저
+	 * @return 받은 견적 요청 리스트
+	 */
+	PageResponse<ResponseEstimateDTO> getReceivedEstimates(int pageNo , CustomUserDetails customUserDetails);
 }

@@ -3,7 +3,8 @@
 
 
 <mapper namespace="com.kh.even.back.category.model.mapper.CategoryMapper">
-
+	
+	<!-- 카데고리의 소분류를 같이 얻기 위한 resultMap -->
 	<resultMap id="categoryMap" type="CategoryDTO">
 		<id property="categoryName" column="CATEGORY_NAME"/>
 		<collection property="details" ofType="DetailCategoryDTO">
@@ -12,7 +13,7 @@
 		</collection>
 	</resultMap>
 
-
+	<!-- 카데고리 2 3 가져오는 sql -->
 	<select id="getCategoryDetails" parameterType="Long" resultMap="categoryMap">
 		SELECT  
 		       e.CATEGORY_NAME     as CATEGORY_NAME
@@ -28,6 +29,81 @@
 		 ORDER
 		    BY
 		       CATEGORY_DETAIL_NO  
+	</select>
+	
+		<select id="getExpertListCount" parameterType="long">
+		SELECT
+		       COUNT(*)
+		  FROM
+		       TB_EXPERT e
+		  JOIN
+		       TB_MEMBER m
+		    ON m.USER_NO = e.USER_NO
+		  LEFT
+		  JOIN
+		       V_EXPERT_STATS es
+		    ON es.EXPERT_NO = e.USER_NO
+		 WHERE
+		       EXISTS (
+		           SELECT
+		                  1
+		             FROM
+		                  TB_EXPERT_SAVE_CATEGORY esc
+		            WHERE
+		                  esc.USER_NO = e.USER_NO
+		              AND esc.CATEGORY_DETAIL_NO = #{categoryDetailNo}
+		       )
+	</select>	
+	
+	<select id="getExpertList" resultType="ExpertListDTO">
+		SELECT
+		       e.USER_NO              AS expertNo
+		     , m.PROFILE_IMG          AS profileImg
+		     , m.NICKNAME             AS nickName
+		     , e.CAREER
+		     , e.START_TIME           AS startTime
+		     , e.END_TIME             AS endTime
+		     , NVL(es.AVG_STAR_SCORE, 0)   AS starScore
+		     , NVL(es.REVIEW_COUNT, 0)     AS reviewCount
+		     , m.ADDRESS
+		     , CASE
+		           WHEN #{userNo} IS NULL THEN 0
+		           WHEN EXISTS (
+		               SELECT
+		                      1
+		                 FROM
+		                      TB_LIKE ul
+		                WHERE
+		                      ul.EXPERT_NO = e.USER_NO
+		                  AND ul.USER_NO   = #{userNo}
+		           ) THEN 1
+		           ELSE 0
+		       END                    AS userLiked
+		     , NVL(es.TOTAL_LIKE_COUNT, 0) AS totalLikes
+		  FROM
+		       TB_EXPERT e
+		  JOIN
+		       TB_MEMBER m
+		    ON m.USER_NO = e.USER_NO
+		  LEFT
+		  JOIN
+		       V_EXPERT_STATS es
+		    ON es.EXPERT_NO = e.USER_NO
+		 WHERE
+		       EXISTS (
+		           SELECT
+		                  1
+		             FROM
+		                  TB_EXPERT_SAVE_CATEGORY esc
+		            WHERE
+		                  esc.USER_NO = e.USER_NO
+		              AND esc.CATEGORY_DETAIL_NO = #{categoryDetailNo}
+		       )
+		 ORDER
+		    BY
+		       NVL(es.AVG_STAR_SCORE, 0) DESC
+		     , NVL(es.TOTAL_LIKE_COUNT, 0) DESC
+		     , e.USER_NO DESC
 	</select>
 	
 </mapper>

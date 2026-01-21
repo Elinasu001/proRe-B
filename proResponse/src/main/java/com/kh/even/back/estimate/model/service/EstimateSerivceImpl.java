@@ -14,6 +14,7 @@ import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.exception.InvalidFileException;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
+import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.util.PageInfo;
@@ -95,9 +96,21 @@ public class EstimateSerivceImpl implements EstimateService {
 	}
 
 	@Override
-	public List<EstimateRequestDTO> getReceivedEstimates(int page) {
+	public PageResponse<ResponseEstimateDTO> getReceivedEstimates(int pageNo, CustomUserDetails customUserDetails) {
 
-		return null;
+		Long userNo = customUserDetails.getUserNo();
+
+		int listCount = mapper.getResponseEstimateCount(userNo);
+
+		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
+
+		params.put("userNo", userNo);
+
+		List<ResponseEstimateDTO> list = mapper.getResponseEstimateDetails(params);
+		PageInfo pageInfo = (PageInfo) params.get("pi");
+
+		return new PageResponse<ResponseEstimateDTO>(list, pageInfo);
+
 	}
 
 }

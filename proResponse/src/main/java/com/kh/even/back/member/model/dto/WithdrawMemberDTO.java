@@ -18,6 +18,6 @@ public class WithdrawMemberDTO {
 	@NotNull(message = "탈퇴 사유를 선택해주세요.")
 	private Long reasonNo;
 	
-	@Size(max = 50, message = "탈퇴 사유는 최대 50자까지 입력 가능합니다.")
+	@Size(max = 100, message = "탈퇴 사유는 최대 100자까지 입력 가능합니다.")
 	private String reasonDetail;
 }

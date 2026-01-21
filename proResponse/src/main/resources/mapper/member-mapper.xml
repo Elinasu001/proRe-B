@@ -94,11 +94,32 @@
 	
 	<!-- 비밀번호를 변경합니다. -->
 	<update id="changePassword" parameterType="ChangePasswordVO">
-	UPDATE
-	       TB_MEMBER
-	   SET
-	       USER_PWD = #{newPassword}
-	 WHERE
-	       USER_NO = #{userNo}          
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       USER_PWD = #{newPassword}
+		 WHERE
+		       USER_NO = #{userNo}          
 	</update>
+	
+	<!-- 회원탈퇴를 요청합니다. -->
+	<insert id="withdrawMember" parameterType="WithdrawMemberVO">
+		INSERT
+		  INTO
+		       TB_MEMBER_WITHDRAW
+		       (
+		       WITHDRAW_NO 
+		     , USER_NO userNo  
+		     , REASON_NO reasonNo
+		     , REASON_DETAIL reasonDetail
+		       )
+		VALUES
+		       (
+		       SEQ_MEMBER_WITHDRAW.NEXTVAL
+		     , #{userNo}
+		     , #{reasonNo}
+		     , #{reasonDetail}
+		       )  
+	</insert>
+	
 </mapper>

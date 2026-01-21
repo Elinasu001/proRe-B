@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
+import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
@@ -16,6 +17,7 @@ import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -131,8 +133,16 @@ public class MemberServiceImpl implements MemberService {
 		
 		validatePassword(request.getPassword(), user);
 		
-		// INSERT INTO TB_MEMBER_WITHDRAW (WITHDRAW_NO, USER_NO, REASON_NO, REASON_DETAIL) VALUES (SEQ.NEXTVAL, #{userNo}, #{reasonNo}, #{reasonDetail}
-		memberMapper.withdrawMember(request)
+		WithdrawMemberVO wmv = WithdrawMemberVO.builder().userNo(user.getUserNo())
+				  										 .reasonNo(request.getReasonNo())
+				  										 .reasonDetail(request.getReasonDetail())
+				  										 .build();
+		int result = memberMapper.withdrawMember(wmv);
+		if(result != 1) {
+			throw new Exception("회원탈퇴 요청에 실패했습니다.");
+		}
+		
+		
 	}
 	
 }

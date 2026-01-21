@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 @Mapper
 public interface MemberMapper {
@@ -42,4 +43,11 @@ public interface MemberMapper {
 	 * @param passwordVO
 	 */
 	void changePassword(ChangePasswordVO passwordVO);
+	
+	/**
+	 * 회원탈퇴
+	 * @param wmv
+	 * @return
+	 */
+	int withdrawMember(WithdrawMemberVO wmv);
 }

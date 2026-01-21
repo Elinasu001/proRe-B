@@ -30,11 +30,14 @@ public class ExpertServiceImpl implements ExpertService {
 			userNo = user.getUserNo();
 		}
 		
-		Map<String, Long> param = new HashMap();
-		
-		param.put("expertNo", expertNo);
-		param.put("userNo", userNo );
 		validateExpertCount(expertNo);
+
+		Map<String, Long> param = new HashMap();
+
+		param.put("expertNo", expertNo);
+
+		param.put("userNo", userNo);
+
 
 		ExpertDetailDTO expertDetail = mapper.getExpertDetails(param);
 
@@ -44,7 +47,7 @@ public class ExpertServiceImpl implements ExpertService {
 	}
 
 	private void validateExpertCount(Long expertNo) {
-		
+
 		int count = repository.countByUserNo(expertNo);
 
 		// log.info(" JPA로 count 잘 들어오는지 확인 : {} " , count);

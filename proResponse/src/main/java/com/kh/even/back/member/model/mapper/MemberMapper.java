@@ -45,9 +45,16 @@ public interface MemberMapper {
 	void changePassword(ChangePasswordVO passwordVO);
 	
 	/**
-	 * 회원탈퇴
+	 * 회원탈퇴 요청
 	 * @param wmv
-	 * @return
+	 * @return TB_MEMBER_WITHDRAW에 새로 추가된 행의 개수를 반환해줍니다.
+	 */
+	int withdrawRequest(WithdrawMemberVO wmv);
+	
+	/**
+	 * 회원탈퇴(논리 삭제)
+	 * @param userNo
+	 * @return TB_MEMBER에 업데이트된 행의 개수를 반환해줍니다.
 	 */
 	int withdrawMember(WithdrawMemberVO wmv);
 }

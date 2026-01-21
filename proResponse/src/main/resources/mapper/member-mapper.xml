@@ -103,15 +103,15 @@
 	</update>
 	
 	<!-- 회원탈퇴를 요청합니다. -->
-	<insert id="withdrawMember" parameterType="WithdrawMemberVO">
+	<insert id="withdrawRequest" parameterType="WithdrawMemberVO">
 		INSERT
 		  INTO
 		       TB_MEMBER_WITHDRAW
 		       (
 		       WITHDRAW_NO 
-		     , USER_NO userNo  
-		     , REASON_NO reasonNo
-		     , REASON_DETAIL reasonDetail
+		     , USER_NO  
+		     , REASON_NO 
+		     , REASON_DETAIL 
 		       )
 		VALUES
 		       (
@@ -121,5 +121,16 @@
 		     , #{reasonDetail}
 		       )  
 	</insert>
+	
+	<update id="withdrawMember" parameterType="WithdrawMemberVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       STATUS = 'N'
+		 WHERE
+		       USER_NO = #{userNo}
+		   AND   
+		       STATUS = {status}            
+	</update>
 	
 </mapper>

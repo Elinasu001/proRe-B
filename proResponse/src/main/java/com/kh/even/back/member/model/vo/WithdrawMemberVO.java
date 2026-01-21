@@ -8,7 +8,12 @@ import lombok.Getter;
 public class WithdrawMemberVO {
 	
 	private Long userNo;
+	
+	private String status;
+	
 	private Long reasonNo;
+	
 	private String reasonDetail;
+	
 	
 }

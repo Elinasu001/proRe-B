@@ -7,7 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
+import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
+import com.kh.even.back.exception.UsernameNotFoundException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
@@ -132,14 +134,26 @@ public class MemberServiceImpl implements MemberService {
 		validatePassword(request.getPassword(), user);
 		
 		WithdrawMemberVO wmv = WithdrawMemberVO.builder().userNo(user.getUserNo())
+														 .status(user.getStatus())
 				  										 .reasonNo(request.getReasonNo())
 				  										 .reasonDetail(request.getReasonDetail())
 				  										 .build();
-		int result = memberMapper.withdrawMember(wmv);
-		if(result != 1) {
-			
+		if(!"Y".equals(user.getStatus())) {
+			throw new CustomAuthenticationException("이미 탈퇴 처리된 회원입니다.");
+		}
+		if(!"N".equals(user.getPenaltyStatus())) {
+			throw new CustomAuthenticationException("비활성화된 계정입니다.");
 		}
 		
+		int insertRows = memberMapper.withdrawRequest(wmv);
+		if(insertRows != 1) {
+			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
+		}
+		
+		int updateRows = memberMapper.withdrawMember(wmv);
+		if(updateRows != 1) {
+			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
+		}
 		
 	}
 	

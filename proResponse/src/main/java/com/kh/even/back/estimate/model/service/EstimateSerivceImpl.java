@@ -13,7 +13,6 @@ import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
-import com.kh.even.back.exception.InvalidFileException;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
@@ -40,9 +39,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files,
 			CustomUserDetails customUserDetails) {
 
-		if (files != null && files.size() > 4) {
-			throw new InvalidFileException("첨부파일은 최대 4개까지 업로드할 수 있습니다.");
-		}
+		AssertUtil.checkFileSize(files);
 
 		EstimateRequestEntity entity = toEntity(estimateReqeust, customUserDetails);
 

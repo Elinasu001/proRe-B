@@ -35,5 +35,5 @@ public class ReportController {
         		);
         return ResponseData.ok(canReport, "신고 가능 여부 조회 성공");
     }
-
+  
 }

@@ -1,8 +1,13 @@
 package com.kh.even.back.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -13,14 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	
 	/* ===================== 인증 / 인가 ===================== */
+	
 	@ExceptionHandler(CustomAuthenticationException.class)
 	public ResponseEntity<ResponseData<Object>> handleAuth(CustomAuthenticationException e) {
 		log.warn("인증 실패: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.UNAUTHORIZED);
 	}
 
-	// 작성자만 수정/삭제 같은 권한 예외
 	@ExceptionHandler(CustomAuthorizationException.class)
 	public ResponseEntity<ResponseData<Object>> handleAuthorization(CustomAuthorizationException e) {
 		log.warn("인가 실패: {}", e.getMessage());
@@ -39,6 +45,8 @@ public class GlobalExceptionHandler {
 	    return ResponseData.failure(e.getMessage(), HttpStatus.UNAUTHORIZED);
 	}
 
+	/* ===================== 도메인 예외 ===================== */
+	
 	@ExceptionHandler(ChatException.class)
 	public ResponseEntity<ResponseData<Object>> handleChatException(ChatException e) {
 	    log.warn("채팅 오류: {}", e.getMessage());
@@ -50,68 +58,74 @@ public class GlobalExceptionHandler {
 		log.warn("리뷰 오류: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
-
-	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
-
-	/* ===================== 공통 Runtime / Exception ===================== */
-	@ExceptionHandler(IllegalStateException.class)
-	public ResponseEntity<ResponseData<Object>> handlerIllegalState(IllegalStateException e) {
-		log.warn("잘못된 상태: {}", e.getMessage());
-		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
-	}
-
-	@ExceptionHandler(RuntimeException.class)
-	public ResponseEntity<ResponseData<Object>> handleRuntimeException(RuntimeException e) {
-		log.error("런타임 오류 발생: {} ", e.getMessage());
-		// 별도 핸들러 안 만든 RuntimeException 들
-		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ResponseData<Object>> handleException(Exception e) {
-		log.error("알 수 없는 서버 오류 발생: {} ", e.getMessage());
-		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	@ExceptionHandler(UsernameNotFoundException.class)
-	public ResponseEntity<ResponseData<Object>> handleuserNameNotFound(UsernameNotFoundException e) {
-
-		log.error("유저 이름 못찾음: {}", e.getMessage());
-
-		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
-	}
 	
-	@ExceptionHandler(NotFoundException.class)
-	public ResponseEntity<ResponseData<Object>> handleNotFound(NotFoundException e) {
-
-		log.error("조회 결과를 못찾음 : {}", e.getMessage());
-
-		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	@ExceptionHandler(AlreadyReportedException.class)
+	public ResponseEntity<ResponseData<Object>> handleAlreadyReportedException(AlreadyReportedException e) {
+		log.warn("이미 신고됨: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
+
+	/* ===================== 검증 예외 ===================== */
 	
 	@ExceptionHandler(EmailDuplicateException.class)
 	public ResponseEntity<ResponseData<Object>> handleEmailDuplicateException(EmailDuplicateException e) {
-		
-		log.error("이메일 중복 : {}", e.getMessage());
-		
+		log.warn("이메일 중복: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
-		
 	}
 	
 	@ExceptionHandler(InvalidFileException.class)
-	public ResponseEntity<ResponseData<Object>> handleInvalidFileExceptiona(InvalidFileException e) {
-		
-		log.error("파일 4개 이상 업로드 : {}", e.getMessage());
-		
+	public ResponseEntity<ResponseData<Object>> handleInvalidFileException(InvalidFileException e) {
+		log.warn("파일 검증 실패: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
-		
+	}
+	
+	/**
+	 * Validation 예외 처리
+	 */
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ResponseData<Object>> handleValidationException(MethodArgumentNotValidException e) {
+	    Map<String, String> errors = new HashMap<>();
+	    e.getBindingResult().getAllErrors().forEach(error -> {
+	        String fieldName = ((FieldError) error).getField();
+	        String errorMessage = error.getDefaultMessage();
+	        errors.put(fieldName, errorMessage);
+	    });
+	    
+	    log.warn("입력값 검증 실패: {}", errors);
+	    return ResponseData.failure("입력값이 올바르지 않습니다: " + errors, HttpStatus.BAD_REQUEST);
+	}
+	// ✅ 추가: IllegalArgumentException
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ResponseData<Object>> handleIllegalArgumentException(IllegalArgumentException e) {
+		log.warn("잘못된 인자: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
+	/* ===================== 조회 예외 ===================== */
+	
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ResponseData<Object>> handleNotFound(NotFoundException e) {
+		log.warn("조회 결과 없음: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<ResponseData<Object>> handleUsernameNotFoundException(UsernameNotFoundException e) {
+		log.warn("사용자 없음: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
+	/* ===================== 공통 예외 ===================== */
+	
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<ResponseData<Object>> handleIllegalState(IllegalStateException e) {
+		log.warn("잘못된 상태: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 	
 	@ExceptionHandler(CustomServerException.class)
 	public ResponseEntity<ResponseData<Object>> handleServerException(CustomServerException e) {
-		
-		log.error("서버 오류 발생 : {}", e.getMessage());
-		
+		log.error("서버 오류 발생: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
@@ -123,4 +137,15 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<ResponseData<Object>> handleRuntimeException(RuntimeException e) {
+		log.error("런타임 오류 발생", e);
+		return ResponseData.failure("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ResponseData<Object>> handleException(Exception e) {
+		log.error("예상치 못한 오류 발생", e);
+		return ResponseData.failure("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 }

@@ -13,5 +13,5 @@ public interface MemberService {
 	
 	void changePassword(ChangePasswordDTO password, CustomUserDetails user);
 	
-	void withdrawMember(WithdrawMemberDTO request);
+	void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user);
 }

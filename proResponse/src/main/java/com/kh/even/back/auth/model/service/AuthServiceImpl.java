@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 		
 		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
 		if(user.getStatus().equals("N")) {
-			throw new CustomAuthenticationException("비활성화된 계정입니다.");
+			throw new CustomAuthenticationException("탈퇴한 계정입니다.");
 		}
 		
 		if(user.getPenaltyStatus().equals("Y")) {

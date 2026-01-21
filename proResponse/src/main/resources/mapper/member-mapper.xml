@@ -130,7 +130,7 @@
 		 WHERE
 		       USER_NO = #{userNo}
 		   AND   
-		       STATUS = {status}            
+		       STATUS = 'Y'
 	</update>
 	
 </mapper>

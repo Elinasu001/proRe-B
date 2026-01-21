@@ -134,7 +134,6 @@ public class MemberServiceImpl implements MemberService {
 		validatePassword(request.getPassword(), user);
 		
 		WithdrawMemberVO wmv = WithdrawMemberVO.builder().userNo(user.getUserNo())
-														 .status(user.getStatus())
 				  										 .reasonNo(request.getReasonNo())
 				  										 .reasonDetail(request.getReasonDetail())
 				  										 .build();
@@ -146,12 +145,12 @@ public class MemberServiceImpl implements MemberService {
 		}
 		
 		int insertRows = memberMapper.withdrawRequest(wmv);
-		if(insertRows != 1) {
+		if(insertRows == 0) {
 			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
 		}
 		
 		int updateRows = memberMapper.withdrawMember(wmv);
-		if(updateRows != 1) {
+		if(updateRows == 0) {
 			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
 		}
 		

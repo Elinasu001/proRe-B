@@ -11,15 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ReviewService {
 
     /**
-     * 채팅방 기준 리뷰 조회
+     * 리뷰 조회 (작성 후 상세 조회)
      */
     ReviewDetailDTO getReview(Long estimateNo
         //, Long userNo
     );
 
     /**
-	 * 카테고리 목록 조회
-	 * @return 카테고리 목록
+	 *  태그 전체 조회 (등록 시 필요)
 	 */
 	List<ReviewTagDTO> getAllReviewTags();
 

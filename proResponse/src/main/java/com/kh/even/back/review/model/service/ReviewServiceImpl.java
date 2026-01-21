@@ -27,6 +27,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final S3Service s3Service;
 
+    // 리뷰 조회 (작성 후 상세 조회)
     @Override
     public ReviewDetailDTO getReview(Long estimateNo
         //, Long userNo
@@ -40,6 +41,11 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewDetailDTO;
     }
 
+    // 태그 목록 전체 조회 (등록 시 필요)
+	@Override
+	public List<ReviewTagDTO> getAllReviewTags() {
+		return reviewMapper.getAllReviewTags();
+	}
 
     // 리뷰 등록하기
     @Override
@@ -123,12 +129,6 @@ public class ReviewServiceImpl implements ReviewService {
         
         return reviewVO;
     }
-
-    // 태그 목록 조회
-	@Override
-	public List<ReviewTagDTO> getAllReviewTags() {
-		return reviewMapper.getAllReviewTags();
-	}
     
 
     // 리뷰 삭제

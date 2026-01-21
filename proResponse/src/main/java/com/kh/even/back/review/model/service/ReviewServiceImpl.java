@@ -126,8 +126,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     // 태그 목록 조회
 	@Override
-	public List<ReviewTagDTO> getReviewTags() {
-		return reviewMapper.getReviewTags();
+	public List<ReviewTagDTO> getAllReviewTags() {
+		return reviewMapper.getAllReviewTags();
 	}
     
 

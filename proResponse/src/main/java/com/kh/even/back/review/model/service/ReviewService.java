@@ -21,7 +21,7 @@ public interface ReviewService {
 	 * 카테고리 목록 조회
 	 * @return 카테고리 목록
 	 */
-	List<ReviewTagDTO> getReviewTags();
+	List<ReviewTagDTO> getAllReviewTags();
 
 
     ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files

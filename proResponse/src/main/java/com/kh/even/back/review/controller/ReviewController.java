@@ -51,8 +51,8 @@ public class ReviewController {
 	 * 
 	 */
     @GetMapping("/tags")
-	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getReviewTags() {
-		List<ReviewTagDTO> categories = reviewService.getReviewTags();
+	public ResponseEntity<ResponseData<List<ReviewTagDTO>>> getAllReviewTags() {
+		List<ReviewTagDTO> categories = reviewService.getAllReviewTags();
 		return ResponseData.ok(categories, "리뷰 태그 목록 조회 성공");
 	}
 

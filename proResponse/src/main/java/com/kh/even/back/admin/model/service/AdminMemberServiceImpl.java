@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.even.back.admin.model.dto.MemberDTO;
+import com.kh.even.back.admin.model.dto.AdminMemberDTO;
 import com.kh.even.back.admin.model.mapper.AdminMemberMapper;  // ✅ 수정
 import com.kh.even.back.member.model.vo.MemberVO;
 
@@ -74,7 +74,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {  // ✅ 클�
         dto.setPostcode(vo.getPostcode());
         dto.setAddress(vo.getAddress());
         dto.setAddressDetail(vo.getAddressDetail());
-        dto.setStatus(vo.getStatus());
+        dto.setStatus(String.valueOf(vo.getStatus()));  // ✅ char → String 변환
         dto.setCreateDate(vo.getCreateDate());
         dto.setDeleteDate(vo.getDeleteDate());
         dto.setUpdateDate(vo.getUpdateDate());

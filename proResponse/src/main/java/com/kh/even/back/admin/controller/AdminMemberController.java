@@ -34,7 +34,7 @@ public class AdminMemberController {
         log.info("회원 목록 조회 - currentPage: {}, keyword: {}", currentPage, keyword);
         
         try {
-            List<MemberDTO> memberList = adminMemberService.getMemberList(currentPage, keyword);
+            List<AdminMemberDTO> memberList = adminMemberService.getMemberList(currentPage, keyword);
             int totalCount = adminMemberService.getMemberCount(keyword);
             
             Map<String, Object> data = new HashMap<>();

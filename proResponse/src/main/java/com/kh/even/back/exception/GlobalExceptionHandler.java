@@ -51,6 +51,12 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(ReportException.class)
+	public ResponseEntity<ResponseData<Object>> handleReportException(ReportException e) {
+		log.warn("신고 오류: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
 	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
 
 	/* ===================== 공통 Runtime / Exception ===================== */

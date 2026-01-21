@@ -1,15 +1,30 @@
 package com.kh.even.back.report.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+// import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.kh.even.back.auth.model.vo.CustomUserDetails;
+// import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
+import com.kh.even.back.report.model.dto.ReportDTO;
+import com.kh.even.back.report.model.dto.ReportDetailDTO;
 import com.kh.even.back.report.model.service.ReportService;
+import com.kh.even.back.report.model.vo.ReportVO;
+import com.kh.even.back.review.model.dto.ReviewDTO;
+import com.kh.even.back.review.model.vo.ReviewVO;
+
+import jakarta.validation.Valid;
+
+import com.kh.even.back.report.model.dto.ReportTagDTO;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,18 +37,53 @@ public class ReportController {
 
     private final ReportService reportService;
     
+
     /**
-     * 신고 여부 조회
+     * 신고 조회
      */
-    @GetMapping("/{roomNo}")
-    public  ResponseEntity<ResponseData<Boolean>> getReportStatus(
-            @PathVariable Long roomNo
+    @GetMapping("/{estimateNo}")
+    public ResponseEntity<ResponseData<ReportDetailDTO>> getReport(
+            @PathVariable(name="estimateNo") Long estimateNo
             //, @AuthenticationPrincipal CustomUserDetails user
             ) {
-        boolean canReport = reportService.getReportStatus(roomNo
-        		//, user.getUserNo()
-        		);
-        return ResponseData.ok(canReport, "신고 가능 여부 조회 성공");
+        ReportDetailDTO report = reportService.getReport(
+            estimateNo
+            // , user.getUserNo()
+        );
+        return ResponseData.ok(report, "신고 조회에 성공했습니다");
+    }
+
+
+    /**
+	 * 태그 전체 조회 (등록 시 필요)
+	 * 
+	 */
+    @GetMapping("/tags")
+	public ResponseEntity<ResponseData<List<ReportTagDTO>>> getAllReportTags() {
+		List<ReportTagDTO> categories = reportService.getAllReportTags();
+		return ResponseData.ok(categories, "전체 태그 목록 조회에 성공했습니다");
+	}
+
+
+    /**
+	 * 신고 등록
+	 * 
+	 */
+        @PostMapping
+    public ResponseEntity<ResponseData<ReportVO>> saveReport(
+            @Valid ReportDTO reportDTO
+            //, @AuthenticationPrincipal CustomUserDetails user
+        ) {
+        
+        //log.info("신고 등록 요청 - estimateNo: {}, userNo: {}, content: {}", reportDTO.getEstimateNo(), user.getUserNo(), reportDTO.getContent());
+        
+        // 권한 검증 (해당 견적의 의뢰인인지 확인)
+        ReportVO saved = reportService.saveReport(
+            reportDTO
+            //, user.getUserNo()
+        );
+        
+        return ResponseData.created(saved, "신고가 성공적으로 등록되었습니다");
     }
 
 }

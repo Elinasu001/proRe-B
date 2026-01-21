@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
@@ -82,6 +83,8 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		int listCount = mapper.getMyEstimateCount(userNo);
 
+		AssertUtil.notFound(listCount, "보낸 견적 요청이 없습니다.");
+
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
 
 		params.put("userNo", userNo);
@@ -101,6 +104,8 @@ public class EstimateSerivceImpl implements EstimateService {
 		Long userNo = customUserDetails.getUserNo();
 
 		int listCount = mapper.getResponseEstimateCount(userNo);
+
+		AssertUtil.notFound(listCount, "받은 견적 내역이 없습니다.");
 
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
 

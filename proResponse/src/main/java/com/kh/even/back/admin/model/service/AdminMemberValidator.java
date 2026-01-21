@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class MemberValidator {
+public class AdminMemberValidator {
     
     /**
      * 상태 변경 검증

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class MemberStatusManager {
+public class AdminMemberStatusManager {
     
     /**
      * 회원 활성화 판단

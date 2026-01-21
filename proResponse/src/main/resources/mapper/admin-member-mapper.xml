@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.kh.even.back.admin.model.mapper.MemberMapper">
+<mapper namespace="com.kh.even.back.admin.model.mapper.AdminMemberMapper">
 
 <resultMap id="memberResultMap" type="com.kh.even.back.member.model.vo.MemberVO">
     <constructor>

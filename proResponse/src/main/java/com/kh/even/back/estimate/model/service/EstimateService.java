@@ -28,5 +28,11 @@ public interface EstimateService {
 	 */
 	PageResponse<ExpertDTO> getMyEstimate(int pageNo, CustomUserDetails customUserDetails);
 
+	/**
+	 * 
+	 * @param pageNo 앞에서 넘겨주는 페이지 넘버
+	 * @param customUserDetails 인증유저
+	 * @return 받은 견적 요청 리스트
+	 */
 	PageResponse<ResponseEstimateDTO> getReceivedEstimates(int pageNo , CustomUserDetails customUserDetails);
 }

@@ -2,8 +2,11 @@ package com.kh.even.back.category.model.service;
 
 import java.util.List;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.category.model.dto.CategoryDTO;
+import com.kh.even.back.category.model.dto.ExpertListDTO;
 import com.kh.even.back.category.model.entity.CategoryEntity;
+import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface CategoryService {
 
@@ -23,4 +26,6 @@ public interface CategoryService {
 	 *         이름(categoryName)과 참조 테이블인 List<DetailCategoryDTO>를 포함합니다.
 	 */
 	List<CategoryDTO> getCategoryDetails(Long categoryNo);
+	
+	PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo , int pageNo , CustomUserDetails customUserDetails);
 }

@@ -4,6 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kh.even.back.estimate.model.mapper.EstimateMapper">
 	
+	<!-- 회원이 보내는 견적 이미지 저장 -->
 	<insert id="saveEstimateAttachment">
     INSERT
       INTO
@@ -23,7 +24,7 @@
            )      
 	</insert>
 	
-	
+	<!-- 회원이 보낸 견적 요청 수 -->
 	<select id="getMyEstimateCount" resultType="int">
 	SELECT COUNT(*)
 	FROM TB_ESTIMATE_REQUEST
@@ -31,6 +32,7 @@
 	  AND STATUS = 'REQUESTED'
 	</select>
 	
+	<!-- 회원이 보낸 견적 전문가 정보 -->
 	<select id="getMyEstimate" resultType="ExpertDTO">
 	SELECT
 	       r.REQUEST_NO		   AS requestNo
@@ -38,6 +40,7 @@
 	     , r.STATUS            AS requestStatus
 	     , m.NICKNAME          AS nickName
 	     , m.ADDRESS
+	     , m.PROFILE_IMG       AS profileImg
 	     , e.START_TIME        AS startTime
 	     , e.END_TIME          AS endTime
 	     , NVL(rs.AVG_STAR_SCORE,0)   AS starScore
@@ -70,7 +73,7 @@
 	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
 	
-	
+	<!-- 회원이 받은 견적 요청 수 -->
 	<select id="getResponseEstimateCount" resultType="int">
     SELECT COUNT(*) AS responseCount
       FROM TB_ESTIMATE_RESPONSE er
@@ -80,15 +83,17 @@
        AND er.STATUS IN ('SENT', 'ACCEPTED')
 	</select>
 	
-	
+	<!-- 회원이 받은 견적 요청 내용 -->
 	<select id="getResponseEstimateDetails" resultType="ResponseEstimateDTO">
     SELECT
+    	   r.REQUEST_NO              AS requestNo,
            r.EXPERT_NO               AS expertNo,
            m.NICKNAME                AS nickName,
+           m.PROFILE_IMG             AS profileImg,
            NVL(rs.AVG_STAR_SCORE, 0) AS starScore,
            NVL(rs.REVIEW_COUNT, 0)   AS reviewCount,
            er.PRICE                  AS price,
-           er.STATUS                 AS status
+           r.STATUS                  AS status
       FROM TB_ESTIMATE_REQUEST r
       JOIN TB_ESTIMATE_RESPONSE er
         ON er.REQUEST_NO = r.REQUEST_NO
@@ -116,8 +121,11 @@
       ) rs
         ON rs.EXPERT_NO = r.EXPERT_NO
      WHERE r.USER_NO = #{userNo}
+       AND r.STATUS IN ('QUOTED' , 'MATCHED')
      ORDER BY er.ESTIMATE_DATE DESC
      OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
-</select>
+	</select>
+
+
 	
 </mapper>

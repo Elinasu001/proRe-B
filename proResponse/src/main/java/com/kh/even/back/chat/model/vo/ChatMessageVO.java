@@ -1,0 +1,17 @@
+package com.kh.even.back.chat.model.vo;
+
+import java.sql.Date;
+
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder
+public class ChatMessageVO {
+    private Long messageNo;				// 메시지 번호
+    private String content;				// 메시지 내용
+    private Date sentDate;		        // 보낸 시간
+    private String status;				// 확인 여부
+    private Long userNo;				// 회원 번호
+    private Long roomNo;				// 채팅방 번호
+}

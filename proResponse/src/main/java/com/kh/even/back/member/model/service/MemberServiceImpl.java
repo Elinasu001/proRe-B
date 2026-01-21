@@ -99,11 +99,11 @@ public class MemberServiceImpl implements MemberService {
 	
 		CustomUserDetails user = getCurrentUser();
 		
-		String currentPassword = password.getCurrentPassword();
-		String encodedPassword = user.getPassword();
-		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
-			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
-		}
+		validatePassword(password.getCurrentPassword(), user);
+		
+		if (passwordEncoder.matches(password.getNewPassword(), user.getPassword())) {
+	        throw new CustomAuthenticationException("새 비밀번호는 기존 비밀번호와 달라야 합니다.");
+	    }
 		
 		String newPassword = passwordEncoder.encode(password.getNewPassword());
 		
@@ -134,14 +134,11 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 * 비밀번호 검증
 	 */
-	private String validatePassword(String password) {
+	private void validatePassword(String password, CustomUserDetails user) {
 		
-		CustomUserDetails user = getCurrentUser();
-		
-		String currentPassword = password.getCurrentPassword();
 		String encodedPassword = user.getPassword();
 		
-		if(!passwordEncoder.matches(currentPassword, encodedPassword)) {
+		if(!passwordEncoder.matches(password, encodedPassword)) {
 			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
 		}
 		

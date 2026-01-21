@@ -27,6 +27,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final S3Service s3Service;
 
+
+
     // 리뷰 조회 (작성 후 상세 조회)
     @Override
     public ReviewDetailDTO getReview(Long estimateNo
@@ -38,6 +40,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewDetailDTO == null) {
             throw new ReviewException("해당 견적에 대한 리뷰가 존재하지 않습니다");
         }
+        
         return reviewDetailDTO;
     }
 
@@ -74,7 +77,7 @@ public class ReviewServiceImpl implements ReviewService {
         //log.info("견적 기능 미구현 상태로 - 견적 검증 생략");
 
         // 3. 이미 리뷰가 있는 지 확인
-        boolean exists = reviewMapper.existsReviewByEstimateNo(reviewDTO.getEstimateNo());
+        boolean exists = existsByEstimateNo(reviewDTO.getEstimateNo());
         if (exists) {
             throw new ReviewException("이미 리뷰가 작성된 견적서입니다");
         }
@@ -126,6 +129,15 @@ public class ReviewServiceImpl implements ReviewService {
         //log.info("리뷰 등록 완료 - reviewNo: {}, estimateNo: {}, 태그수: {}", reviewNo, reviewDTO.getEstimateNo(), reviewDTO.getTagNos() != null ? reviewDTO.getTagNos().size() : 0);
         
         return reviewVO;
+    }
+
+
+    /**
+    * 견적 번호로 리뷰 존재 여부 확인
+     */
+    @Override
+    public boolean existsByEstimateNo(Long estimateNo) {
+        return reviewMapper.existsByEstimateNo(estimateNo);
     }
     
 

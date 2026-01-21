@@ -31,7 +31,7 @@ public interface ReviewService {
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsReviewByEstimateNo(Long estimateNo);
+    boolean existsByEstimateNo(Long estimateNo);
 
     /**
      * 리뷰 등록

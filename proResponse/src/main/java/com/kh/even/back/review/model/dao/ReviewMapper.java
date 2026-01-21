@@ -26,14 +26,14 @@ public interface ReviewMapper {
      * 전체 태그 목록 조회
      * @return 태그 DTO 리스트(List<ReviewTagDTO>)
      */
-    List<ReviewTagDTO> getReviewTags();
+    List<ReviewTagDTO> getAllReviewTags();
 
     /**
      * 견적 번호로 리뷰 존재 여부 확인
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsReviewByEstimateNo(Long estimateNo);
+    boolean existsByEstimateNo(Long estimateNo);
 
     // === 리뷰 등록 ===
     /**

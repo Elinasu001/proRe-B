@@ -102,13 +102,13 @@
 
 
     <!-- 리뷰 중복 체크 -->
-    <select id="existsReviewByEstimateNo"
+    <select id="existsByEstimateNo"
         parameterType="Long"
         resultType="boolean">
       SELECT
           CASE
-              WHEN COUNT(*) &gt; 0 THEN 1 <!--리뷰가 존재하면 1(true)-->
-              ELSE 0 <!--리뷰가 존재 안하면 2(false)-->
+              WHEN COUNT(*) &gt; 0 THEN 1 <!--존재하면 1(true)-->
+              ELSE 0 <!--존재 안하면 0(false)-->
           END
           FROM TB_REVIEW
        WHERE ESTIMATE_NO = #{value}

@@ -32,7 +32,7 @@ public interface ReportMapper {
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsReportByEstimateNo(Long estimateNo);
+    boolean existsByEstimateNo(Long estimateNo);
     
     // === 신고 등록 ===
 

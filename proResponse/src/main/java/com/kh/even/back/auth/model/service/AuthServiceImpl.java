@@ -27,45 +27,36 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public LoginResponseDTO login(MemberLoginDTO member) {
 		
-		// 유효성 검사 -> Valid에게 위임
 		try {
 			
 		Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(member.getEmail(), member.getUserPwd()));
 		
-		
 		CustomUserDetails user = (CustomUserDetails)auth.getPrincipal();
-		
-		// log.info(" user 들어옴 ? : {} " , user );
-		
 		if(user.getStatus().equals("N")) {
 			throw new CustomAuthenticationException("비활성화된 계정입니다.");
 		}
 		
 		if(user.getPenaltyStatus().equals("Y")) {
-			// log.info(" 패널티 검증 : {} " , user);
 			throw new CustomAuthenticationException("정지된 계정입니다.");
 		}
-		// log.info(" 패널티 검증 : {} " , user);
-		// log.info("로그인 성공~!");
-		// log.info("인증에 성공한 사용자 정보 : {}", user);
-		
+
 		TokensDTO tokens = tokenService.generateToken(user.getUsername(), user.getUserNo(), user.getAuthorities());
 		
 		String role = user.getAuthorities()
-                .iterator()
-                .next()
-                .getAuthority();
+			              .iterator()
+			              .next()
+			              .getAuthority();
 		
 		return LoginResponseDTO.builder().tokens(tokens)
-								      .userNo(user.getUserNo())
-				                      .email(user.getUsername())
-				                      .userName(user.getRealName())
-				                      .nickname(user.getNickname())
-				                      .profileImgPath(user.getProfileImgPath())
-				                      .userRole(role)
-				                      .status(user.getStatus())
-				                      .penaltyStatus(user.getPenaltyStatus())
-				                      .build();
+									     .userNo(user.getUserNo())
+					                     .email(user.getUsername())
+					                     .userName(user.getRealName())
+					                     .nickname(user.getNickname())
+					                     .profileImgPath(user.getProfileImgPath())
+					                     .userRole(role)
+					                     .status(user.getStatus())
+					                     .penaltyStatus(user.getPenaltyStatus())
+					                     .build();
 		
 		} catch (CustomAuthenticationException e) {
             throw e;
@@ -74,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new CustomAuthenticationException("회원정보를 확인해주세요.");
 			
 		} catch (Exception e) {
+			log.error("로그인 처리 중 오류", e);
 	        throw new CustomAuthenticationException("로그인 처리 중 오류가 발생했습니다.");
 	    }
 				                   

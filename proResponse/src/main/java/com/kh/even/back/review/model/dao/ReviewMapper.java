@@ -13,6 +13,7 @@ import com.kh.even.back.review.model.vo.ReviewVO;
 @Mapper
 public interface ReviewMapper {
 
+    // === 리뷰 조회 ===
     /**
      * 견적 번호 기준 리뷰 상세 조회
      */
@@ -44,6 +45,7 @@ public interface ReviewMapper {
      */
     int saveReviewMap(ReviewMapVO reviewMapVO);
 
+    // === 리뷰 삭제 ===
 
     /**
      * 견적 번호로 리뷰 조회 (리뷰 상태변경용)
@@ -51,7 +53,7 @@ public interface ReviewMapper {
     ReviewVO getReviewByEstimateNo(Long estimateNo);
 
     /**
-     * 리뷰 상태 변경(비활성화)
+     * 리뷰 상태 변경
      */
     int updateReviewStatus(Long reviewNo);
 

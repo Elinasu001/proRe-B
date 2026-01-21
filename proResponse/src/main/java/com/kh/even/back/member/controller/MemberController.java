@@ -1,11 +1,11 @@
 package com.kh.even.back.member.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.service.MemberService;
 
 import jakarta.validation.Valid;
@@ -44,6 +45,13 @@ public class MemberController {
 		memberService.changePassword(password);
 		
 		return ResponseData.ok(null, "비밀번호 변경에 성공했습니다.");
+	}
+	
+	@DeleteMapping
+	public ResponseEntity<ResponseData<Void>> withdrawMember(@Valid @RequestBody WithdrawMemberDTO request) {
+		log.info("회원탈퇴 요청 진위여부 : {}", request);
+		
+		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
 	}
 	
 }

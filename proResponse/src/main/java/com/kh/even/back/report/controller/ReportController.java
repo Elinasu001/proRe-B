@@ -16,15 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.report.model.dto.ReportDTO;
 import com.kh.even.back.report.model.dto.ReportDetailDTO;
+import com.kh.even.back.report.model.dto.ReportTagDTO;
 import com.kh.even.back.report.model.service.ReportService;
 import com.kh.even.back.report.model.vo.ReportVO;
-import com.kh.even.back.review.model.dto.ReviewDTO;
-import com.kh.even.back.review.model.vo.ReviewVO;
 
 import jakarta.validation.Valid;
-
-import com.kh.even.back.report.model.dto.ReportTagDTO;
-
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,9 +63,8 @@ public class ReportController {
 
     /**
 	 * 신고 등록
-	 * 
 	 */
-        @PostMapping
+    @PostMapping
     public ResponseEntity<ResponseData<ReportVO>> saveReport(
             @Valid ReportDTO reportDTO
             //, @AuthenticationPrincipal CustomUserDetails user
@@ -78,11 +73,9 @@ public class ReportController {
         //log.info("신고 등록 요청 - estimateNo: {}, userNo: {}, content: {}", reportDTO.getEstimateNo(), user.getUserNo(), reportDTO.getContent());
         
         // 권한 검증 (해당 견적의 의뢰인인지 확인)
-        ReportVO saved = reportService.saveReport(
-            reportDTO
+        ReportVO saved = reportService.saveReport(reportDTO
             //, user.getUserNo()
         );
-        
         return ResponseData.created(saved, "신고가 성공적으로 등록되었습니다");
     }
 

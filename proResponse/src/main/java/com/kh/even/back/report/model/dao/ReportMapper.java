@@ -6,18 +6,42 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.even.back.report.model.dto.ReportDetailDTO;
 import com.kh.even.back.report.model.dto.ReportTagDTO;
+import com.kh.even.back.report.model.vo.ReportVO;
 
 
 @Mapper
 public interface ReportMapper {
 
+     // === 신고 조회 ===
 
-    /* 신고 상세 조회 */
+    /**
+     * 신고 상세 조회
+     * @param estimateNo 견적 번호
+     * @return 신고 상세 DTO(ReportDetailDTO)
+     */
     ReportDetailDTO getByEstimateNo(Long estimateNo);
 
     /**
      * 전체 태그 목록 조회
+     * @return 태그 DTO 리스트(List<ReportTagDTO>)
      */
     List<ReportTagDTO> getAllReportTags();
+
+    /**
+     * 견적서에 대한 신고 존재 여부 확인
+     * @param estimateNo 견적 번호
+     * @return 존재 여부(boolean)
+     */
+    boolean existsReportByEstimateNo(Long estimateNo);
+    
+    // === 신고 등록 ===
+
+    /**
+     * 신고 등록
+     * @param reportVO 신고 VO
+     * @return 등록된 행 수(int)
+     */
+    int saveReport(ReportVO reportVO);
+
 
 }

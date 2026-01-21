@@ -23,7 +23,7 @@ public class ReportDTO {
     private String status;            // 신고 상태 WAITING/RESOLVED/REJECTED (대기중/처리완료/신고거절)
     private Integer reasonNo;         // 신고 사유 번호 (FK)
     private Long estimateNo;          // 신고된 견적서 번호 (FK)
-    private Long reportUserNo;        // 신고자 (FK)
+    private Long reporterUserNo;        // 신고자 (FK)
     private Long targetUserNo;        // 신고대상 (FK)
 
 

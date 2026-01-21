@@ -92,11 +92,26 @@
          SELECT
                 TAG_NO
               , TAG_NAME
-              , 1 AS SELECTED
+              , 0 AS SELECTED
            FROM 
                 TB_REVIEW_TAG
           ORDER 
-             BY TAG_NO
+             BY 
+                TAG_NO
+    </select>
+
+
+    <!-- 리뷰 중복 체크 -->
+    <select id="existsReviewByEstimateNo"
+        parameterType="Long"
+        resultType="boolean">
+      SELECT
+          CASE
+              WHEN COUNT(*) &gt; 0 THEN 1 <!--리뷰가 존재하면 1(true)-->
+              ELSE 0 <!--리뷰가 존재 안하면 2(false)-->
+          END
+          FROM TB_REVIEW
+       WHERE ESTIMATE_NO = #{value}
     </select>
 
     <!-- 리뷰 등록 -->
@@ -168,19 +183,6 @@
             , #{tagNo}
               )
     </insert>
-
-    <!-- 리뷰 중복 체크 -->
-    <select id="existsReviewByEstimateNo"
-        parameterType="Long"
-        resultType="boolean">
-      SELECT
-        CASE
-             WHEN COUNT(*) &gt; 0 THEN 1 <!--리뷰가 존재하면 1(true)-->
-             ELSE 0 <!--리뷰가 존재 안하면 2(false)-->
-         END
-        FROM TB_REVIEW
-       WHERE ESTIMATE_NO = #{value}
-    </select>
 
     <!-- 리뷰 상태 변경(삭제) resultMap -->
     <resultMap id="reviewResultMap" type="ReviewVO">

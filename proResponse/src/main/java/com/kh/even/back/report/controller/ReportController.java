@@ -1,13 +1,11 @@
 package com.kh.even.back.report.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.report.model.service.ReportService;
 
@@ -25,7 +23,7 @@ public class ReportController {
     /**
      * 신고 여부 조회
      */
-    @GetMapping("/{roomNo}/status")
+    @GetMapping("/{roomNo}")
     public  ResponseEntity<ResponseData<Boolean>> getReportStatus(
             @PathVariable Long roomNo
             //, @AuthenticationPrincipal CustomUserDetails user

@@ -9,7 +9,6 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
-import com.kh.even.back.exception.UsernameNotFoundException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
@@ -129,8 +128,20 @@ public class MemberServiceImpl implements MemberService {
 	/**
 	 * 회원탈퇴
 	 */
+	@Transactional
 	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
-		
+		WithdrawMemberVO wmv = saveWithdrawRequest(request, user);
+		updateMemberStatus(wmv);
+	}
+	
+	
+	/**
+	 * 회원탈퇴 요청 저장하기
+	 * @param request (PK / 회원탈퇴사유번호 / 상세사유)
+	 * @param user (회원정보)
+	 * @return 회원탈퇴용 VO 반환
+	 */
+	private WithdrawMemberVO saveWithdrawRequest(WithdrawMemberDTO request, CustomUserDetails user) {
 		validatePassword(request.getPassword(), user);
 		
 		WithdrawMemberVO wmv = WithdrawMemberVO.builder().userNo(user.getUserNo())
@@ -144,12 +155,21 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomAuthenticationException("비활성화된 계정입니다.");
 		}
 		
-		int insertRows = memberMapper.withdrawRequest(wmv);
+		int insertRows = memberMapper.saveWithdrawRequest(wmv);
 		if(insertRows == 0) {
 			throw new CustomServerException("회원탈퇴 요청에 실패했습니다.");
 		}
 		
-		int updateRows = memberMapper.withdrawMember(wmv);
+		return wmv;
+	}
+	
+	/**
+	 * 회원 상태 수정(논리 삭제)
+	 * @param wmv (회원탈퇴용 VO)
+	 */
+	private void updateMemberStatus(WithdrawMemberVO wmv) {
+		
+		int updateRows = memberMapper.updateMemberStatus(wmv);
 		if(updateRows == 0) {
 			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
 		}

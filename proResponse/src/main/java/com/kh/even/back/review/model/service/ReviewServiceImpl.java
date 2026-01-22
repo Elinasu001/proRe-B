@@ -27,6 +27,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final S3Service s3Service;
 
+
+
     // 리뷰 조회 (작성 후 상세 조회)
     @Override
     public ReviewDetailDTO getReview(Long estimateNo
@@ -38,6 +40,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewDetailDTO == null) {
             throw new ReviewException("해당 견적에 대한 리뷰가 존재하지 않습니다");
         }
+        
         return reviewDetailDTO;
     }
 
@@ -71,30 +74,26 @@ public class ReviewServiceImpl implements ReviewService {
         
         */
 
-        log.info("견적 기능 미구현 상태로 - 견적 검증 생략");
+        //log.info("견적 기능 미구현 상태로 - 견적 검증 생략");
 
         // 3. 이미 리뷰가 있는 지 확인
-        boolean exists = reviewMapper.existsReviewByEstimateNo(reviewDTO.getEstimateNo());
+        boolean exists = existsByEstimateNo(reviewDTO.getEstimateNo());
         if (exists) {
             throw new ReviewException("이미 리뷰가 작성된 견적서입니다");
         }
 
-        // 4. 태그 개수 검증
-        if(reviewDTO.getTagNos() != null && reviewDTO.getTagNos().size() > 4) {
-            throw new ReviewException("태그는 최대 4개까지 선택 가능합니다");
-        }
-
-        // 리뷰 등록
+        // 4. 리뷰 등록
         ReviewVO reviewVO = ReviewVO.builder()
                 .estimateNo(reviewDTO.getEstimateNo())
                 .content(reviewDTO.getContent())
                 .starScore(reviewDTO.getStarScore())
                 .status("Y")
                 .build();
+
         reviewMapper.saveReview(reviewVO);
+
         Long reviewNo = reviewVO.getReviewNo();
-        
-         // 태그 매핑 등록
+         // 5. 태그 매핑 등록
         if (reviewDTO.getTagNos() != null && !reviewDTO.getTagNos().isEmpty()) {
             for (Long tagNo : reviewDTO.getTagNos()) {
                 ReviewMapVO mapVO = ReviewMapVO.builder()
@@ -108,7 +107,9 @@ public class ReviewServiceImpl implements ReviewService {
             //log.info("태그 {}개 등록 완료 - reviewNo: {}", reviewDTO.getTagNos().size(), reviewNo);
         }
         
-        // 첨부파일 등록
+        // 6. AssertUtil.checkFilesSize(files); - pull 받고 다시 적용 필요
+
+        // 7. 첨부파일 등록
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
 
@@ -128,6 +129,15 @@ public class ReviewServiceImpl implements ReviewService {
         //log.info("리뷰 등록 완료 - reviewNo: {}, estimateNo: {}, 태그수: {}", reviewNo, reviewDTO.getEstimateNo(), reviewDTO.getTagNos() != null ? reviewDTO.getTagNos().size() : 0);
         
         return reviewVO;
+    }
+
+
+    /**
+    * 견적 번호로 리뷰 존재 여부 확인
+     */
+    @Override
+    public boolean existsByEstimateNo(Long estimateNo) {
+        return reviewMapper.existsByEstimateNo(estimateNo);
     }
     
 

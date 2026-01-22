@@ -58,6 +58,19 @@ public class GlobalExceptionHandler {
 		log.warn("리뷰 오류: {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
+
+	@ExceptionHandler(ReportException.class)
+	public ResponseEntity<ResponseData<Object>> handleReportException(ReportException e) {
+		log.warn("신고 오류: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
+	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
+
+	/* ===================== 공통 Runtime / Exception ===================== */
+	// @ExceptionHandler(IllegalStateException.class) 중복 제거: 아래 handleIllegalState만 남김
+
+	// @ExceptionHandler(UsernameNotFoundException.class) 중복 제거: 아래 handleUsernameNotFoundException만 남김
 	
 	@ExceptionHandler(AlreadyReportedException.class)
 	public ResponseEntity<ResponseData<Object>> handleAlreadyReportedException(AlreadyReportedException e) {
@@ -94,7 +107,7 @@ public class GlobalExceptionHandler {
 	    log.warn("입력값 검증 실패: {}", errors);
 	    return ResponseData.failure("입력값이 올바르지 않습니다: " + errors, HttpStatus.BAD_REQUEST);
 	}
-	// ✅ 추가: IllegalArgumentException
+	//  추가: IllegalArgumentException
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ResponseData<Object>> handleIllegalArgumentException(IllegalArgumentException e) {
 		log.warn("잘못된 인자: {}", e.getMessage());

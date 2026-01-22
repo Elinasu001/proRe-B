@@ -50,9 +50,14 @@
             FROM TB_MEMBER
             <where>
                 <if test="keyword != null and keyword != ''">
-                    AND (USER_NAME LIKE '%' || #{keyword} || '%'
-                     OR EMAIL LIKE '%' || #{keyword} || '%'
-                     OR NICKNAME LIKE '%' || #{keyword} || '%')
+                   <choose>
+    <when test="keyword matches '^[0-9]+$'">
+        AND USER_NO = #{keyword}
+    </when>
+    <otherwise>
+        AND NICKNAME LIKE '%' || #{keyword} || '%'
+    </otherwise>
+</choose>
                 </if>
             </where>
             ORDER BY CREATE_DATE DESC
@@ -66,9 +71,14 @@
     FROM TB_MEMBER
     <where>
         <if test="keyword != null and keyword != ''">
-            AND (USER_NAME LIKE '%' || #{keyword} || '%'
-             OR EMAIL LIKE '%' || #{keyword} || '%'
-             OR NICKNAME LIKE '%' || #{keyword} || '%')
+          <choose>
+    <when test="keyword matches '^[0-9]+$'">
+        AND USER_NO = #{keyword}
+    </when>
+    <otherwise>
+        AND NICKNAME LIKE '%' || #{keyword} || '%'
+    </otherwise>
+</choose>
         </if>
     </where>
 </select>

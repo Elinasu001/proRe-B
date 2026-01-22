@@ -5,7 +5,7 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.kh.even.back.exception.BusinessLogicException;
+import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.redis.RedisService;
 
@@ -44,7 +44,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 		// 재전송 쿨타임 체크
 		String cooldownKey = COOLDOWN_PREFIX + email;
 		if(redisService.hasKey(cooldownKey)) {
-			throw new BusinessLogicException("잠시 후 다시 시도해주세요.");
+			throw new EmailAuthFailException("30초 후에 다시 시도해주세요.");
 		}
 		
 		// 인증코드 생성(6자리)

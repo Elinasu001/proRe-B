@@ -161,4 +161,10 @@ public class GlobalExceptionHandler {
 		log.error("예상치 못한 오류 발생", e);
 		return ResponseData.failure("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	
+	@ExceptionHandler(EmailAuthFailException.class)
+	public ResponseEntity<ResponseData<Object>> EmailAuthFailException(EmailAuthFailException e) {
+		log.error("이메일 인증 오류 발생 : {}", e.getMessage());
+		return ResponseData.failure("이메일 인증 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
+	}
 }

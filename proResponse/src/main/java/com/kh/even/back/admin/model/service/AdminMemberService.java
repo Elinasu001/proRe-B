@@ -30,25 +30,25 @@ public interface AdminMemberService {
      * 
      * @param userNo 회원 번호
      * @param status 변경할 상태 ('Y' 활성, 'N' 탈퇴)
-     * @return 변경 성공 여부
+     * @throws ResourceNotFoundException 회원을 찾을 수 없는 경우
      */
-    boolean updateMemberStatus(Long userNo, char status);
+    void updateMemberStatus(Long userNo, String status);
 
     /**
      * 회원 징계 상태 변경
      * 
      * @param userNo 회원 번호
      * @param penaltyStatus 징계 상태 ('Y' 징계, 'N' 정상)
-     * @return 변경 성공 여부
+     * @throws ResourceNotFoundException 회원을 찾을 수 없는 경우
      */
-    boolean updatePenaltyStatus(Long userNo, char penaltyStatus);
+    void updatePenaltyStatus(Long userNo, String penaltyStatus);
 
     /**
      * 회원 권한 변경
      * 
      * @param userNo 회원 번호
      * @param userRole 변경할 권한 (ROLE_USER, ROLE_ADMIN 등)
-     * @return 변경 성공 여부
+     * @throws ResourceNotFoundException 회원을 찾을 수 없는 경우
      */
-    boolean updateUserRole(Long userNo, String userRole);
+    void updateUserRole(Long userNo, String userRole);
 }

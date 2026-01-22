@@ -8,34 +8,46 @@ import com.kh.even.back.member.model.vo.MemberVO;
 @Mapper
 public interface AdminMemberMapper {
 
-    // ✅ 파라미터 3개 - @Param 필요
+    /**
+     * 회원 목록 조회 (페이징 + 검색)
+     */
     List<MemberVO> getMemberList(
         @Param("startRow") int startRow,
         @Param("endRow") int endRow,
         @Param("keyword") String keyword
     );
 
-    // ✅ 파라미터 1개 - @Param 제거
-    int getMemberCount(String keyword);
+    /**
+     * 회원 전체 개수 (검색 포함)
+     */
+    int getMemberCount(String keyword);  // ✅ 단일 파라미터 - @Param 없음
 
-    // ✅ 파라미터 1개 - @Param 제거
-    MemberVO getMemberDetail(Long userNo);
+    /**
+     * 회원 상세 조회
+     */
+    MemberVO getMemberDetail(Long userNo);  // ✅ 단일 파라미터 - @Param 없음
 
-    // ✅ 파라미터 2개 - @Param 필요
+    /**
+     * 회원 상태 변경
+     */
     int updateMemberStatus(
-        @Param("userNo") Long userNo, 
-        @Param("status") char status
+        @Param("userNo") Long userNo,
+        @Param("status") String status  // ✅ char → String 변경
     );
 
-    // ✅ 파라미터 2개 - @Param 필요
+    /**
+     * 징계 상태 변경
+     */
     int updatePenaltyStatus(
-        @Param("userNo") Long userNo, 
+        @Param("userNo") Long userNo,
         @Param("penaltyStatus") String penaltyStatus
     );
 
-    // ✅ 파라미터 2개 - @Param 필요
+    /**
+     * 권한 변경
+     */
     int updateUserRole(
-        @Param("userNo") Long userNo, 
+        @Param("userNo") Long userNo,
         @Param("userRole") String userRole
     );
 }

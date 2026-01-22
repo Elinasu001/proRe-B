@@ -5,15 +5,17 @@ import java.util.List;
 import com.kh.even.back.util.PageInfo;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;  // ✅ 추가
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder  // ✅ 추가
 public class AdminMemberListResponse {
     private List<AdminMemberDTO> memberList;
-    private int totalCount;
-    private int currentPage;
     private PageInfo pageInfo;
 }

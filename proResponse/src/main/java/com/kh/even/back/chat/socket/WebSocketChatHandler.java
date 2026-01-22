@@ -27,7 +27,9 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
       private final ChatService chatService;
       // private final ObjectMapper objectMapper = new ObjectMapper();
 
-      // 웹소켓 연결 시 호출
+      /**
+       * 연결 성공 시 호출
+      */
       @Override
       public void afterConnectionEstablished(WebSocketSession session) throws Exception {
          log.info("웹소켓 연결 성공");
@@ -38,7 +40,9 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
          }
       }
 
-      // 메시지 수신 시 호출
+      /**
+       * 메시지 수신 시 호출
+      */
       @Override
       protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
          
@@ -60,7 +64,7 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
 
          // 닉네임 조회 후 sender 세팅
          String nickname = chatService.getNicknameByUserNo(chatMessage.getUserNo());
-         chatMessage.setSender(nickname);
+         chatMessage.setNickname(nickname);
 
          // 메시지 브로드캐스트
          TextMessage textMessage = new TextMessage(om.writeValueAsString(chatMessage));
@@ -72,7 +76,9 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
          }
       }
 
-      // 연결 해제 시 호출
+      /**
+       * 연결 종료 시 호출
+      */
       @Override
       public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
          log.info("웹소켓 연결 해제: {} / {}", session, status);
@@ -88,7 +94,9 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
          }
       }
 
-      // 세션에서 estimateNo 추출 (URI 경로 기반)
+      /**
+       * 세션에서 estimateNo 추출 (URI 경로 기반)
+      */
       private String getEstimateNo(WebSocketSession session) {
          String path = session.getUri().getPath();
          String[] part = path.split("/");

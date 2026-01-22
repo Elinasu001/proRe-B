@@ -18,7 +18,6 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.dto.ChatRoomDTO;
 import com.kh.even.back.chat.model.service.ChatService;
-import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.ResponseData;
 
@@ -31,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
 public class ChatController {
+        
 	
     private final ChatService chatService;
 
@@ -50,16 +50,13 @@ public class ChatController {
     /**
      * 견적 번호로 채팅방 번호 조회
      */
-    @PostMapping("{estimateNo}")
+    @PostMapping("/estimate/{estimateNo}")
     public ResponseEntity<ResponseData<Map<String, Object>>> createRoomSimple(
-            @PathVariable(name = "estimateNo") Long estimateNo) {
-        
+            @PathVariable("estimateNo") Long estimateNo) {
         Long roomNo = chatService.getRoomNoByEstimateNo(estimateNo);
-        
         Map<String, Object> data = new HashMap<>();
         data.put("estimateNo", estimateNo);
         data.put("roomNo", roomNo);
-        
         return ResponseData.ok(data, "채팅방을 조회했습니다.");
     }
 
@@ -68,9 +65,9 @@ public class ChatController {
      */
     @GetMapping("/{roomNo}/messages")
     public ResponseEntity<ResponseData<List<ChatMessageDTO>>> getMessages(
-            @PathVariable Long roomNo,
-            @RequestParam(required = false) Long messageNo,
-            @RequestParam(defaultValue = "50") int size,
+            @PathVariable("roomNo") Long roomNo,
+            @RequestParam(value = "messageNo", required = false) Long messageNo,
+            @RequestParam(value = "size", defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails user) {
         List<ChatMessageDTO> messages = chatService.getMessages(
             roomNo,
@@ -81,6 +78,29 @@ public class ChatController {
         return ResponseData.ok(messages, "메시지를 조회했습니다.");
     }
 
+
+    /**
+     * 기존 채팅방에 파일/텍스트 메시지 전송
+     */
+    @PostMapping("/{roomNo}")
+    public ResponseEntity<ResponseData<Void>> sendMessageWithFile(
+            @PathVariable("roomNo") Long roomNo,
+            @RequestParam("content") String content,
+            @RequestParam("type") String type,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal CustomUserDetails user) {
+
+        ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
+                .roomNo(roomNo)
+                .userNo(user.getUserNo())
+                .content(content)
+                .type(type)
+                .build();
+
+        chatService.saveMessage(chatMessageDTO, files);
+        return ResponseData.ok(null, "파일이 전송되었습니다.");
+    }
+    
 
 
 }

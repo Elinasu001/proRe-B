@@ -13,6 +13,17 @@
 		<result property="status" column="STATUS"/>
 		<result property="roomNo" column="ROOM_NO"/>
 		<result property="type" column="TYPE"/>
+		<result property="nickname" column="NICKNAME"/>
+		<collection property="attachments" ofType="ChatAttachmentDTO" resultMap="ChatAttachmentMap"/>
+	</resultMap>
+
+	<resultMap id="ChatAttachmentMap" type="ChatAttachmentDTO">
+		<id property="fileNo" column="FILE_NO"/>
+		<result property="messageNo" column="MESSAGE_NO"/>
+		<result property="filePath" column="FILE_PATH"/>
+		<result property="originName" column="ORIGIN_NAME"/>
+		<result property="uploadDate" column="UPLOAD_DATE"/>
+		<result property="status" column="STATUS"/>
 	</resultMap>
 	
 	<!-- 견적 요청 상태 조회 -->
@@ -63,6 +74,69 @@
 			, #{estimateNo}
 			  )
 	</insert>
+	
+	<!-- 여러 메시지의 첨부파일 일괄 조회 -->
+	<select id="getAttachmentsByMessageNos" parameterType="list" resultMap="ChatAttachmentMap">
+		SELECT
+			   FILE_NO
+			 , MESSAGE_NO
+			 , FILE_PATH
+			 , ORIGIN_NAME
+			 , UPLOAD_DATE
+			 , STATUS
+		  FROM
+			   TB_CHAT_ROOM_MESSAGE_ATTACHMENT
+		 WHERE
+			   MESSAGE_NO IN
+		   <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			  #{item}
+		   </foreach>
+	</select>
+
+	<!--커서 기반 페이징 -->
+	<select id="getMessagesByCursor" parameterType="map" resultMap="chatMessageResultMap">
+		SELECT
+			   m.MESSAGE_NO
+			 , m.USER_NO
+			 , m.CONTENT
+			 , m.SENT_DATE
+			 , m.STATUS
+			 , m.ROOM_NO
+			 , m.TYPE
+			 , u.NICKNAME
+		  FROM
+			   TB_CHAT_ROOM_MESSAGE m
+		  JOIN 
+		       TB_MEMBER u ON m.USER_NO = u.USER_NO
+		 WHERE
+			   ROOM_NO = #{roomNo}
+			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
+				AND MESSAGE_NO &lt; #{messageNo}
+			</if>
+		ORDER BY MESSAGE_NO DESC
+		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
+	</select>
+
+	<select id="getNicknameByUserNo" parameterType="long" resultType="string">
+		SELECT
+		       NICKNAME
+		  FROM
+		       TB_USER
+		 WHERE
+		       USER_NO = #{userNo}
+	</select>
+
+	<!-- 견적 번호로 채팅방 번호 조회 -->
+	<select id="getRoomNoByEstimateNo" resultType="Long">
+		SELECT 
+		       ROOM_NO
+		  FROM 
+		       TB_CHAT_ROOM
+		 WHERE 
+		       ESTIMATE_NO = #{estimateNo}
+		   AND
+		       STATUS = 'Y'
+	</select>
 
 	<!-- 채팅방 사용자 생성 -->
 	<insert id="createRoomUser" parameterType="ChatRoomUserVO">
@@ -109,9 +183,9 @@
 	
 	<!-- 채팅 첨부파일 저장 -->
 	<insert id="saveChatAttachment" parameterType="ChatAttachmentVO">
-		<selectKey keyProperty="attachmentNo" resultType="Long" order="AFTER">
-            SELECT SEQ_CHAT_ATTACHMENT.CURRVAL FROM DUAL
-        </selectKey>
+		<selectKey keyProperty="fileNo" resultType="long" order="BEFORE">
+			SELECT SEQ_CHAT_ROOM_MESSAGE_ATTACHMENT.NEXTVAL FROM DUAL
+		</selectKey>
 		INSERT
 		  INTO
 		       TB_CHAT_ROOM_MESSAGE_ATTACHMENT
@@ -134,46 +208,5 @@
 			 )
 	</insert>
 
-	<!--커서 기반 페이징 -->
-	<select id="getMessagesByCursor" parameterType="map" resultMap="chatMessageResultMap">
-		SELECT
-			   MESSAGE_NO
-			 , USER_NO
-			 , CONTENT
-			 , SENT_DATE
-			 , STATUS
-			 , ROOM_NO
-			 , TYPE
-		  FROM
-			   TB_CHAT_ROOM_MESSAGE
-		 WHERE
-			   ROOM_NO = #{roomNo}
-			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
-				AND MESSAGE_NO &lt; #{messageNo}
-			</if>
-		ORDER BY MESSAGE_NO DESC
-		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
-	</select>
-
-	<select id="getNicknameByUserNo" parameterType="long" resultType="string">
-		SELECT
-		       NICKNAME
-		  FROM
-		       TB_USER
-		 WHERE
-		       USER_NO = #{userNo}
-	</select>
-
-	<!-- 견적 번호로 채팅방 번호 조회 -->
-	<select id="getRoomNoByEstimateNo" resultType="Long">
-		SELECT 
-		       ROOM_NO
-		  FROM 
-		       TB_CHAT_ROOM
-		 WHERE 
-		       ESTIMATE_NO = #{estimateNo}
-		   AND
-		       STATUS = 'Y'
-	</select>
-
+	
 </mapper>

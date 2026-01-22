@@ -2,6 +2,9 @@
 package com.kh.even.back.chat.model.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.chat.model.dao.ChatMapper;
+import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.dto.ChatRoomDTO;
 import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
@@ -81,8 +85,40 @@ public class ChatServiceImpl implements ChatService {
 
         // 5. 첨부파일 저장
         saveAttachments(files, messageVo.getMessageNo());
-
+        
         return roomVo;
+    }
+
+    /**
+     *  견적 상태 검증
+     */
+    private void validateEstimateStatus(Long estimateNo) {
+        String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
+        String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
+
+        if (!"MATCHED".equals(requestStatus) || !"ACCEPTED".equals(responseStatus)) {
+            throw new ChatException("채팅방 생성 조건이 충족되지 않았습니다.");
+        }
+    }
+
+    /**
+     * 첨부파일 저장
+     */
+    private void saveAttachments(List<MultipartFile> files, Long messageNo) {
+        if (files == null || files.isEmpty()) return;
+        
+        for (MultipartFile file : files) {
+            String filePath = s3Service.store(file, "chat");
+            ChatAttachmentVO attachmentVo = ChatAttachmentVO.builder()
+                .messageNo(messageNo)
+                .originName(file.getOriginalFilename())
+                .filePath(filePath)
+                .uploadDate(LocalDateTime.now())
+                .status("Y")
+                .build();
+            int attachResult = chatMapper.saveChatAttachment(attachmentVo);
+            ChatValidator.validateDbResult(attachResult, "첨부파일 저장에 실패했습니다.");
+        }
     }
 
 
@@ -118,22 +154,22 @@ public class ChatServiceImpl implements ChatService {
         return messageVo;
     }
 
- 
-    /**
-     * 견적 상태 검증
-     */
-    private void validateEstimateStatus(Long estimateNo) {
-        String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
-        String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
 
-        if (!"MATCHED".equals(requestStatus) || !"ACCEPTED".equals(responseStatus)) {
-            throw new ChatException("채팅방 생성 조건이 충족되지 않았습니다.");
-        }
+    
+    /**
+     * 타입별 에러 메시지
+     */
+    private String getFailMessage(String type) {
+        return switch (type) {
+            case "FILE" -> "파일 메시지 저장에 실패했습니다.";
+            case "PAYMENT" -> "결제 메시지 저장에 실패했습니다.";
+            default -> "메시지 저장에 실패했습니다.";
+        };
     }
 
 
     /**
-     * 공통: 메시지 VO 빌더
+     * 메시지 VO 빌더
      */
     private ChatMessageVO buildMessageVO(ChatMessageDTO chatMessageDto) {
         return ChatMessageVO.builder()
@@ -148,46 +184,12 @@ public class ChatServiceImpl implements ChatService {
 
 
     /**
-     * 공통: 메시지 저장 및 검증
+     * 메시지 저장 및 검증
      */
     private void saveMessageAndValidate(ChatMessageVO messageVo, String failMsg) {
         int result = chatMapper.saveMessage(messageVo);
         ChatValidator.validateDbResult(result, failMsg);
     }
-
-
-    /**
-     * 공통: 첨부파일 저장
-     */
-    private void saveAttachments(List<MultipartFile> files, Long messageNo) {
-        if (files == null || files.isEmpty()) return;
-        
-        for (MultipartFile file : files) {
-            String filePath = s3Service.store(file, "chat");
-            ChatAttachmentVO attachmentVo = ChatAttachmentVO.builder()
-                .messageNo(messageNo)
-                .originName(file.getOriginalFilename())
-                .filePath(filePath)
-                .uploadDate(LocalDateTime.now())
-                .status("Y")
-                .build();
-            int attachResult = chatMapper.saveChatAttachment(attachmentVo);
-            ChatValidator.validateDbResult(attachResult, "첨부파일 저장에 실패했습니다.");
-        }
-    }
-
-
-    /**
-     * 타입별 에러 메시지
-     */
-    private String getFailMessage(String type) {
-        return switch (type) {
-            case "FILE" -> "파일 메시지 저장에 실패했습니다.";
-            case "PAYMENT" -> "결제 메시지 저장에 실패했습니다.";
-            default -> "메시지 저장에 실패했습니다.";
-        };
-    }
-
     
     /**
      * 채팅 메시지 조회 (커서 기반 페이징)
@@ -207,17 +209,46 @@ public class ChatServiceImpl implements ChatService {
         if (messages == null) {
             throw new ChatException("메시지 조회에 실패했습니다.");
         }
+
+        // 각 메시지의 userNo와 현재 userNo를 비교하여 isMine 값 세팅
+        // 그리고 FILE 타입 메시지의 messageNo 수집
+        List<Long> fileMessageNos = new ArrayList<>();
+        for (ChatMessageDTO msg : messages) {
+            msg.setMine(msg.getUserNo() != null && msg.getUserNo().equals(userNo));
+            if ("FILE".equals(msg.getType())) {
+                fileMessageNos.add(msg.getMessageNo());
+            }
+        }
+
+        // FILE 타입 메시지의 첨부파일 일괄 조회 및 매핑
+        if (!fileMessageNos.isEmpty()) {
+            List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(fileMessageNos);
+            // messageNo -> List<ChatAttachmentDTO> 맵핑
+            Map<Long, List<ChatAttachmentDTO>> attachMap = new HashMap<>();
+            for (ChatAttachmentDTO att : attachments) {
+                attachMap.computeIfAbsent(att.getMessageNo(), k -> new ArrayList<>()).add(att);
+            }
+            for (ChatMessageDTO msg : messages) {
+                if ("FILE".equals(msg.getType())) {
+                    msg.setAttachments(attachMap.getOrDefault(msg.getMessageNo(), Collections.emptyList()));
+                }
+            }
+        }
+        
+
         return messages;
     }
 
 
+
+
+    
     /**
      * 회원 번호로 닉네임 조회
      */
     @Override
     public String getNicknameByUserNo(Long userNo) {
         return "사용자" + userNo;
-        // TODO: 실제 닉네임 조회로 변경
         // return chatMapper.getNicknameByUserNo(userNo);
     }
 

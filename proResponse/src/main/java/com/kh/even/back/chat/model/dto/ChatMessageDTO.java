@@ -28,8 +28,8 @@ public class ChatMessageDTO {
 
 
     private boolean isMine;             // 내 메시지인지 (UI용)
-    private String sender;        // 보낸 사람 회원 번호 (UI용)
-    //private boolean read;                // 읽음 상태 (UI용)
+    private String nickname;            // 보낸 사람 회원 번호 (UI용)
+    //private boolean read;             // 읽음 상태 (UI용)
 
     private List<ChatAttachmentDTO> attachments; // 첨부파일 목록
 }

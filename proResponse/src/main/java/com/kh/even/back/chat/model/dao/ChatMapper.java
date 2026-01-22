@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
@@ -13,7 +14,6 @@ import com.kh.even.back.chat.model.vo.ChatRoomVO;
 
 @Mapper
 public interface ChatMapper {
-
 
     /**
      * 견적 상태 조회
@@ -59,5 +59,10 @@ public interface ChatMapper {
      * 커서 기반 메시지 목록 조회
      */
     List<ChatMessageDTO> getMessagesByCursor(Map<String, Object> params);
+
+    /**
+     * 여러 메시지의 첨부파일 일괄 조회
+     */
+    List<ChatAttachmentDTO> getAttachmentsByMessageNos(List<Long> messageNos);
 
 }

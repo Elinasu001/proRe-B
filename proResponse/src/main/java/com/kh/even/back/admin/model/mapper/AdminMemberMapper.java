@@ -32,7 +32,7 @@ public interface AdminMemberMapper {
      */
     int updateMemberStatus(
         @Param("userNo") Long userNo,
-        @Param("status") String status  // ✅ char → String 변경
+        @Param("status") char status  
     );
 
     /**
@@ -40,7 +40,7 @@ public interface AdminMemberMapper {
      */
     int updatePenaltyStatus(
         @Param("userNo") Long userNo,
-        @Param("penaltyStatus") String penaltyStatus
+        @Param("penaltyStatus") char penaltyStatus
     );
 
     /**

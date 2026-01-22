@@ -32,7 +32,7 @@ public interface AdminMemberService {
      * @param status 변경할 상태 ('Y' 활성, 'N' 탈퇴)
      * @throws ResourceNotFoundException 회원을 찾을 수 없는 경우
      */
-    void updateMemberStatus(Long userNo, String status);
+    void updateMemberStatus(Long userNo, char status);
 
     /**
      * 회원 징계 상태 변경
@@ -41,7 +41,7 @@ public interface AdminMemberService {
      * @param penaltyStatus 징계 상태 ('Y' 징계, 'N' 정상)
      * @throws ResourceNotFoundException 회원을 찾을 수 없는 경우
      */
-    void updatePenaltyStatus(Long userNo, String penaltyStatus);
+    void updatePenaltyStatus(Long userNo, char penaltyStatus);
 
     /**
      * 회원 권한 변경

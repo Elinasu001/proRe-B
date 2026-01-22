@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.even.back.expert.model.mapper.ExpertMapper">
+
+<resultMap id="expertDetailMap" type="ExpertDetailDTO">
+    <id property="expertNo" column="EXPERT_NO"/>
+
+    <result property="profileImg"  column="PROFILE_IMG"/>
+    <result property="nickname"    column="NICKNAME"/>
+    <result property="career"      column="CAREER"/>
+    <result property="startTime"   column="START_TIME"/>
+    <result property="endTime"     column="END_TIME"/>
+    <result property="starScore"   column="STAR_SCORE"/>
+    <result property="reviewCount" column="REVIEW_COUNT"/>
+    <result property="address"     column="ADDRESS"/>
+    <result property="content"     column="CONTENT"/>
+    <result property="userLiked"   column="USER_LIKED"/>
+
+    <collection property="images" ofType="string">
+        <result column="FILE_PATH"/>
+    </collection>
+</resultMap>
+	
+	<select id="getExpertDetails" parameterType="long" resultMap="expertDetailMap">
+	SELECT
+	       e.USER_NO                 AS EXPERT_NO
+	     , m.PROFILE_IMG             AS PROFILE_IMG
+	     , m.NICKNAME                AS NICKNAME
+	     , e.CAREER                  AS CAREER
+	     , e.START_TIME              AS START_TIME
+	     , e.END_TIME                AS END_TIME
+	     , NVL(es.AVG_STAR_SCORE, 0) AS STAR_SCORE
+	     , NVL(es.REVIEW_COUNT, 0)   AS REVIEW_COUNT
+	     , m.ADDRESS                 AS ADDRESS
+	     , e.CONTENT                 AS CONTENT
+	     , ea.FILE_PATH              AS FILE_PATH
+	     , CASE
+	           WHEN #{userNo} IS NULL THEN 0
+	           WHEN EXISTS (
+	               SELECT
+	                      1
+	                 FROM
+	                      TB_LIKE ul
+	                WHERE
+	                      ul.EXPERT_NO = e.USER_NO
+	                  AND ul.USER_NO   = #{userNo}
+	           ) THEN 1
+	           ELSE 0
+	       END                       AS USER_LIKED
+	  FROM
+	       TB_EXPERT e
+	  JOIN
+	       TB_MEMBER m
+	    ON m.USER_NO = e.USER_NO
+	  LEFT
+	  JOIN
+	       V_EXPERT_STATS es
+	    ON es.EXPERT_NO = e.USER_NO
+	  LEFT
+	  JOIN
+	       TB_EXPERTING_ATTACHMENT ea
+	    ON ea.USER_NO = e.USER_NO
+	 WHERE
+	       EXISTS (
+	           SELECT
+	                  1
+	             FROM
+	                  TB_EXPERT_SAVE_CATEGORY esc
+	            WHERE
+	                  esc.USER_NO = e.USER_NO
+	       )
+	   AND
+	       e.USER_NO = #{expertNo}
+	</select>	
+
+	
+</mapper>

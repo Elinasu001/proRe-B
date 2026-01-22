@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.kh.even.back.chat.model.dao.ChatMapper">
+	
+	<!-- 채팅방 ResultMap -->
+	<resultMap id="chatMessageResultMap" type="ChatMessageDTO">
+		<id property="messageNo" column="MESSAGE_NO"/>
+		<result property="userNo" column="USER_NO"/>
+		<result property="content" column="CONTENT"/>
+		<result property="sentDate" column="SENT_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="roomNo" column="ROOM_NO"/>
+		<result property="type" column="TYPE"/>
+	</resultMap>
+	
+	<!-- 견적 요청 상태 조회 -->
+	<select id="getRequestStatusByEstimateNo" parameterType="long" resultType="string">
+		SELECT
+		       STATUS
+		  FROM
+		       TB_ESTIMATE_REQUEST
+		 WHERE
+		       REQUEST_NO = (
+				SELECT
+				       REQUEST_NO
+				  FROM
+				       TB_ESTIMATE_RESPONSE
+			     WHERE
+				       ESTIMATE_NO = #{estimateNo}
+		       )
+	</select>
+
+	<!-- 견적 응답 상태 조회 -->
+	<select id="getResponseStatusByEstimateNo" parameterType="long" resultType="string">
+		SELECT
+		       STATUS
+		  FROM
+		       TB_ESTIMATE_RESPONSE
+		 WHERE
+		       ESTIMATE_NO = #{estimateNo}
+	</select>
+
+	<!-- 채팅방 생성 -->
+	<insert id="createRoom" parameterType="ChatRoomVO" useGeneratedKeys="true" keyProperty="roomNo">
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM
+			   (
+			   ROOM_NO
+			 , STATUS
+			 , CREATED_DATE
+			 , ESTIMATE_NO
+			   )
+		VALUES (
+			   SEQ_CHAT_ROOM.NEXTVAL
+			, #{status}
+			, #{createDate}
+			, #{estimateNo}
+			  )
+	</insert>
+
+	<!-- 채팅방 사용자 생성 -->
+	<insert id="createRoomUser" parameterType="ChatRoomUserVO">
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_USER
+			   (
+			   USER_NO
+			 , ROOM_NO
+			   )
+		VALUES (
+			   #{userNo}
+			 , #{roomNo}
+			   )
+	</insert>
+
+	<!-- 메시지 저장 -->
+	<insert id="saveMessage" parameterType="ChatMessageVO" useGeneratedKeys="true" keyProperty="messageNo">
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_MESSAGE
+			   (
+			   MESSAGE_NO
+			 , USER_NO
+			 , CONTENT
+			 , SENT_DATE
+			 , STATUS
+			 , ROOM_NO
+			 , TYPE
+			   )
+		VALUES (
+			   SEQ_CHAT_ROOM_MESSAGE.NEXTVAL
+			, #{userNo}
+			, #{content}
+			, #{sentDate}
+			, #{status}
+			, #{roomNo}
+			, #{type}
+			  )
+	</insert>
+	
+	<!-- 채팅 첨부파일 저장 -->
+	<insert id="saveChatAttachment" parameterType="ChatAttachmentVO">
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_MESSAGE_ATTACHMENT
+			   (
+			   FILE_NO
+			 , MESSAGE_NO
+			 , FILE_PATH
+			 , ORIGIN_NAME
+			 , UPLOAD_DATE
+			 , STATUS
+			   )
+		VALUES 
+		      (
+			  SEQ_MESSAGE_ATTACHMENT.NEXTVAL
+			, #{messageNo}
+			, #{filePath}
+			, #{originName}
+			, #{uploadDate}
+			, #{status}
+			 )
+	</insert>
+
+	<!--커서 기반 페이징 -->
+	<select id="getMessagesByCursor" parameterType="map" resultMap="chatMessageResultMap">
+		SELECT
+			   MESSAGE_NO
+			 , USER_NO
+			 , CONTENT
+			 , SENT_DATE
+			 , STATUS
+			 , ROOM_NO
+			 , TYPE
+		  FROM
+			   TB_CHAT_ROOM_MESSAGE
+		 WHERE
+			   ROOM_NO = #{roomNo}
+			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
+				AND MESSAGE_NO &lt; #{messageNo}
+			</if>
+		ORDER BY MESSAGE_NO DESC
+		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
+	</select>
+
+</mapper>

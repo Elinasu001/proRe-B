@@ -1,6 +1,6 @@
 package com.kh.even.back.chat.model.dto;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -18,13 +18,16 @@ public class ChatMessageDTO {
 
     private Long messageNo;				// 메시지 번호 (PK)
     private String content;				// 메시지 내용
-    private Long amount;                // 결제 메시지일 때만 값 (null 가능)
+    private LocalDateTime sentDate;		// 보낸 시간
+    private String status;				// 확인 여부
+    private Long userNo;				// 회원 번호 (FK)
+    private Long roomNo;				// 채팅방 번호 (FK)
+    private String type;                // 메시지 타입 (TEXT, FILE, PAYMENT, SYSTEM 등)
 
-    private Date sentDate;		// 보낸 시간
 
-    private Long senderUserNo;          // 보낸 사람
-    private boolean read;               // 읽음 여부 (status Y/N 변환)
     private boolean isMine;             // 내 메시지인지 (UI용)
+    //private String senderUserNo;        // 보낸 사람 회원 번호 (UI용)
+    //private boolean read;                // 읽음 상태 (UI용)
 
-    private List<ChatRoomMessageAttachmentDTO> attachments; // 첨부파일 목록
+    private List<ChatAttachmentDTO> attachments; // 첨부파일 목록
 }

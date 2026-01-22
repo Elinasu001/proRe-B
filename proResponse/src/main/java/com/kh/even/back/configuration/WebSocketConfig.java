@@ -12,18 +12,16 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSocket
 @RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketConfigurer{
+public class WebSocketConfig implements WebSocketConfigurer {
 
-	private final WebSocketHandler webSocketHandler;
-	
-	@Value("${instance.url}")
-	private String instance;
-	
+    private final WebSocketHandler webSocketHandler;
 
-	@Override
-	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(webSocketHandler, "/ws/chat/{roomNo}")
-		.setAllowedOrigins(instance);
-	}
-	
+    @Value("${instance.url}")
+    private String instance;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketHandler, "/ws/chat/{roomNo}")
+                .setAllowedOrigins(instance);
+    }
 }

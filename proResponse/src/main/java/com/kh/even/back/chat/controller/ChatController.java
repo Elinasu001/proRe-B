@@ -6,16 +6,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.dto.ChatRoomDTO;
 import com.kh.even.back.chat.model.service.ChatService;
+import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.ResponseData;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,13 +34,14 @@ public class ChatController {
     /**
      * 채팅방 기본 정보 조회
      */
-    @GetMapping("/{roomNo}")
-    public ResponseEntity<ResponseData<ChatRoomDTO>> getChatRoom(
-            @PathVariable Long roomNo,
+    @PostMapping
+    public ResponseEntity<ResponseData<ChatRoomVO>> createRoom(
+            @Valid ChatRoomDTO chatRoomDTO,
+            @Valid ChatMessageDTO chatMessageDTO,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal CustomUserDetails user) {
-        
-        ChatRoomDTO basicInfo = chatService.getChatRoom(roomNo, user.getUserNo());
-        return ResponseData.ok(basicInfo, "채팅방 기본 정보 조회 성공");
+        ChatRoomVO chatRoom = chatService.createRoom(chatRoomDTO, chatMessageDTO, files, user.getUserNo());
+        return ResponseData.ok(chatRoom, "채팅방이 생성되었습니다.");
     }
 
     /**

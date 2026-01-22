@@ -1,11 +1,15 @@
 
 package com.kh.even.back.chat.model.service;
 
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Component;
 
 import com.kh.even.back.chat.model.dto.ChatRoomDTO;
 import com.kh.even.back.exception.ChatException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Component
 public class ChatValidator {
 
     /**
@@ -26,33 +30,23 @@ public class ChatValidator {
     }
 
     /**
-     * 파일 유효성 검사
+     * DB 작업 결과 유효성 검사 (insert, update 등)
      */
-    public static void validateFile(MultipartFile file) {
-        // 1. 파일이 비어있는지 체크
-        if (file == null || file.isEmpty()) {
-            return; // 파일이 필수 옵션이 아니라면 그냥 리턴, 필수라면 예외 발생
+    public static void validateDbResult(int result, String errorMessage) {
+        if (result != 1) {
+            throw new ChatException(errorMessage);
         }
-
-        String filename = file.getOriginalFilename();
-        
-        // 2. 파일명 존재 여부
-        if (filename == null || filename.trim().isEmpty()) {
-            throw new ChatException("파일명이 올바르지 않습니다.");
-        }
-        
-        // 3. 확장자 추출 및 검사
-        int dotIndex = filename.lastIndexOf(".");
-        if (dotIndex == -1) {
-            throw new ChatException("확장자가 없는 파일입니다.");
-        }
-        
-        // String extension = filename.substring(dotIndex + 1).toLowerCase();
-
-        // if (!ALLOWED_EXTENSIONS.contains(extension)) {
-        //     throw new ChatException("허용되지 않는 파일 형식입니다. (허용: " + ALLOWED_EXTENSIONS + ")");
-        // }
     }
 
-
+    /**
+     * getMessages 파라미터 유효성 검사
+     */
+    public static void validateGetMessagesParams(Long roomNo, int size) {
+        if (roomNo == null) {
+            throw new ChatException("채팅방 번호가 없습니다.");
+        }
+        if (size <= 0) {
+            throw new ChatException("조회할 메시지 개수가 올바르지 않습니다.");
+        }
+    }
 }

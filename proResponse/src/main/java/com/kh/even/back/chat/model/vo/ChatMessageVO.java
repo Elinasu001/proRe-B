@@ -12,7 +12,7 @@ public class ChatMessageVO {
     private String content;				// 메시지 내용
     private LocalDateTime sentDate;		// 보낸 시간
     private String status;				// 확인 여부
-    private String type;
+    private String type;                // 메시지 타입 (TEXT, FILE, PAYMENT, SYSTEM 등)
     private Long userNo;				// 회원 번호 (FK)
     private Long roomNo;				// 채팅방 번호 (FK)
 }

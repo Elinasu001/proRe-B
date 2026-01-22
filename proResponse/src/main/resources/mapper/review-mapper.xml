@@ -238,6 +238,7 @@
     </collection>
 </resultMap>
 
+<!-- 전문가 리뷰 조회 -->
 <select id="getExpertReviews" resultMap="expertReviewMap">
     SELECT
         r.REVIEW_NO REVIEW_NO,
@@ -279,6 +280,7 @@
     ORDER BY r.CREATE_DATE DESC
 </select>
 	
+	<!-- 전문가 리뷰 갯수 조회 -->
 	<select id="getReviewsCountByExpertNo" parameterType="long">
 		SELECT 
 		       COUNT(*) 

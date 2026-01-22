@@ -4,6 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kh.even.back.expert.model.mapper.ExpertMapper">
 
+<!-- 전문가 조회 resultMap -->
 <resultMap id="expertDetailMap" type="ExpertDetailDTO">
     <id property="expertNo" column="EXPERT_NO"/>
 
@@ -23,6 +24,7 @@
     </collection>
 </resultMap>
 	
+	<!-- 전문가 디테일 조회 sql -->
 	<select id="getExpertDetails" parameterType="long" resultMap="expertDetailMap">
 	SELECT
 	       e.USER_NO                 AS EXPERT_NO

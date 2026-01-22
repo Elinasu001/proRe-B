@@ -23,34 +23,49 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WebSocketChatHandler extends TextWebSocketHandler {
     
-      private final Map<String, Set<WebSocketSession>> rooms = new ConcurrentHashMap<>();
+      private final Map<String, Set<WebSocketSession>> estimateRooms = new ConcurrentHashMap<>();
       private final ChatService chatService;
-      private final ObjectMapper objectMapper = new ObjectMapper();
+      // private final ObjectMapper objectMapper = new ObjectMapper();
 
       // 웹소켓 연결 시 호출
       @Override
       public void afterConnectionEstablished(WebSocketSession session) throws Exception {
          log.info("웹소켓 연결 성공");
          log.info("{}", session);
-         String roomId = getRoomId(session);
-         if (roomId != null) {
-            rooms.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet()).add(session);
+         String estimateNo = getEstimateNo(session);
+         if (estimateNo != null) {
+            estimateRooms.computeIfAbsent(estimateNo, k -> ConcurrentHashMap.newKeySet()).add(session);
          }
       }
 
       // 메시지 수신 시 호출
       @Override
       protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+         
          log.info("메시지 수신: {} / {}", session, message);
-         String roomId = getRoomId(session);
-         if (roomId == null) return;
 
-         ChatMessageDTO chatMessage = objectMapper.readValue(message.getPayload(), ChatMessageDTO.class);
-         // DB 저장 (Service 사용)
+         ObjectMapper om = new ObjectMapper();
+
+         String estimateNo = getEstimateNo(session);
+         if (estimateNo == null) return;
+
+         ChatMessageDTO chatMessage = om.readValue(message.getPayload(), ChatMessageDTO.class);
+         
+         // estimateNo로 roomNo 조회 후 설정
+         Long roomNo = chatService.getRoomNoByEstimateNo(Long.parseLong(estimateNo));
+         chatMessage.setRoomNo(roomNo);
+
+         // DB 저장
          chatService.saveMessage(chatMessage, null);
 
-         TextMessage textMessage = new TextMessage(objectMapper.writeValueAsString(chatMessage));
-         for (WebSocketSession user : rooms.getOrDefault(roomId, Collections.emptySet())) {
+         // 닉네임 조회 후 sender 세팅
+         String nickname = chatService.getNicknameByUserNo(chatMessage.getUserNo());
+         chatMessage.setSender(nickname);
+
+         // 메시지 브로드캐스트
+         TextMessage textMessage = new TextMessage(om.writeValueAsString(chatMessage));
+                                                   // get을 했더니 Null이면 Default를 돌림. 이 경우엔 빈 Set을 돌리게 끔 만들어서 NullpointerException을 방지
+         for (WebSocketSession user : estimateRooms.getOrDefault(estimateNo, Collections.emptySet())) {
             if (user != null && user.isOpen()) {
                user.sendMessage(textMessage);
             }
@@ -61,26 +76,24 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
       @Override
       public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
          log.info("웹소켓 연결 해제: {} / {}", session, status);
-         String roomId = getRoomId(session);
-         if (roomId != null) {
-            Set<WebSocketSession> sessions = rooms.get(roomId);
+         String estimateNo = getEstimateNo(session);
+         if (estimateNo != null) {
+            Set<WebSocketSession> sessions = estimateRooms.get(estimateNo);
             if (sessions != null) {
                sessions.remove(session);
                if (sessions.isEmpty()) {
-                  rooms.remove(roomId);
+                  estimateRooms.remove(estimateNo);
                }
             }
          }
       }
 
-      // 세션에서 roomId 추출 (URI 경로 기반)
-      private String getRoomId(WebSocketSession session) {
+      // 세션에서 estimateNo 추출 (URI 경로 기반)
+      private String getEstimateNo(WebSocketSession session) {
          String path = session.getUri().getPath();
          String[] part = path.split("/");
-         if (part.length > 3) {
-            return part[3];
-         }
-         return null;
+         String estimateNo = part[3];
+         return estimateNo;
       }
 
 }

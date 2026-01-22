@@ -2,7 +2,6 @@ package com.kh.even.back.common.validator;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.tika.Tika;

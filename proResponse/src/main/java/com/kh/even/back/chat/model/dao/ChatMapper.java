@@ -28,24 +28,32 @@ public interface ChatMapper {
     /**
      * 채팅방 생성
      */
-	int createRoom(ChatRoomVO roomVO);
+	int createRoom(ChatRoomVO roomVo);
 
     /**
      * 채팅방 사용자 저장
      */
-	int createRoomUser(ChatRoomUserVO roomUserVO);
+	int createRoomUser(ChatRoomUserVO roomUserVo);
 
     /**
      * 메시지 저장
      */
-	int saveMessage(ChatMessageVO messageVO);
+	int saveMessage(ChatMessageVO messageVo);
 
     /**
      * 첨부파일 저장
      */
-	int saveChatAttachment(ChatAttachmentVO attachmentVO);
+	int saveChatAttachment(ChatAttachmentVO attachmentVo);
 
+    /**
+     * 회원 번호로 닉네임 조회
+     */
+    String getNicknameByUserNo(Long userNo);
 
+    /**
+     * 견적 번호로 채팅방 번호 조회
+     */
+    Long getRoomNoByEstimateNo(Long estimateNo);
 
     /**
      * 커서 기반 메시지 목록 조회

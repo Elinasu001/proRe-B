@@ -44,6 +44,9 @@
 
 	<!-- 채팅방 생성 -->
 	<insert id="createRoom" parameterType="ChatRoomVO" useGeneratedKeys="true" keyProperty="roomNo">
+		<selectKey keyProperty="roomNo" resultType="Long" order="AFTER">
+            SELECT SEQ_CHAT_ROOM.CURRVAL FROM DUAL
+        </selectKey>
 		INSERT
 		  INTO
 		       TB_CHAT_ROOM
@@ -78,6 +81,9 @@
 
 	<!-- 메시지 저장 -->
 	<insert id="saveMessage" parameterType="ChatMessageVO" useGeneratedKeys="true" keyProperty="messageNo">
+	    <selectKey keyProperty="messageNo" resultType="Long" order="AFTER">
+			SELECT SEQ_CHAT_ROOM_MESSAGE.CURRVAL FROM DUAL
+		</selectKey>
 		INSERT
 		  INTO
 		       TB_CHAT_ROOM_MESSAGE
@@ -103,6 +109,9 @@
 	
 	<!-- 채팅 첨부파일 저장 -->
 	<insert id="saveChatAttachment" parameterType="ChatAttachmentVO">
+		<selectKey keyProperty="attachmentNo" resultType="Long" order="AFTER">
+            SELECT SEQ_CHAT_ATTACHMENT.CURRVAL FROM DUAL
+        </selectKey>
 		INSERT
 		  INTO
 		       TB_CHAT_ROOM_MESSAGE_ATTACHMENT
@@ -144,6 +153,27 @@
 			</if>
 		ORDER BY MESSAGE_NO DESC
 		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
+	</select>
+
+	<select id="getNicknameByUserNo" parameterType="long" resultType="string">
+		SELECT
+		       NICKNAME
+		  FROM
+		       TB_USER
+		 WHERE
+		       USER_NO = #{userNo}
+	</select>
+
+	<!-- 견적 번호로 채팅방 번호 조회 -->
+	<select id="getRoomNoByEstimateNo" resultType="Long">
+		SELECT 
+		       ROOM_NO
+		  FROM 
+		       TB_CHAT_ROOM
+		 WHERE 
+		       ESTIMATE_NO = #{estimateNo}
+		   AND
+		       STATUS = 'Y'
 	</select>
 
 </mapper>

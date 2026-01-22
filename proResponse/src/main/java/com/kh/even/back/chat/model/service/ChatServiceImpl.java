@@ -68,7 +68,7 @@ public class ChatServiceImpl implements ChatService {
         ChatValidator.validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
 
         // 5. 메시지 저장
-        ChatMessageVO messageVO = ChatMessageVO.builder()
+        ChatMessageVO messageVo = ChatMessageVO.builder()
             .roomNo(roomVo.getRoomNo())
             .userNo(userNo)
             .content(chatMessageDto.getContent())
@@ -76,66 +76,65 @@ public class ChatServiceImpl implements ChatService {
             .sentDate(LocalDateTime.now())
             .type(chatMessageDto.getType())
             .build();
-        int messageResult = chatMapper.saveMessage(messageVO);
+        int messageResult = chatMapper.saveMessage(messageVo);
         ChatValidator.validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
 
-        // 저장된 메시지의 PK get 하기
-        Long messageNo = messageVO.getMessageNo();
-
-        // 5. 첨부파일 등록
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                String filePath = s3Service.store(file, "chat");
-                ChatAttachmentVO attachmentVo = ChatAttachmentVO.builder()
-                        .messageNo(messageNo)
-                        .originName(file.getOriginalFilename())
-                        .filePath(filePath)
-                        .uploadDate(LocalDateTime.now())
-                        .status("Y")
-                        .build();
-                int attachResult = chatMapper.saveChatAttachment(attachmentVo);
-                ChatValidator.validateDbResult(attachResult, "첨부파일 저장에 실패했습니다.");
-            }
-        }
+        // 5. 첨부파일 저장
+        saveAttachments(files, messageVo.getMessageNo());
 
         return roomVo;
     }
 
+
+    /**
+     *  메시지 저장
+     * - TEXT: 일반 텍스트 메시지 (첨부파일 X)
+     * - FILE: 파일 전송 메시지 (첨부파일 필수)
+     * - PAYMENT: 결제 메시지 (첨부파일 X)
+     */
+    @Override
+    @Transactional
+    public ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, List<MultipartFile> files) {
+        
+        String type = chatMessageDto.getType();
+        
+        // FILE 타입 검증
+        if ("FILE".equals(type)) {
+            if (files == null || files.isEmpty()) {
+                throw new ChatException("파일 타입 메시지는 첨부파일이 필수입니다.");
+            }
+        }
+        
+        // 메시지 저장
+        String failMsg = getFailMessage(type);
+        ChatMessageVO messageVo = buildMessageVO(chatMessageDto);
+        saveMessageAndValidate(messageVo, failMsg);
+        
+        // FILE 타입이면 첨부파일 저장
+        if ("FILE".equals(type)) {
+            saveAttachments(files, messageVo.getMessageNo());
+        }
+        
+        return messageVo;
+    }
+
+ 
     /**
      * 견적 상태 검증
      */
     private void validateEstimateStatus(Long estimateNo) {
-        // 견적 요청 상태 조회 (TB_ESTIMATE_REQUEST)
         String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
-        // 견적 응답 상태 조회 (TB_ESTIMATE_RESPONSE)
         String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
 
-        // 두 조건 모두 충족해야 채팅방 생성 가능
         if (!"MATCHED".equals(requestStatus) || !"ACCEPTED".equals(responseStatus)) {
             throw new ChatException("채팅방 생성 조건이 충족되지 않았습니다.");
         }
     }
 
 
-    @Override
-    @Transactional
-    public ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, List<MultipartFile> files) {
-        String type = chatMessageDto.getType();
-        String failMsg = "메시지 저장에 실패했습니다.";
-        if ("FILE".equals(type)) failMsg = "파일 메시지 저장에 실패했습니다.";
-        else if ("PAYMENT".equals(type)) failMsg = "결제 메시지 저장에 실패했습니다.";
-
-        ChatMessageVO messageVO = buildMessageVO(chatMessageDto);
-        saveMessageAndValidate(messageVO, failMsg);
-
-        if ("FILE".equals(type)) {
-            saveAttachments(files, messageVO.getMessageNo());
-        }
-        // 결제 메시지라면 결제 관련 추가 처리 필요시 여기에
-        return messageVO;
-    }
-
-    // 공통 메시지 VO 빌더
+    /**
+     * 공통: 메시지 VO 빌더
+     */
     private ChatMessageVO buildMessageVO(ChatMessageDTO chatMessageDto) {
         return ChatMessageVO.builder()
             .roomNo(chatMessageDto.getRoomNo())
@@ -147,27 +146,46 @@ public class ChatServiceImpl implements ChatService {
             .build();
     }
 
-    // 공통 메시지 저장 및 검증
-    private void saveMessageAndValidate(ChatMessageVO messageVO, String failMsg) {
-        int result = chatMapper.saveMessage(messageVO);
+
+    /**
+     * 공통: 메시지 저장 및 검증
+     */
+    private void saveMessageAndValidate(ChatMessageVO messageVo, String failMsg) {
+        int result = chatMapper.saveMessage(messageVo);
         ChatValidator.validateDbResult(result, failMsg);
     }
 
-    // 첨부파일 저장 공통 메서드
+
+    /**
+     * 공통: 첨부파일 저장
+     */
     private void saveAttachments(List<MultipartFile> files, Long messageNo) {
         if (files == null || files.isEmpty()) return;
+        
         for (MultipartFile file : files) {
             String filePath = s3Service.store(file, "chat");
-            ChatAttachmentVO attachmentVO = ChatAttachmentVO.builder()
-                    .messageNo(messageNo)
-                    .originName(file.getOriginalFilename())
-                    .filePath(filePath)
-                    .uploadDate(LocalDateTime.now())
-                    .status("Y")
-                    .build();
-            int attachResult = chatMapper.saveChatAttachment(attachmentVO);
+            ChatAttachmentVO attachmentVo = ChatAttachmentVO.builder()
+                .messageNo(messageNo)
+                .originName(file.getOriginalFilename())
+                .filePath(filePath)
+                .uploadDate(LocalDateTime.now())
+                .status("Y")
+                .build();
+            int attachResult = chatMapper.saveChatAttachment(attachmentVo);
             ChatValidator.validateDbResult(attachResult, "첨부파일 저장에 실패했습니다.");
         }
+    }
+
+
+    /**
+     * 타입별 에러 메시지
+     */
+    private String getFailMessage(String type) {
+        return switch (type) {
+            case "FILE" -> "파일 메시지 저장에 실패했습니다.";
+            case "PAYMENT" -> "결제 메시지 저장에 실패했습니다.";
+            default -> "메시지 저장에 실패했습니다.";
+        };
     }
 
     
@@ -177,7 +195,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChatMessageDTO> getMessages(Long roomNo, Long userNo, Long messageNo, int size) {
         if (size <= 0) {
-            size = 50; // 기본값 지정
+            size = 50;
         }
         ChatValidator.validateGetMessagesParams(roomNo, size);
 
@@ -192,4 +210,27 @@ public class ChatServiceImpl implements ChatService {
         return messages;
     }
 
+
+    /**
+     * 회원 번호로 닉네임 조회
+     */
+    @Override
+    public String getNicknameByUserNo(Long userNo) {
+        return "사용자" + userNo;
+        // TODO: 실제 닉네임 조회로 변경
+        // return chatMapper.getNicknameByUserNo(userNo);
+    }
+
+
+    /**
+     * 견적 번호로 채팅방 번호 조회
+     */
+    @Override
+    public Long getRoomNoByEstimateNo(Long estimateNo) {
+        Long roomNo = chatMapper.getRoomNoByEstimateNo(estimateNo);
+        if (roomNo == null) {
+            throw new ChatException("해당 견적의 채팅방을 찾을 수 없습니다.");
+        }
+        return roomNo;
+    }
 }

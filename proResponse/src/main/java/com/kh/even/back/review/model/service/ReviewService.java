@@ -2,11 +2,14 @@ package com.kh.even.back.review.model.service;
 
 import java.util.List;
 
-import com.kh.even.back.review.model.dto.ReviewDetailDTO;
-import com.kh.even.back.review.model.dto.ReviewDTO;
-import com.kh.even.back.review.model.dto.ReviewTagDTO;
-import com.kh.even.back.review.model.vo.ReviewVO;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.kh.even.back.review.model.dto.ReviewDTO;
+import com.kh.even.back.review.model.dto.ReviewDetailDTO;
+import com.kh.even.back.review.model.dto.ReviewTagDTO;
+import com.kh.even.back.review.model.vo.ExpertReviewVO;
+import com.kh.even.back.review.model.vo.ReviewVO;
+import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface ReviewService {
 
@@ -50,4 +53,13 @@ public interface ReviewService {
     ReviewVO deleteByEstimateNo(Long estimateNo
         //, Long userNo
     );
+    
+    /**
+     * 
+     * @param expertNo 조회할 전문가 번호
+     * @param pageNo 페이지 넘버
+     * @return 조회한 리뷰들
+     */
+    PageResponse<ExpertReviewVO> getExpertReviews(Long expertNo,int pageNo);
+    
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @ToString
 public class ChatMessageDTO {
 
@@ -26,7 +28,7 @@ public class ChatMessageDTO {
 
 
     private boolean isMine;             // 내 메시지인지 (UI용)
-    //private String senderUserNo;        // 보낸 사람 회원 번호 (UI용)
+    private String sender;        // 보낸 사람 회원 번호 (UI용)
     //private boolean read;                // 읽음 상태 (UI용)
 
     private List<ChatAttachmentDTO> attachments; // 첨부파일 목록

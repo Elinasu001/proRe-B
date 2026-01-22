@@ -12,19 +12,31 @@ import com.kh.even.back.chat.model.vo.ChatRoomVO;
 
 public interface ChatService {
 
-    /**
-     * 채팅방 생성
-     */
-    ChatRoomVO createRoom(ChatRoomDTO chatRoomDTO, ChatMessageDTO chatMessageDTO, List<MultipartFile> files, Long userNo);
 
     /**
-     * 메시지 목록 조회 (페이징)
+     * 채팅방 생성 및 초기 메시지 저장
      */
-    List<ChatMessageDTO> getMessages(Long roomNo, Long userNo, Long lastMessageNo, int size);
+    ChatRoomVO createRoom(ChatRoomDTO chatRoomDto, ChatMessageDTO chatMessageDto, List<MultipartFile> files, Long userNo);
 
     /**
-     * 채팅 메시지 저장 (웹소켓/파일용)
+     * 채팅 메시지 조회 (커서 기반 페이징)
      */
-    ChatMessageVO saveMessage(ChatMessageDTO chatMessageDTO, List<MultipartFile> files);
+    List<ChatMessageDTO> getMessages(Long roomNo, Long userNo, Long messageNo, int size);
+
+    /**
+     * 메시지 저장 (TEXT/FILE/PAYMENT)
+     */
+    ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, List<MultipartFile> files);
+
+    /**
+     * 회원 번호로 닉네임 조회
+     */
+    String getNicknameByUserNo(Long userNo);
+
+    /**
+     * 견적 번호로 채팅방 번호 조회
+     */
+    Long getRoomNoByEstimateNo(Long estimateNo);
+
 
 }

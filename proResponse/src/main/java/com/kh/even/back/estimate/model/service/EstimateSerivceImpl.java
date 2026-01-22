@@ -13,6 +13,7 @@ import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
+import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
@@ -63,7 +64,7 @@ public class EstimateSerivceImpl implements EstimateService {
 		EstimateRequestEntity entity = EstimateRequestEntity.builder().requestDate(dto.getRequestDate())
 				.requestType(dto.getRequestType()).requestService(dto.getRequestService()).content(dto.getContent())
 				.expertNo(dto.getExpertNo()).categoryDetailNo(dto.getCategoryDetailNo())
-				.userNo(customUserDetails.getUserNo()).status("REQUESTED").build();
+				.userNo(customUserDetails.getUserNo()).status(EstimateRequestStatus.REQUESTED).build();
 
 		return entity;
 	}

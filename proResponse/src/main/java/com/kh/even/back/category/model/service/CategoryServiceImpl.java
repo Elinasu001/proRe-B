@@ -13,8 +13,6 @@ import com.kh.even.back.category.model.entity.CategoryEntity;
 import com.kh.even.back.category.model.mapper.CategoryMapper;
 import com.kh.even.back.category.model.repository.CategoryRepository;
 import com.kh.even.back.common.validator.AssertUtil;
-import com.kh.even.back.expert.model.dto.ExpertDTO;
-import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
 import com.kh.even.back.util.model.dto.PageResponse;

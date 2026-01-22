@@ -12,6 +12,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
+import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.exception.EntityNotFoundException;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
@@ -88,7 +89,7 @@ public class ExpertServiceImpl implements ExpertService {
 				.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
 
 		// JPA의 dirtyCheck
-		requestEntity.changeStatus("QUOTED");
+		requestEntity.changeStatus(EstimateRequestStatus.QUOTED);
 
 		fileUploadService.uploadFiles(files, "expertEstimate", entity.getEstimateNo(),
 				mapper::saveExpertEstimateAttachment);

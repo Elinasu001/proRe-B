@@ -1,8 +1,13 @@
 package com.kh.even.back.estimate.model.Entity;
 
 import java.sql.Date;
+
+import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,10 +55,11 @@ public class EstimateRequestEntity {
 	@Column(name = "CATEGORY_DETAIL_NO", nullable = false)
 	private Long categoryDetailNo;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "STATUS", nullable = false)
-	private String status;
+	private EstimateRequestStatus  status;
 	
-	public void changeStatus(String status) {
+	public void changeStatus(EstimateRequestStatus  status) {
 		this.status = status;
 	}
 	

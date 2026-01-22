@@ -16,8 +16,4 @@ public interface MemberService {
 	
 	void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user);
 	
-	void sendCodeToEmail(String toEmail);
-	
-	EmailVerificationResult verifiedCode(String email, String authCode);
-	
 }

@@ -64,23 +64,4 @@ public class MemberController {
 		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
 	}
 	
-	
-	
-	/*
-	@PostMapping("/emails/verification-requests")
-	public ResponseEntity<ResponseData<Void>> sendMessage(@RequestParam("email") @NotBlank @Email String email) {
-		memberService.sendCodeToEmail(email);
-		
-		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
-	}
-	
-	@GetMapping("/emails/verifications")
-	public ResponseEntity<ResponseData<EmailVerificationResult>> verificationEmail(@RequestParam("email") @NotBlank @Email String email,
-															   @RequestParam("code") String authCode) {
-		EmailVerificationResult response = memberService.verifiedCode(email, authCode);
-		
-		return ResponseData.ok(response, "성공");
-	}
-	*/
-	
 }

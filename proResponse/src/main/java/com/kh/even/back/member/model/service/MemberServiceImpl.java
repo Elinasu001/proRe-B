@@ -1,24 +1,15 @@
 package com.kh.even.back.member.model.service;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Duration;
-import java.util.Random;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-import com.kh.even.back.exception.BusinessLogicException;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.mail.MailService;
-import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
@@ -39,13 +30,8 @@ public class MemberServiceImpl implements MemberService {
 	private final MemberMapper memberMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final S3Service s3Service;
-	private static final String AUTH_CODE_PREFIX = "AuthCode";
-	private final MailService mailService;
 	private final RedisService redisService;
-	
-	@Value("${spring.mail.auth-code-expiration-millis}")
-	private long authCodeExpirationMillis;
-	
+		
 	/**
 	 * 회원가입
 	 */
@@ -54,8 +40,12 @@ public class MemberServiceImpl implements MemberService {
 	public void signUp(MemberSignUpDTO member, MultipartFile file) {
 		String fileUrl = null;
 		
-		// 유효성 검사 => Validator에게 위임
-		
+		// 이메일 인증 완료 시에만 회원가입이 가능하게 한다.
+		String verifiedKey = "email:verified:" + member.getEmail();
+	    if(!redisService.hasKey(verifiedKey)) {
+	        throw new CustomAuthenticationException("이메일 인증이 필요합니다.");
+	    }
+	    
 		// 이메일 중복 검사 (프론트 + 백엔드)
 		checkDuplicatedEmail(member.getEmail());
 		
@@ -97,6 +87,9 @@ public class MemberServiceImpl implements MemberService {
 			if (locationResult != 1) {
 				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
 			}
+			
+			// 가입 성공 후 이메일 인증상태 삭제(1회 인증으로 중복가입 방지)
+			redisService.deleteValues("email:verified:" + member.getEmail());
 	}
 	
 	/**
@@ -183,46 +176,6 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
 		}
 		
-	}
-	
-	@Override
-	public void sendCodeToEmail(String toEmail) {
-		String title = "Join with us 이메일 인증번호";
-		String authCode = this.createCode();
-		mailService.sendEmail(toEmail, title, authCode);
-		// 이메일 인증 요청 시 인증번호 redis에 저장 ( key = "AuthCode " + Email + value = AuthCode )
-		redisService.setValues(AUTH_CODE_PREFIX + toEmail, authCode, Duration.ofMillis(this.authCodeExpirationMillis));
-	}
-	
-	private String createCode() {
-		
-		int lenth = 6;
-		
-		try {
-			Random random = SecureRandom.getInstanceStrong();
-			StringBuilder builder = new StringBuilder();
-			for(int i = 0; i < lenth; i++) {
-				builder.append(random.nextInt(10));
-			}
-			return builder.toString();
-		} catch(NoSuchAlgorithmException e) {
-			throw new BusinessLogicException("이메일 인증에 실패했습니다.");
-		}
-	}
-	
-	@Override
-	public EmailVerificationResult verifiedCode(String email, String authCode) {
-	    String key = AUTH_CODE_PREFIX + email;
-	    String redisAuthCode = redisService.getValues(key);
-
-	    boolean authResult =
-	            redisService.checkExistsValue(redisAuthCode) && redisAuthCode.equals(authCode);
-
-	    if (authResult) {
-	        redisService.deleteValues(key); // 1회용 처리
-	    }
-
-	    return EmailVerificationResult.of(authResult);
 	}
 	
 	/**

@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
-import com.kh.even.back.exception.InvalidFileException;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
@@ -39,9 +39,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files,
 			CustomUserDetails customUserDetails) {
 
-		if (files != null && files.size() > 4) {
-			throw new InvalidFileException("첨부파일은 최대 4개까지 업로드할 수 있습니다.");
-		}
+		AssertUtil.validateImageFiles(files);
 
 		EstimateRequestEntity entity = toEntity(estimateReqeust, customUserDetails);
 
@@ -82,6 +80,8 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		int listCount = mapper.getMyEstimateCount(userNo);
 
+		AssertUtil.notFound(listCount, "보낸 견적 요청이 없습니다.");
+
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
 
 		params.put("userNo", userNo);
@@ -101,6 +101,8 @@ public class EstimateSerivceImpl implements EstimateService {
 		Long userNo = customUserDetails.getUserNo();
 
 		int listCount = mapper.getResponseEstimateCount(userNo);
+
+		AssertUtil.notFound(listCount, "받은 견적 내역이 없습니다.");
 
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
 

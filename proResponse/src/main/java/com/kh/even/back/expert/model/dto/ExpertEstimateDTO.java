@@ -15,11 +15,11 @@ import lombok.ToString;
 @ToString
 public class ExpertEstimateDTO {
 
-	@NotNull
+	@NotNull(message="견적 금액은 필수입니다.")
 	private int price;
-	@NotNull
+	@NotNull(message="견적 상세내용은 한줄이라도 적어주세요.")
 	private String content;
-	@NotNull
+	@NotNull(message="견적 번호는 필수입니다.")
 	private Long requestNo;
 	
 	

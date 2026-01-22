@@ -58,7 +58,7 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public boolean hasKey(String key) {
     	Boolean has = redisTemplate.hasKey(key);
-    	return has != null & has;
+    	return has != null && has;
     }
     
     /**

@@ -96,4 +96,16 @@
            )      
 	</insert>
 	
+	<select id="countByRequestNoAndUserNo" resultType="int">
+		SELECT 
+		       COUNT(*) 
+		  FROM 
+		       TB_ESTIMATE_REQUEST 
+		 WHERE 
+		       REQUEST_NO = #{requestNo} 
+		   AND 
+		       EXPERT_NO = #{userNo}
+		
+	</select>
+	
 </mapper>

@@ -174,5 +174,11 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure("30초 후 다시 시도해주세요.", HttpStatus.BAD_REQUEST);
 	}
 	
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<ResponseData<Object>> handleEntityNotFoundException(EntityNotFoundException e) {
+		log.error("유효하지 않은 요청 번호 : {} ", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+	
 	
 }

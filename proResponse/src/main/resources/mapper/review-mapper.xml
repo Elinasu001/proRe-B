@@ -221,6 +221,76 @@
                REVIEW_NO = #{reviewNo}
     </update>
 
+
+<resultMap id="expertReviewMap" type="ExpertReviewDTO">
+    <id property="reviewNo" column="REVIEW_NO"/>
+    <result property="nickname" column="NICKNAME"/>
+    <result property="tagNames" column="TAG_NAMES"/>
+    <result property="categoryName" column="CATEGORY_NAME"/>
+    <result property="starScore" column="STAR_SCORE"/>
+    <result property="content" column="CONTENT"/>
+    <result property="createDate" column="CREATE_DATE"/>
     
+    <collection property="filePaths"
+                javaType="java.util.ArrayList"
+                ofType="string">
+        <result column="FILE_PATH"/>
+    </collection>
+</resultMap>
+
+<!-- 전문가 리뷰 조회 -->
+<select id="getExpertReviews" resultMap="expertReviewMap">
+    SELECT
+        r.REVIEW_NO REVIEW_NO,
+        m.NICKNAME NICKNAME,
+        LISTAGG(trt.TAG_NAME, ',')
+            WITHIN GROUP (ORDER BY trt.TAG_NAME) AS TAG_NAMES,
+        tedc.CATEGORY_NAME,
+        r.STAR_SCORE,
+        r.CONTENT,
+        CASE
+            WHEN TRUNC(SYSDATE - r.CREATE_DATE) = 0 THEN '오늘'
+            ELSE TRUNC(SYSDATE - r.CREATE_DATE) || '일 전'
+        END AS CREATE_DATE,
+        ra.FILE_PATH FILE_PATH
+    FROM TB_REVIEW r
+    LEFT JOIN TB_ESTIMATE_RESPONSE er
+           ON r.ESTIMATE_NO = er.ESTIMATE_NO
+    LEFT JOIN TB_ESTIMATE_REQUEST ter
+           ON er.REQUEST_NO = ter.REQUEST_NO
+    LEFT JOIN TB_MEMBER m
+           ON ter.USER_NO = m.USER_NO
+    LEFT JOIN TB_REVIEW_MAP rm
+           ON r.REVIEW_NO = rm.REVIEW_NO
+    LEFT JOIN TB_REVIEW_TAG trt
+           ON rm.TAG_NO = trt.TAG_NO
+    LEFT JOIN TB_EXPERT_DETAIL_CATEGORY tedc
+           ON tedc.CATEGORY_DETAIL_NO = ter.CATEGORY_DETAIL_NO
+    LEFT JOIN TB_REVIEW_ATTACHMENT ra
+           ON r.REVIEW_NO = ra.REVIEW_NO
+    WHERE ter.EXPERT_NO = #{expertNo}
+    GROUP BY
+        r.REVIEW_NO,
+        m.NICKNAME,
+        tedc.CATEGORY_NAME,
+        r.STAR_SCORE,
+        r.CONTENT,
+        r.CREATE_DATE,
+        ra.FILE_PATH
+    ORDER BY r.CREATE_DATE DESC
+</select>
+	
+	<!-- 전문가 리뷰 갯수 조회 -->
+	<select id="getReviewsCountByExpertNo" parameterType="long">
+		SELECT 
+		       COUNT(*) 
+		  FROM 
+		       TB_REVIEW
+		  JOIN 
+		       TB_ESTIMATE_RESPONSE USING (ESTIMATE_NO) 
+		  JOIN TB_ESTIMATE_REQUEST USING (REQUEST_NO) 
+		 WHERE 
+		       EXPERT_NO = #{expertNo}
+	</select>
 
 </mapper>

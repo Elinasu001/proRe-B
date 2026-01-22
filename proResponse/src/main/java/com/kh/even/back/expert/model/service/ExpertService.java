@@ -1,7 +1,12 @@
 package com.kh.even.back.expert.model.service;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
+import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 
 public interface ExpertService {
 
@@ -12,5 +17,15 @@ public interface ExpertService {
 	 * @return 전문가 자세히보기를 눌렀을때 나오는 정보를 담은 DTO
 	 */
 	ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user);
+
+	
+	/**
+	 * 
+	 * @param expertEstimate 전문가가 견적 응답을 하는 값을 담는 DTO
+	 * @param images 상세 이미지들 
+	 * @param user 로그인한 전문가 user
+	 */
+	void saveEstimate(ExpertEstimateDTO expertEstimate, List<MultipartFile> images , CustomUserDetails user);
+	
 
 }

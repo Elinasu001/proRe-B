@@ -1,6 +1,7 @@
 package com.kh.even.back.estimate.model.dto;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,22 +16,22 @@ import lombok.ToString;
 @ToString
 public class EstimateRequestDTO {
 
-	@NotNull
-	private LocalDateTime requestDate;
+	@NotNull(message="요청 일자는 필수입니다.")
+	private Date requestDate;
 
-	@NotNull
+	@NotNull(message="유형은 필수입니다.")
 	private String requestType;
 
-	@NotNull
+	@NotNull(message="요청 서비스는 필수입니다.")
 	private String requestService;
 
-	@NotNull
+	@NotNull(message="요청 상세는 한줄이라도 적어주세요.")
 	private String content;
 
-	@NotNull
+	@NotNull(message="전문가 번호는 필수입니다.")
 	private Long expertNo;
 
-	@NotNull
+	@NotNull(message="카테고리 번호는 필수입니다.")
 	private Long categoryDetailNo;
 
 }

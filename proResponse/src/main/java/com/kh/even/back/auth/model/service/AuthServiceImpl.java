@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.member.model.dto.LoginResponseDTO;
+import com.kh.even.back.member.model.dto.LogoutRequestDTO;
 import com.kh.even.back.member.model.dto.MemberLoginDTO;
+import com.kh.even.back.member.model.dto.MemberLogoutDTO;
 import com.kh.even.back.token.dto.TokensDTO;
 import com.kh.even.back.token.model.service.TokenService;
 
@@ -69,6 +71,15 @@ public class AuthServiceImpl implements AuthService {
 	        throw new CustomAuthenticationException("로그인 처리 중 오류가 발생했습니다.");
 	    }
 				                   
+	}
+	
+	@Override
+	public void logout(LogoutRequestDTO request,CustomUserDetails member) {
+		
+		MemberLogoutDTO logoutDTO = new MemberLogoutDTO(request.getRefreshToken(), member.getUserNo());
+		
+		tokenService.deleteToken(logoutDTO);
+		
 	}
 
 }

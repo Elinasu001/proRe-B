@@ -13,9 +13,11 @@ import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
+import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
+import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
@@ -29,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EstimateSerivceImpl implements EstimateService {
 
-	private final S3Service s3Service;
+	private final FileUploadService fileUploadService;
 	private final EstimateMapper mapper;
 	private final EstimateRepository repository;
 	private final Pagenation pagenation;
@@ -45,20 +47,14 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		EstimateRequestEntity savedEntity = repository.save(entity);
 
-		if (files != null && !files.isEmpty()) {
-
-			for (MultipartFile file : files) {
-
-				String filePath = s3Service.store(file, "estimate");
-
-				FileVO VO = FileVO.builder().originName(file.getOriginalFilename()).filePath(filePath)
-						.reqNo(savedEntity.getRequestNo()).build();
-
-				mapper.saveEstimateAttachment(VO);
-
-			}
-
-		}
+		fileUploadService.uploadFiles(
+			    files,
+			    "estimate",
+			    savedEntity.getRequestNo(),
+			    mapper::saveEstimateAttachment
+			);
+			
+		
 
 	}
 
@@ -68,7 +64,7 @@ public class EstimateSerivceImpl implements EstimateService {
 		EstimateRequestEntity entity = EstimateRequestEntity.builder().requestDate(dto.getRequestDate())
 				.requestType(dto.getRequestType()).requestService(dto.getRequestService()).content(dto.getContent())
 				.expertNo(dto.getExpertNo()).categoryDetailNo(dto.getCategoryDetailNo())
-				.userNo(customUserDetails.getUserNo()).build();
+				.userNo(customUserDetails.getUserNo()).status(EstimateRequestStatus.REQUESTED).build();
 
 		return entity;
 	}

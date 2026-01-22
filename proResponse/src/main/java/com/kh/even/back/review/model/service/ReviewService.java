@@ -10,23 +10,43 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ReviewService {
 
+
     /**
-     * 리뷰 조회 (작성 후 상세 조회)
+     * 견적 번호 기준 리뷰 상세 조회
+     * @param estimateNo
+     * @return 리뷰 상세 DTO(ReviewDetailDTO)
      */
     ReviewDetailDTO getReview(Long estimateNo
         //, Long userNo
     );
 
     /**
-	 *  태그 전체 조회 (등록 시 필요)
-	 */
+     * 전체 태그 목록 조회 (등록 시 필요)
+     * @return 태그 DTO 리스트(List<ReviewTagDTO>)
+     */
 	List<ReviewTagDTO> getAllReviewTags();
 
+    /**
+     * 견적 번호로 리뷰 존재 여부 확인
+     * @param estimateNo 견적 번호
+     * @return 존재 여부(boolean)
+     */
+    boolean existsByEstimateNo(Long estimateNo);
 
+    /**
+     * 리뷰 등록
+     * @param reviewDTO 리뷰 DTO
+     * @param files
+     * @return 등록된 리뷰 VO(ReviewVO)
+     */
     ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files
         //, Long userNo
     );
 
+    /**
+     * 리뷰 삭제 (논리삭제)
+     * @param estimateNo
+     */
     ReviewVO deleteByEstimateNo(Long estimateNo
         //, Long userNo
     );

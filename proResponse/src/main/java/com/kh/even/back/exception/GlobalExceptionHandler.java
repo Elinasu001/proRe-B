@@ -167,4 +167,12 @@ public class GlobalExceptionHandler {
 		log.error("이메일 인증 오류 발생 : {}", e.getMessage());
 		return ResponseData.failure("이메일 인증 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
 	}
+	
+	@ExceptionHandler(EmailAuthCooltimeException.class)
+	public ResponseEntity<ResponseData<Object>> EmailAuthCooltimeException(EmailAuthCooltimeException e) {
+		log.error("인증번호 재발송 오류 발생 : {}", e.getMessage());
+		return ResponseData.failure("30초 후 다시 시도해주세요.", HttpStatus.BAD_REQUEST);
+	}
+	
+	
 }

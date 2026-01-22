@@ -17,6 +17,7 @@ import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
+import com.kh.even.back.redis.RedisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
-	
+
 	private final MemberMapper memberMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final S3Service s3Service;
-	
+	private final RedisService redisService;
+		
 	/**
 	 * 회원가입
 	 */
@@ -38,17 +40,14 @@ public class MemberServiceImpl implements MemberService {
 	public void signUp(MemberSignUpDTO member, MultipartFile file) {
 		String fileUrl = null;
 		
-		// 유효성 검사 => Validator에게 위임
-		
+		// 이메일 인증 완료 시에만 회원가입이 가능하게 한다.
+		String verifiedKey = "email:verified:" + member.getEmail();
+	    if(!redisService.hasKey(verifiedKey)) {
+	        throw new CustomAuthenticationException("이메일 인증이 필요합니다.");
+	    }
+	    
 		// 이메일 중복 검사 (프론트 + 백엔드)
-		int count = memberMapper.countByEmail(member.getEmail());
-		// log.info("이메일 중복여부 : {}", count);
-			
-		
-		if(count >= 1) {
-			throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
-		}
-		
+		checkDuplicatedEmail(member.getEmail());
 		
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
 		if(file != null && !file.isEmpty()) {
@@ -88,6 +87,9 @@ public class MemberServiceImpl implements MemberService {
 			if (locationResult != 1) {
 				throw new IllegalStateException("위치정보 저장에 실패했습니다.");
 			}
+			
+			// 가입 성공 후 이메일 인증상태 삭제(1회 인증으로 중복가입 방지)
+			redisService.deleteValues("email:verified:" + member.getEmail());
 	}
 	
 	/**
@@ -174,6 +176,19 @@ public class MemberServiceImpl implements MemberService {
 			throw new CustomServerException ("회원탈퇴에 실패했습니다.");
 		}
 		
+	}
+	
+	/**
+	 * 이메일 중복 검사
+	 * @param email
+	 */
+	private void checkDuplicatedEmail(String email) {
+				
+				int count = memberMapper.countByEmail(email);
+					
+				if(count >= 1) {
+					throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
+				}
 	}
 	
 }

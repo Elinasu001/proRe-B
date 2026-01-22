@@ -16,5 +16,21 @@ public class ExpertEntity {
 	@Id
 	@Column(name = "USER_NO")
 	private Long userNo;
+	
+	@Column(name = "CAREER")
+	private int career;
+	
+	@Column(name ="START_TIME")
+	private String startTime;
+	
+	@Column(name = "CONTENT")
+	private String endTime;
+	
+	@Column(name = "EXPERT_TYPE_NO")
+	private int expertTypeNo;
+	
+	@Column(name = "STATUS")
+	private String status;
+	
 
 }

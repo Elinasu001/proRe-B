@@ -4,6 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kh.even.back.expert.model.mapper.ExpertMapper">
 
+<!-- 전문가 조회 resultMap -->
 <resultMap id="expertDetailMap" type="ExpertDetailDTO">
     <id property="expertNo" column="EXPERT_NO"/>
 
@@ -23,6 +24,7 @@
     </collection>
 </resultMap>
 	
+	<!-- 전문가 디테일 조회 sql -->
 	<select id="getExpertDetails" parameterType="long" resultMap="expertDetailMap">
 	SELECT
 	       e.USER_NO                 AS EXPERT_NO
@@ -74,6 +76,36 @@
 	   AND
 	       e.USER_NO = #{expertNo}
 	</select>	
-
+	<!-- 전문가가 견적 응답 이미지 저장 -->
+	<insert id="saveExpertEstimateAttachment">
+    INSERT
+      INTO
+           TB_ESTIMATE_RESPONSE_ATTACHMENT
+           (
+           FILE_NO
+         , ORIGIN_NAME
+         , FILE_PATH
+         , REQUEST_NO  
+           )
+    VALUES
+           (
+           SEQ_ESTIMATE_RESPONSE_ATTACH.NEXTVAL
+         , #{originName}
+         , #{filePath}
+         , #{reqNo} 
+           )      
+	</insert>
+	
+	<select id="countByRequestNoAndUserNo" resultType="int">
+		SELECT 
+		       COUNT(*) 
+		  FROM 
+		       TB_ESTIMATE_REQUEST 
+		 WHERE 
+		       REQUEST_NO = #{requestNo} 
+		   AND 
+		       EXPERT_NO = #{userNo}
+		
+	</select>
 	
 </mapper>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.even.back.review.model.dto.ExpertReviewDTO;
 import com.kh.even.back.review.model.dto.ReviewDetailDTO;
 import com.kh.even.back.review.model.dto.ReviewTagDTO;
 import com.kh.even.back.review.model.vo.ReviewAttachmentVO;
@@ -71,4 +72,13 @@ public interface ReviewMapper {
      */
     int updateReviewStatus(Long reviewNo);
 
+    /**
+     * 
+     * @param expertNo
+     * @return 리뷰수
+     */
+    int getReviewsCountByExpertNo(Long expertNo);
+    
+    List<ExpertReviewDTO> getExpertReviews(Long expertNo);
+    
 }

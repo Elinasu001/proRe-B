@@ -3,6 +3,7 @@ package com.kh.even.back.member.model.service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
@@ -14,4 +15,5 @@ public interface MemberService {
 	void changePassword(ChangePasswordDTO password, CustomUserDetails user);
 	
 	void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user);
+	
 }

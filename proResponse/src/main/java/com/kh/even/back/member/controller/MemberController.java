@@ -2,7 +2,9 @@ package com.kh.even.back.member.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,19 +16,23 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
+import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.service.MemberService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/members")
+@RequestMapping("/api/members")
 public class MemberController {
 	
 	private final MemberService memberService;

@@ -1,6 +1,7 @@
 package com.kh.even.back.estimate.model.dto;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import lombok.ToString;
 public class EstimateRequestDTO {
 
 	@NotNull
-	private LocalDateTime requestDate;
+	private Date requestDate;
 
 	@NotNull
 	private String requestType;

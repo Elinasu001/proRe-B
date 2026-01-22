@@ -74,6 +74,24 @@
 	   AND
 	       e.USER_NO = #{expertNo}
 	</select>	
-
+	<!-- 전문가가 견적 응답 이미지 저장 -->
+	<insert id="saveExpertEstimateAttachment">
+    INSERT
+      INTO
+           TB_ESTIMATE_RESPONSE_ATTACHMENT
+           (
+           FILE_NO
+         , ORIGIN_NAME
+         , FILE_PATH
+         , REQUEST_NO  
+           )
+    VALUES
+           (
+           SEQ_ESTIMATE_RESPONSE_ATTACH.NEXTVAL
+         , #{originName}
+         , #{filePath}
+         , #{reqNo} 
+           )      
+	</insert>
 	
 </mapper>

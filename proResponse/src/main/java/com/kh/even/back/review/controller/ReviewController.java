@@ -17,7 +17,9 @@ import com.kh.even.back.review.model.dto.ReviewDTO;
 import com.kh.even.back.review.model.dto.ReviewDetailDTO;
 import com.kh.even.back.review.model.dto.ReviewTagDTO;
 import com.kh.even.back.review.model.service.ReviewService;
+import com.kh.even.back.review.model.vo.ExpertReviewVO;
 import com.kh.even.back.review.model.vo.ReviewVO;
+import com.kh.even.back.util.model.dto.PageResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -92,5 +94,12 @@ public class ReviewController {
             //, user.getUserNo()
         );
         return ResponseData.created(deleted, "리뷰가 삭제되었습니다");
+    }
+    
+    @GetMapping("/expert/{expertNo}")
+    public ResponseEntity<ResponseData<PageResponse<ExpertReviewVO>>> getExpertReviews(@PathVariable(name="expertNo") Long expertNo , @RequestParam(name="pageNo" , defaultValue = "1") int pageNo){
+    
+    	return ResponseData.ok(reviewService.getExpertReviews(expertNo,pageNo),"조회에 성공했습니다.");
+    	
     }
 }

@@ -1,6 +1,6 @@
 package com.kh.even.back.estimate.model.Entity;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,7 +30,7 @@ public class EstimateRequestEntity {
 	private Long requestNo;
 
 	@Column(name = "REQUEST_DATE", nullable = false)
-	private LocalDateTime requestDate;
+	private Date requestDate;
 
 	@Column(name = "REQUEST_TYPE", nullable = false)
 	private String requestType;
@@ -50,6 +50,11 @@ public class EstimateRequestEntity {
 	@Column(name = "CATEGORY_DETAIL_NO", nullable = false)
 	private Long categoryDetailNo;
 
-	@Column(name = "STATUS", nullable = false, insertable = false)
+	@Column(name = "STATUS", nullable = false)
 	private String status;
+	
+	public void changeStatus(String status) {
+		this.status = status;
+	}
+	
 }

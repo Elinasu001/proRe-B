@@ -14,7 +14,7 @@
         <arg column="PROFILE_IMG" javaType="String"/>
         <arg column="PHONE" javaType="String"/>
         <arg column="BIRTHDAY" javaType="String"/>
-        <arg column="GENDER" javaType="_char"/>  <!-- ✅ char로 변경 -->
+        <arg column="GENDER" javaType="_char"/>  <!-- char로 변경 -->
         <arg column="POSTCODE" javaType="String"/>
         <arg column="ADDRESS" javaType="String"/>
         <arg column="ADDRESS_DETAIL" javaType="String"/>
@@ -26,7 +26,7 @@
         <arg column="DELETE_DATE" javaType="java.sql.Date"/>
         <arg column="USER_ROLE" javaType="String"/>
         <arg column="PENALTY_STATUS" javaType="String"/>
-        <arg column="STATUS" javaType="_char"/>  <!-- ✅ char로 변경 -->
+        <arg column="STATUS" javaType="_char"/>  <!-- char로 변경 -->
     </constructor>
 </resultMap>
 
@@ -35,8 +35,8 @@
         USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
         PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
         ADDRESS, ADDRESS_DETAIL,
-        NULL AS LATITUDE,   <!-- ✅ NULL 컬럼 추가 -->
-        NULL AS LONGITUDE,  <!-- ✅ NULL 컬럼 추가 -->
+        NULL AS LATITUDE,   <!--  NULL 컬럼 추가 -->
+        NULL AS LONGITUDE,  <!--  NULL 컬럼 추가 -->
         CREATE_DATE, UPDATE_DATE, UPDATE_PWD_DATE, DELETE_DATE,
         USER_ROLE, PENALTY_STATUS, STATUS
    FROM (

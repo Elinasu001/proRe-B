@@ -4,7 +4,7 @@
 
 <mapper namespace="com.kh.even.back.category.model.mapper.CategoryMapper">
 	
-	<!-- 카데고리의 소분류를 같이 얻기 위한 resultMap -->
+	<!-- 카테고리의 소분류를 같이 얻기 위한 resultMap -->
 	<resultMap id="categoryMap" type="CategoryDTO">
 		<id property="categoryName" column="CATEGORY_NAME"/>
 		<collection property="details" ofType="DetailCategoryDTO">
@@ -13,7 +13,7 @@
 		</collection>
 	</resultMap>
 
-	<!-- 카데고리 2 3 가져오는 sql -->
+	<!-- 카테고리 2 3 가져오는 sql -->
 	<select id="getCategoryDetails" parameterType="Long" resultMap="categoryMap">
 		SELECT  
 		       e.CATEGORY_NAME     as CATEGORY_NAME

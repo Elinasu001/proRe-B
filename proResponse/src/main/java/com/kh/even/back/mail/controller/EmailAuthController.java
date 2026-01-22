@@ -32,7 +32,6 @@ public class EmailAuthController {
 	@PostMapping("/verification-requests")
 	public ResponseEntity<ResponseData<Void>> sendVerificationCode(@Valid @RequestBody EmailSendRequestDTO request) {
 		
-		// 이메일을 줄테니 코드를 발송해라
 		emailAuthService.sendCode(request.getEmail());
 		
 		return ResponseData.ok(null, "인증번호가 발송됐습니다.");

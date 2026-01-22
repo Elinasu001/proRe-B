@@ -4,7 +4,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import com.kh.even.back.exception.BusinessLogicException;
+import com.kh.even.back.exception.EmailAuthFailException;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class MailSendServiceImpl implements MailSendService {
 			mailSender.send(message);
 			
 		} catch(Exception e) {
-			throw new BusinessLogicException("이메일 인증 메일 발송에 실패했습니다.");
+			throw new EmailAuthFailException("이메일 인증번호 발송에 실패했습니다.");
 		}
 	
 	}

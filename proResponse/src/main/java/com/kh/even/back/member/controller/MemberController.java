@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/members")
+@RequestMapping("/api/members")
 public class MemberController {
 	
 	private final MemberService memberService;
@@ -64,6 +64,9 @@ public class MemberController {
 		return ResponseData.ok(null, "회원탈퇴에 성공했습니다.");
 	}
 	
+	
+	
+	/*
 	@PostMapping("/emails/verification-requests")
 	public ResponseEntity<ResponseData<Void>> sendMessage(@RequestParam("email") @NotBlank @Email String email) {
 		memberService.sendCodeToEmail(email);
@@ -78,6 +81,6 @@ public class MemberController {
 		
 		return ResponseData.ok(response, "성공");
 	}
-	
+	*/
 	
 }

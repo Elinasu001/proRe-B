@@ -1,5 +1,6 @@
 package com.kh.even.back.review.model.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,21 +100,20 @@ public class ReviewServiceImpl implements ReviewService {
                 .status("Y")
                 .build();
 
-        reviewMapper.saveReview(reviewVO);
+        int reviewResult = reviewMapper.saveReview(reviewVO);
+        ReviewValidator.validateDbResult(reviewResult, "리뷰 등록에 실패했습니다.");
 
         Long reviewNo = reviewVO.getReviewNo();
-         // 5. 태그 매핑 등록
+        // 5. 태그 매핑 등록
         if (reviewDTO.getTagNos() != null && !reviewDTO.getTagNos().isEmpty()) {
             for (Long tagNo : reviewDTO.getTagNos()) {
                 ReviewMapVO mapVO = ReviewMapVO.builder()
                         .reviewNo(reviewNo)
                         .tagNo(tagNo)
                         .build();
-                
-                reviewMapper.saveReviewMap(mapVO);
+                int mapResult = reviewMapper.saveReviewMap(mapVO);
+                ReviewValidator.validateDbResult(mapResult, "리뷰 태그 매핑에 실패했습니다.");
             }
-            
-            //log.info("태그 {}개 등록 완료 - reviewNo: {}", reviewDTO.getTagNos().size(), reviewNo);
         }
         
         // 6. AssertUtil.checkFilesSize(files); - pull 받고 다시 적용 필요
@@ -121,17 +121,16 @@ public class ReviewServiceImpl implements ReviewService {
         // 7. 첨부파일 등록
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
-
                 String filePath = s3Service.store(file, "reviews");
-                
                 ReviewAttachmentVO attachmentVO = ReviewAttachmentVO.builder()
                         .reviewNo(reviewNo)
                         .originName(file.getOriginalFilename())
                         .filePath(filePath)
+                        .uploadDate(LocalDateTime.now())
                         .status("Y")
                         .build();
-                
-                reviewMapper.saveReviewAttachment(attachmentVO);
+                int attachResult = reviewMapper.saveReviewAttachment(attachmentVO);
+                ReviewValidator.validateDbResult(attachResult, "리뷰 첨부파일 저장에 실패했습니다.");
             }
         }
 
@@ -159,10 +158,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
         // 상태 변경만 수행
         int updated = reviewMapper.updateReviewStatus(reviewVO.getReviewNo());
-
-        if (updated == 0) {
-            throw new ReviewException("리뷰 삭제에 실패했습니다.");
-        }
+        ReviewValidator.validateDbResult(updated, "리뷰 삭제에 실패했습니다.");
         return reviewVO;
     }
 

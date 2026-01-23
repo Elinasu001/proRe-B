@@ -11,7 +11,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor 
 @ToString
-public class ChatRoomUserDTO {
-    private Long roomNo;	  // 채팅방 번호
-    private Long userNo;	  // 회원 번호
+public class ChatRoomActionsDTO {
+
+    private boolean reported;   // 신고 여부
+    private boolean reviewed;   // 리뷰 작성 여부
+    private boolean paid;       // 결제 여부
+
 }

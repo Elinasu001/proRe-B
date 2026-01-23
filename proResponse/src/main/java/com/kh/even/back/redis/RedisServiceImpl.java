@@ -12,19 +12,19 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class RedisServiceImpl implements RedisService {
-	
-	/**
-	 * 스프링이 Redis 연결정보(.yml)를 보고 자동으로 생성해주는 템플릿
-	 * Redis Cloud에 붙는다.
-	 */
+   
+   /**
+    * 스프링이 Redis 연결정보(.yml)를 보고 자동으로 생성해주는 템플릿
+    * Redis Cloud에 붙는다.
+    */
     private final StringRedisTemplate redisTemplate;
 
     @Override
     public void setValues(String key, String value, Duration duration) {
         
-    	// opsForValue(): Redis의 String(Value) 자료구조를 다루는 연산자
-    	// set(key, value, duration): 저장과 동시에 TTL 설정
-    	redisTemplate.opsForValue().set(key, value, duration);
+       // opsForValue(): Redis의 String(Value) 자료구조를 다루는 연산자
+       // set(key, value, duration): 저장과 동시에 TTL 설정
+       redisTemplate.opsForValue().set(key, value, duration);
     }
     
     /**
@@ -57,8 +57,8 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public boolean hasKey(String key) {
-    	Boolean has = redisTemplate.hasKey(key);
-    	return has != null && has;
+       Boolean has = redisTemplate.hasKey(key);
+       return has != null && has;
     }
     
     /**
@@ -67,7 +67,7 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public Long increment(String key) {
-    	return redisTemplate.opsForValue().increment(key);
+       return redisTemplate.opsForValue().increment(key);
     }
     
     /**
@@ -76,7 +76,7 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public void expire(String key, Duration duration) {
-    	redisTemplate.expire(key, duration);
+       redisTemplate.expire(key, duration);
     }
     
     

@@ -19,7 +19,6 @@ import com.kh.even.back.report.model.service.ReportService;
 import com.kh.even.back.report.model.vo.ReportVO;
 
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +36,7 @@ public class ReportController {
      */
     @GetMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReportDetailDTO>> getReport(
-            @PathVariable(name="estimateNo") Long estimateNo
+            @PathVariable("estimateNo") Long estimateNo
             //, @AuthenticationPrincipal CustomUserDetails user
             ) {
         ReportDetailDTO report = reportService.getReport(

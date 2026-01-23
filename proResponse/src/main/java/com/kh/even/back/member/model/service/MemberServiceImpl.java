@@ -195,7 +195,7 @@ public class MemberServiceImpl implements MemberService {
 	}
 	
 	public void changeEmail(ChangeEmailDTO newEmail, CustomUserDetails user) {
-		// 기존 이메일과 새 이메일 일치여부
+		// 새 이메일과 기존 이메일 일치여부
 		if(newEmail.getEmail().equals(user.getUsername())) {
 			throw new EmailDuplicateException("새 이메일은 기존 이메일과 달라야 합니다.");
 		}

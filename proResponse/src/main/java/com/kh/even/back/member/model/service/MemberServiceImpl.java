@@ -8,12 +8,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
+import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
+import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
@@ -189,6 +191,35 @@ public class MemberServiceImpl implements MemberService {
 				if(count >= 1) {
 					throw new EmailDuplicateException("이미 사용 중인 이메일입니다.");
 				}
+	}
+	
+	public void changeEmail(String newEmail, CustomUserDetails user) {
+		// 새 이메일과 기존 이메일 일치여부
+		if(newEmail.equals(user.getUsername())) {
+			throw new EmailDuplicateException("새 이메일은 기존 이메일과 달라야 합니다.");
+		}
+		
+		// 이메일 중복여부
+		checkDuplicatedEmail(newEmail);
+		
+		// 이메일 인증여부
+		String verifiedKey = "email:verified:" + newEmail;
+	    if(!redisService.hasKey(verifiedKey)) {
+	        throw new CustomAuthenticationException("이메일 인증이 필요합니다.");
+	    }
+		
+	    // DB에 보낼 데이터 가공
+	    ChangeEmailVO changeEmail = ChangeEmailVO.builder().email(newEmail)
+	    		                                           .userNo(user.getUserNo())
+	    		                                           .build();
+		// 이메일 변경요청
+	    int result = memberMapper.changeEmail(changeEmail);
+	    if(result == 0) {
+	    	throw new EmailAuthFailException("이메일 변경에 실패했습니다.");
+	    }
+		
+		// 이메일 인증상태 삭제 (1회 인증으로 중복변경 방지)
+	 	redisService.deleteValues("email:verified:" + newEmail);
 	}
 	
 }

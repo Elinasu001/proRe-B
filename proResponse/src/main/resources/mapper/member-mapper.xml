@@ -95,9 +95,10 @@
 	<!-- 비밀번호를 변경합니다. -->
 	<update id="changePassword" parameterType="ChangePasswordVO">
 		UPDATE
-		       TB_MEMBERdeleteTokenByUserNo
+		       TB_MEMBER
 		   SET
 		       USER_PWD = #{newPassword}
+		     , UPDATE_PWD_DATE = SYSDATE
 		 WHERE
 		       USER_NO = #{userNo}          
 	</update>
@@ -127,10 +128,21 @@
 		       TB_MEMBER
 		   SET
 		       STATUS = 'N'
+		     , DELETE_DATE = SYSDATE
 		 WHERE
-		       USER_NO = #{userNo}
+		       USER_NO = #{userNo}  
 		   AND   
 		       STATUS = 'Y'
+	</update>
+	
+	<update id="changeEmail" parameterType="ChangeEmailVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       EMAIL = #{email}
+		     , UPDATE_DATE = SYSDATE  
+		 WHERE
+		       USER_NO = #{userNo}
 	</update>
 	
 </mapper>

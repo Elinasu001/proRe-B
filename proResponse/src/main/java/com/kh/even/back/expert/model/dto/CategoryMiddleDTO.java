@@ -1,4 +1,4 @@
-package com.kh.even.back.category.model.dto;
+package com.kh.even.back.expert.model.dto;
 
 public class CategoryMiddleDTO {
 

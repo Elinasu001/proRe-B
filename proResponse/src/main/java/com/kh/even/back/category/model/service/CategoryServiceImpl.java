@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.category.model.dto.CategoryDTO;
-import com.kh.even.back.category.model.dto.ExpertCategoryDTO;
 import com.kh.even.back.category.model.dto.ExpertListDTO;
 import com.kh.even.back.category.model.entity.CategoryEntity;
 import com.kh.even.back.category.model.mapper.CategoryMapper;
@@ -76,10 +75,6 @@ public class CategoryServiceImpl implements CategoryService {
 		return new PageResponse<ExpertListDTO>(list, pageInfo);
 
 	}
-	
-	public ExpertCategoryDTO getExpertCategory(CustomUserDetails user) {
-		
-		return null;
-	}
+
 
 }

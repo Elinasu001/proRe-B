@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.category.model.dto.ExpertCategoryDTO;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
@@ -101,6 +102,17 @@ public class ExpertServiceImpl implements ExpertService {
 		return ExpertEstimateEntity.builder().requestNo(expertEstimateDTO.getRequestNo())
 				.price(expertEstimateDTO.getPrice()).content(expertEstimateDTO.getContent()).build();
 
+	}
+	
+	
+	public void/*ExpertCategoryDTO*/ getExpertCategory(CustomUserDetails user) {
+		
+		// 회원 역할 검증(전문가는 '전문가 등록 페이지'에 접근불가)
+		log.info("이거 뭐야 : {}", user.getAuthorities());
+		if("[ROLE_EXPERT]".equals(user.getAuthorities())) {
+			
+		}
+		
 	}
 
 }

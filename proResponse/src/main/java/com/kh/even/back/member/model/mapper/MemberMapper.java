@@ -3,10 +3,12 @@ package com.kh.even.back.member.model.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.MyProfileVO;
 import com.kh.even.back.member.model.vo.UpdateMeVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
@@ -89,4 +91,11 @@ public interface MemberMapper {
 	 * @return 업데이트된 행의 개수를 반환해줍니다.
 	 */
 	int updateLocation(UpdateMeVO updateVO);
+	
+	/**
+	 * 내정보 조회
+	 * @param user
+	 * @return VO에 데이터를 담아서 반환해줍니다.
+	 */
+	MyProfileVO getMyProfile(Long userNo);
 }

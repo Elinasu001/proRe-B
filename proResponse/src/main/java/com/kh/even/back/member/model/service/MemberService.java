@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.MyProfileDTO;
 import com.kh.even.back.member.model.dto.UpdateMeDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 
@@ -19,5 +20,7 @@ public interface MemberService {
 	void changeEmail(String newEmail, CustomUserDetails user);
 	
 	void updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user);
+	
+	MyProfileDTO getMyProfile(CustomUserDetails user);
 	
 }

@@ -88,7 +88,8 @@ public class ReportServiceImpl implements ReportService {
             .targetUserNo(reportDTO.getTargetUserNo())
             .build();
 
-        reportMapper.saveReport(reportVO);
+        int reportResult = reportMapper.saveReport(reportVO);
+        ReportValidator.validateDbResult(reportResult, "신고 등록에 실패했습니다.");
 
         return reportVO;
     }

@@ -38,7 +38,7 @@ public class ReviewController {
     */
     @GetMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewDetailDTO>> getReview(
-            @PathVariable(name="estimateNo") Long estimateNo
+            @PathVariable("estimateNo") Long estimateNo
             //, @AuthenticationPrincipal CustomUserDetails user
         ) {
         ReviewDetailDTO review = reviewService.getReview(
@@ -86,7 +86,7 @@ public class ReviewController {
 	 */
     @PutMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewVO>> deleteByEstimateNo(
-        @PathVariable(name="estimateNo") Long estimateNo
+        @PathVariable("estimateNo") Long estimateNo
         //, @AuthenticationPrincipal CustomUserDetails user
     ) {
         ReviewVO deleted = reviewService.deleteByEstimateNo(

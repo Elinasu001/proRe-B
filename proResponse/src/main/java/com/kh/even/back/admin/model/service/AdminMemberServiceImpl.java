@@ -37,8 +37,14 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     public AdminMemberListResponse getMemberListWithPaging(int currentPage, String keyword) {
         log.info("회원 목록 조회 - currentPage: {}, keyword: {}", currentPage, keyword);
         
+        // 숫자 판별 로직 추가
+        boolean isNumeric = false;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            isNumeric = keyword.matches("^[0-9]+$");
+        }
+        
         // 전체 회원 수 조회
-        int totalCount = adminMemberMapper.getMemberCount(keyword);
+        int totalCount = adminMemberMapper.getMemberCount(keyword, isNumeric);
         log.debug("전체 회원 수: {}", totalCount);
         
         // 페이징 정보 생성
@@ -62,7 +68,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
         int endRow = currentPage * BOARD_LIMIT;
         
         // 회원 목록 조회
-        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword);
+        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword, isNumeric);
         log.debug("조회된 회원 수: {}", memberVOList.size());
         
         // VO → DTO 변환

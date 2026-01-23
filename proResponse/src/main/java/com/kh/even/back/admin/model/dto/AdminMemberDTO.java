@@ -15,14 +15,14 @@ public class AdminMemberDTO {
     private String userName;
     private String nickname;
     private String phone;
-    private String birthday;        // ✅ birthDate → birthday
+    private String birthday;        // birthDate → birthday
     private char gender;
-    private String postcode;        // ✅ 추가
+    private String postcode;        // 추가
     private String address;
-    private String addressDetail;   // ✅ 추가
-    private String status;          // ✅ String
+    private String addressDetail;   // 추가
+    private String status;          // String
     private Date createDate;
     private Date updateDate;
     private String userRole;
-    private String penaltyStatus;   // ✅ String
+    private String penaltyStatus;   // String
 }

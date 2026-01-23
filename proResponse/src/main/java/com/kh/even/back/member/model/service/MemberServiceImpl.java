@@ -238,7 +238,7 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 연락처가 있을 경우 중복 검사를 한다.
 		if(request.getPhone() != null) {
-			checkDuplicatedPhone(request.getPhone());
+			checkDuplicatedPhone(request.getPhone(), user.getUserNo());
 		}
 		
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
@@ -246,6 +246,13 @@ public class MemberServiceImpl implements MemberService {
 		    fileUrl = s3Service.store(file, "member");
 		}
 		
+		// 주소 변경을 요청했는가 ? -> 주소 5종 세트 값 전체가 유효한가 ?
+		boolean changeAddress = isAddressAttempt(request);
+		if(changeAddress) {
+			validateAddress(request);
+		}
+		
+		// TB_MEMBER에 전달할 VO
 		UpdateMeVO updateVO = UpdateMeVO.builder().userNo(user.getUserNo())
 												  .nickname(request.getNickname())
 												  .profileImgPath(fileUrl)
@@ -262,23 +269,51 @@ public class MemberServiceImpl implements MemberService {
 			throw new UpdateMemberException("내정보 수정에 실패했습니다.");
 		}
 		
-		if(updateVO.getLatitude() != null && updateVO.getLongitude() != null && updateVO.getPostcode() != null
-				                       && updateVO.getAddress() != null && updateVO.getAddressDetail() != null) {
+		if(changeAddress) {
 			int update = memberMapper.updateLocation(updateVO);
 			if(update == 0) {
-				throw new UpdateMemberException("내정보 수정에 실패했습니다.");
+				throw new UpdateMemberException("회원의 위치정보가 존재하지 않습니다.");
 			}
 		}
-												  
-				
-				
+		
 	}
 	
-	private void checkDuplicatedPhone(String phone) {
-		int result = memberMapper.countByPhone(phone);
+	/**
+	 * 연락처 중복 검사
+	 * @param phone
+	 */
+	private void checkDuplicatedPhone(String phone, Long userNo) {
+		int result = memberMapper.countByPhone(phone, userNo);
 		if(result > 0) {
 			throw new PhoneDuplicateException("이미 사용 중인 연락처입니다.");
 		}
+	}
+	
+	/**
+	 * 주소 5종 전체 유효성 검사
+	 * @param updateDTO
+	 * @return true / false
+	 */
+	private boolean isAddressAttempt(UpdateMeDTO updateDTO) {
+		return updateDTO.getPostcode() != null
+		    || updateDTO.getAddress() != null
+		    || updateDTO.getAddressDetail() != null
+		    || updateDTO.getLatitude() != null
+		    || updateDTO.getLongitude() != null;
+	}
+	
+	/**
+	 * 
+	 * @param updateDTO
+	 */
+	private void validateAddress(UpdateMeDTO updateDTO) {
+	    if (updateDTO.getPostcode() == null
+	     || updateDTO.getAddress() == null
+	     || updateDTO.getAddressDetail() == null
+	     || updateDTO.getLatitude() == null
+	     || updateDTO.getLongitude() == null) {
+	        throw new IllegalArgumentException("주소 변경 시 우편번호/주소/상세주소/위도/경도는 모두 필수입니다.");
+	    }
 	}
 	
 }

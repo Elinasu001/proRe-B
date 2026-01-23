@@ -1,6 +1,7 @@
 package com.kh.even.back.member.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
@@ -68,11 +69,12 @@ public interface MemberMapper {
 	int changeEmail(ChangeEmailVO changeEmail);
 	
 	/**
-	 * 연락처 중복검사
+	 * 연락처 중복검사 (본인 제외)
 	 * @param phone
+	 * @param userNo
 	 * @return DB에 존재하는 동일한 연락처의 개수를 반환해줍니다.
 	 */
-	int countByPhone(String phone);
+	int countByPhone(@Param("phone")String phone, @Param("userNo")Long userNo);
 	
 	/**
 	 * 내정보 수정

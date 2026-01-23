@@ -3,6 +3,8 @@
 
 
 <mapper namespace="com.kh.even.back.chat.model.dao.ChatMapper">
+
+
 	
 	<!-- 채팅방 ResultMap -->
 	<resultMap id="chatMessageResultMap" type="ChatMessageDTO">
@@ -14,9 +16,16 @@
 		<result property="roomNo" column="ROOM_NO"/>
 		<result property="type" column="TYPE"/>
 		<result property="nickname" column="NICKNAME"/>
+		<result property="userRole" column="USER_ROLE"/>
+		<association property="actions" javaType="ChatRoomActionsDTO">
+			<result property="reported" column="REPORTED"/>
+			<result property="reviewed" column="REVIEWED"/>
+			<result property="paid" column="PAID"/>
+		</association>
 		<collection property="attachments" ofType="ChatAttachmentDTO" resultMap="ChatAttachmentMap"/>
 	</resultMap>
 
+	<!-- 첨부 파일 ResultMap -->
 	<resultMap id="ChatAttachmentMap" type="ChatAttachmentDTO">
 		<id property="fileNo" column="FILE_NO"/>
 		<result property="messageNo" column="MESSAGE_NO"/>
@@ -25,6 +34,14 @@
 		<result property="uploadDate" column="UPLOAD_DATE"/>
 		<result property="status" column="STATUS"/>
 	</resultMap>
+
+	<!-- ChatRoomActionsDTO ResultMap (신고/리뷰/결제 유무) -->
+	<resultMap id="ChatRoomActionsMap" type="ChatRoomActionsDTO">
+		<result property="reported" column="REPORTED"/>
+		<result property="reviewed" column="REVIEWED"/>
+		<result property="paid" column="PAID"/>
+	</resultMap>
+	
 	
 	<!-- 견적 요청 상태 조회 -->
 	<select id="getRequestStatusByEstimateNo" parameterType="long" resultType="string">
@@ -104,10 +121,14 @@
 			 , m.ROOM_NO
 			 , m.TYPE
 			 , u.NICKNAME
+			 , u.USER_ROLE
+			 , CASE WHEN EXISTS(SELECT 1 FROM TB_REPORT r JOIN TB_CHAT_ROOM cr ON r.ESTIMATE_NO = cr.ESTIMATE_NO WHERE cr.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS REPORTED
+			 , CASE WHEN EXISTS(SELECT 1 FROM TB_REVIEW rv JOIN TB_CHAT_ROOM cr ON rv.ESTIMATE_NO = cr.ESTIMATE_NO WHERE cr.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS REVIEWED
+			 , CASE WHEN EXISTS(SELECT 1 FROM TB_PAYMENT p WHERE p.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS PAID
 		  FROM
 			   TB_CHAT_ROOM_MESSAGE m
 		  JOIN 
-		       TB_MEMBER u ON m.USER_NO = u.USER_NO
+			   TB_MEMBER u ON m.USER_NO = u.USER_NO
 		 WHERE
 			   ROOM_NO = #{roomNo}
 			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
@@ -119,11 +140,11 @@
 
 	<select id="getNicknameByUserNo" parameterType="long" resultType="string">
 		SELECT
-		       NICKNAME
-		  FROM
-		       TB_USER
-		 WHERE
-		       USER_NO = #{userNo}
+			   NICKNAME
+		 FROM
+			  TB_MEMBER
+		WHERE
+			  USER_NO = #{userNo}
 	</select>
 
 	<!-- 견적 번호로 채팅방 번호 조회 -->

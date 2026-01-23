@@ -2,6 +2,7 @@ package com.kh.even.back.chat.model.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +32,6 @@ public class ChatMessageDTO {
     //private boolean read;             // 읽음 상태 (UI용)
 
     private List<ChatAttachmentDTO> attachments; // 첨부파일 목록
+    private ChatRoomActionsDTO actions;          // 채팅방 액션 목록(신고, 리뷰, 결제 상태)
+    private String userRole;                     // 전문가/일반회원 구분
 }

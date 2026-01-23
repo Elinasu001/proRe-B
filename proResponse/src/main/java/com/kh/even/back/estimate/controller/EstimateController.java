@@ -18,6 +18,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.EstimateResponseDetailDTO;
 import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.estimate.model.service.EstimateService;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
@@ -54,7 +55,15 @@ public class EstimateController {
 
 	}
 
-	@GetMapping("/{requestNo}")
+	@GetMapping("/response/{requestNo}")
+	public ResponseEntity<ResponseData<EstimateResponseDetailDTO>> getReceivedEstimateDetail(
+			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+		return null;
+
+	}
+
+	@GetMapping("/request/{requestNo}")
 	public ResponseEntity<ResponseData<EstimateRequestDetailDTO>> getEsimateDetail(
 			@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable("requestNo") Long requestNo) {
 
@@ -89,7 +98,7 @@ public class EstimateController {
 		estimateService.updateEstimateStatus(requestNo, customUserDetails);
 
 		return ResponseData.ok(null, "해당 견적 승낙에 성공하였습니다.");
-		
+
 	}
 
 }

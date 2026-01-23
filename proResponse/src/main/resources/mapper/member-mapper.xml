@@ -145,4 +145,40 @@
 		       USER_NO = #{userNo}
 	</update>
 	
+	<!-- 이메일 중복여부를 확인합니다. -->
+	<select id="countByPhone">
+		SELECT
+		       COUNT(*)
+		  FROM
+		       TB_MEMBER
+		 WHERE
+		       PHONE = #{phone}           
+	</select>
+	
+	<!-- 내정보를 수정합니다. -->
+	<update id="updateMe" parameterType="UpdateMeVO"> 
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       NICKNAME = #{nickname}
+		     , PROFILE_IMG = #{profileImgPath}
+		     , PHONE = #{phone}
+		     , POSTCODE = #{postcode}
+		     , ADDRESS = #{address}
+		     , ADDRESS_DETAIL = #{addressDetail}
+		     , UPDATE_DATE = SYSDATE
+		 WHERE
+		       USER_NO = #{userNo}             
+	</update>
+	
+	<!-- 회원의 위도/경도를 수정합니다 -->
+	<update id="updateLocation" parameterType="UpdateMeVO">
+		UPDATE
+		       TB_MEMBER_LOCATION
+		   SET    
+		       LAT = #{latitude}
+		     , LNG = #{longitude}
+		 WHERE
+		       USER_NO = #{userNo}           
+	</update>
 </mapper>

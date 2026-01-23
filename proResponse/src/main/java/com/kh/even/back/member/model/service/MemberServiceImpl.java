@@ -10,14 +10,18 @@ import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.exception.EmailDuplicateException;
+import com.kh.even.back.exception.PhoneDuplicateException;
+import com.kh.even.back.exception.UpdateMemberException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.UpdateMeDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.UpdateMeVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 import com.kh.even.back.redis.RedisService;
 
@@ -193,6 +197,9 @@ public class MemberServiceImpl implements MemberService {
 				}
 	}
 	
+	/**
+	 * 이메일 변경
+	 */
 	public void changeEmail(String newEmail, CustomUserDetails user) {
 		// 새 이메일과 기존 이메일 일치여부
 		if(newEmail.equals(user.getUsername())) {
@@ -220,6 +227,58 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 이메일 인증상태 삭제 (1회 인증으로 중복변경 방지)
 	 	redisService.deleteValues("email:verified:" + newEmail);
+	}
+	
+	/**
+	 * 내정보 수정
+	 */
+	@Transactional
+	public void updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user) {
+		String fileUrl = null;
+		
+		// 연락처가 있을 경우 중복 검사를 한다.
+		if(request.getPhone() != null) {
+			checkDuplicatedPhone(request.getPhone());
+		}
+		
+		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
+		if(file != null && !file.isEmpty()) {
+		    fileUrl = s3Service.store(file, "member");
+		}
+		
+		UpdateMeVO updateVO = UpdateMeVO.builder().userNo(user.getUserNo())
+												  .nickname(request.getNickname())
+												  .profileImgPath(fileUrl)
+												  .phone(request.getPhone())
+												  .postcode(request.getPostcode())
+												  .address(request.getAddress())
+												  .addressDetail(request.getAddressDetail())
+												  .latitude(request.getLatitude())
+												  .longitude(request.getLongitude())
+												  .build();
+		
+		int result = memberMapper.updateMe(updateVO);
+		if(result == 0) {
+			throw new UpdateMemberException("내정보 수정에 실패했습니다.");
+		}
+		
+		if(updateVO.getLatitude() != null && updateVO.getLongitude() != null && updateVO.getPostcode() != null
+				                       && updateVO.getAddress() != null && updateVO.getAddressDetail() != null) {
+			int update = memberMapper.updateLocation(updateVO);
+			if(update == 0) {
+				throw new UpdateMemberException("내정보 수정에 실패했습니다.");
+			}
+		}
+												  
+				
+				
+	}
+	
+	private void checkDuplicatedPhone(String phone) {
+		int result = memberMapper.countByPhone(phone);
+		if(result > 0) {
+			throw new PhoneDuplicateException("이미 사용 중인 연락처입니다.");
+		}
 	}
 	
 }

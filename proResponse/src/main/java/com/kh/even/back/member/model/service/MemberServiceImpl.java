@@ -10,17 +10,20 @@ import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.exception.EmailDuplicateException;
+import com.kh.even.back.exception.NotFoundException;
 import com.kh.even.back.exception.PhoneDuplicateException;
 import com.kh.even.back.exception.UpdateMemberException;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.MyProfileDTO;
 import com.kh.even.back.member.model.dto.UpdateMeDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.MyProfileVO;
 import com.kh.even.back.member.model.vo.UpdateMeVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 import com.kh.even.back.redis.RedisService;
@@ -290,7 +293,7 @@ public class MemberServiceImpl implements MemberService {
 	}
 	
 	/**
-	 * 주소 5종 전체 유효성 검사
+	 * 주소변경요청 여부 (하나라도 유효한 값이 있으면 주소변경요청으로 간주)
 	 * @param updateDTO
 	 * @return true / false
 	 */
@@ -303,7 +306,7 @@ public class MemberServiceImpl implements MemberService {
 	}
 	
 	/**
-	 * 
+	 * 주소 5종 전체 유효성 검사 (주소변경요청 시 모든 값이 유효한지)
 	 * @param updateDTO
 	 */
 	private void validateAddress(UpdateMeDTO updateDTO) {
@@ -316,4 +319,29 @@ public class MemberServiceImpl implements MemberService {
 	    }
 	}
 	
+	/**
+	 * 내정보 조회
+	 */
+	public MyProfileDTO getMyProfile(CustomUserDetails user) {
+		
+		MyProfileVO profileVO = memberMapper.getMyProfile(user.getUserNo());
+		if(profileVO == null) {
+			throw new NotFoundException("회원 조회에 실패했습니다.");
+		}
+		
+		MyProfileDTO profileDTO = new MyProfileDTO();
+		profileDTO.setEmail(profileVO.getEmail());
+		profileDTO.setUserName(profileVO.getUserName());
+		profileDTO.setNickname(profileVO.getNickname());
+		profileDTO.setProfileImage(profileVO.getProfileImage());
+		profileDTO.setPostcode(profileVO.getPostcode());
+		profileDTO.setAddress(profileVO.getAddress());
+		profileDTO.setAddressDetail(profileVO.getAddressDetail());
+		profileDTO.setLatitude(profileVO.getLatitude());
+		profileDTO.setLongitude(profileVO.getLongitude());
+		profileDTO.setPhone(profileVO.getPhone());
+		profileDTO.setUserRole(profileVO.getRole());
+		
+		return profileDTO;
+	}
 }

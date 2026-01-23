@@ -5,6 +5,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
+import com.kh.even.back.member.model.dto.UpdateMeDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.service.MemberService;
 
@@ -72,4 +74,12 @@ public class MemberController {
 		return ResponseData.ok(null, "이메일 변경에 성공했습니다."); 
 	}
 	
+	@PatchMapping("/me")
+	public ResponseEntity<ResponseData<Void>> UpdateMe(@Valid @ModelAttribute UpdateMeDTO request, @RequestParam(name = "profileImg", required = false) MultipartFile file,
+			 										   @AuthenticationPrincipal CustomUserDetails user) {
+		
+		memberService.updateMe(request, file, user);
+		
+		return ResponseData.ok(null, "정보변경에 성공했습니다.");
+	}
 }

@@ -180,5 +180,16 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
 	}
 	
+	@ExceptionHandler(PhoneDuplicateException.class)
+	public ResponseEntity<ResponseData<Object>> handlePhoneDuplicateException(PhoneDuplicateException e) {
+		log.error("연락처 업데이트 오류 : {} ", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(UpdateMemberException.class)
+	public ResponseEntity<ResponseData<Object>> handleUpdateMemberException(UpdateMemberException e) {
+		log.error("내정보 수정 오류 : {} ", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 	
 }

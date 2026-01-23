@@ -51,7 +51,7 @@ public class ChatController {
     @GetMapping("/{roomNo}/messages")
     public ResponseEntity<ResponseData<List<ChatMessageDTO>>> getMessages(
             @PathVariable("roomNo") Long roomNo,
-            @Valid ChatMessageDTO chatMessageDto,
+            @ModelAttribute ChatMessageDTO chatMessageDto,
             @AuthenticationPrincipal CustomUserDetails user) {
         List<ChatMessageDTO> messages = chatService.getMessages(
             roomNo,

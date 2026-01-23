@@ -95,7 +95,7 @@
 	<!-- 비밀번호를 변경합니다. -->
 	<update id="changePassword" parameterType="ChangePasswordVO">
 		UPDATE
-		       TB_MEMBERdeleteTokenByUserNo
+		       TB_MEMBER
 		   SET
 		       USER_PWD = #{newPassword}
 		     , UPDATE_PWD_DATE = SYSDATE

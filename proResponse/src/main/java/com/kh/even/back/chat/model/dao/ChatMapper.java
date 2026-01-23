@@ -7,10 +7,10 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
-import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
+import com.kh.even.back.file.model.vo.FileVO;
 
 @Mapper
 public interface ChatMapper {
@@ -43,7 +43,7 @@ public interface ChatMapper {
     /**
      * 첨부파일 저장
      */
-	int saveChatAttachment(ChatAttachmentVO attachmentVo);
+	int saveChatAttachment(FileVO fileVo);
 
     /**
      * 회원 번호로 닉네임 조회

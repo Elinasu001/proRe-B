@@ -20,7 +20,9 @@ import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
+import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ChatException;
+import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.review.model.service.ReviewService;
 import com.kh.even.back.util.CursorPagination;
@@ -36,27 +38,27 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMapper chatMapper;
     private final ReviewService reviewService;
     private final S3Service s3Service;
-
+    private final FileUploadService fileUploadService;
 
     /**
      * 채팅방 생성 및 초기 메시지 저장
      */
     @Override
     @Transactional
-    public ChatRoomVO createRoom(ChatRoomDTO chatRoomDto, ChatMessageDTO chatMessageDto, List<MultipartFile> files, Long userNo) {
+    public ChatRoomVO createRoom(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
 
         // 1. 견적 상태 체크
-        validateEstimateStatus(chatRoomDto.getEstimateNo());
+        validateEstimateStatus(estimateNo);
 
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
-        boolean exists = reviewService.existsByEstimateNo(chatRoomDto.getEstimateNo());
+        boolean exists = reviewService.existsByEstimateNo(estimateNo);
         if (exists) {
             throw new ChatException("이미 채팅방이 존재합니다");
         }
 
         // 3. 채팅방 생성
         ChatRoomVO roomVo = ChatRoomVO.builder()
-            .estimateNo(chatRoomDto.getEstimateNo())
+            .estimateNo(estimateNo)
             .status("Y")
             .createDate(LocalDateTime.now())
             .build();
@@ -84,7 +86,7 @@ public class ChatServiceImpl implements ChatService {
         ChatValidator.validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
 
         // 5. 첨부파일 저장
-        saveAttachments(files, messageVo.getMessageNo());
+        saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
         
         return roomVo;
     }
@@ -105,20 +107,8 @@ public class ChatServiceImpl implements ChatService {
      * 첨부파일 저장
      */
     private void saveAttachments(List<MultipartFile> files, Long messageNo) {
-        if (files == null || files.isEmpty()) return;
-        
-        for (MultipartFile file : files) {
-            String filePath = s3Service.store(file, "chat");
-            ChatAttachmentVO attachmentVo = ChatAttachmentVO.builder()
-                .messageNo(messageNo)
-                .originName(file.getOriginalFilename())
-                .filePath(filePath)
-                .uploadDate(LocalDateTime.now())
-                .status("Y")
-                .build();
-            int attachResult = chatMapper.saveChatAttachment(attachmentVo);
-            ChatValidator.validateDbResult(attachResult, "첨부파일 저장에 실패했습니다.");
-        }
+        AssertUtil.validateImageFiles(files);
+        fileUploadService.uploadFiles(files, "chat", messageNo, chatMapper::saveChatAttachment);
     }
 
 
@@ -130,27 +120,26 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, List<MultipartFile> files) {
+    public ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, Long userNo) {
         
         String type = chatMessageDto.getType();
-        
+
         // FILE 타입 검증
         if ("FILE".equals(type)) {
-            if (files == null || files.isEmpty()) {
+            if (chatMessageDto.getFiles() == null || chatMessageDto.getFiles().isEmpty()) {
                 throw new ChatException("파일 타입 메시지는 첨부파일이 필수입니다.");
             }
         }
-        
+
         // 메시지 저장
         String failMsg = getFailMessage(type);
-        ChatMessageVO messageVo = buildMessageVO(chatMessageDto);
+        ChatMessageVO messageVo = buildMessageVO(chatMessageDto, userNo);
         saveMessageAndValidate(messageVo, failMsg);
         
         // FILE 타입이면 첨부파일 저장
         if ("FILE".equals(type)) {
-            saveAttachments(files, messageVo.getMessageNo());
+            saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
         }
-        
         return messageVo;
     }
 
@@ -171,10 +160,10 @@ public class ChatServiceImpl implements ChatService {
     /**
      * 메시지 VO 빌더
      */
-    private ChatMessageVO buildMessageVO(ChatMessageDTO chatMessageDto) {
+    private ChatMessageVO buildMessageVO(ChatMessageDTO chatMessageDto, Long userNo) {
         return ChatMessageVO.builder()
             .roomNo(chatMessageDto.getRoomNo())
-            .userNo(chatMessageDto.getUserNo())
+            .userNo(userNo)
             .content(chatMessageDto.getContent())
             .status("Y")
             .sentDate(LocalDateTime.now())
@@ -195,13 +184,13 @@ public class ChatServiceImpl implements ChatService {
      * 채팅 메시지 조회 (커서 기반 페이징)
      */
     @Override
-    public List<ChatMessageDTO> getMessages(Long roomNo, Long userNo, Long messageNo, int size) {
-        if (size <= 0) {
-            size = 50;
+    public List<ChatMessageDTO> getMessages(Long roomNo, ChatMessageDTO chatMessageDto, Long userNo) {
+        if (chatMessageDto.getSize() <= 0) {
+            chatMessageDto.setSize(50);
         }
-        ChatValidator.validateGetMessagesParams(roomNo, size);
+        ChatValidator.validateGetMessagesParams(roomNo, chatMessageDto.getSize());
 
-        Map<String, Object> params = CursorPagination.getCursorParams(messageNo, size);
+        Map<String, Object> params = CursorPagination.getCursorParams(chatMessageDto.getMessageNo(), chatMessageDto.getSize());
         params.put("roomNo", roomNo);
         params.put("userNo", userNo);
 
@@ -220,7 +209,7 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-        // FILE 타입 메시지의 첨부파일 일괄 조회 및 매핑
+        // // FILE 타입 메시지의 첨부파일 일괄 조회 및 매핑
         if (!fileMessageNos.isEmpty()) {
             List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(fileMessageNos);
             // messageNo -> List<ChatAttachmentDTO> 맵핑
@@ -238,9 +227,6 @@ public class ChatServiceImpl implements ChatService {
 
         return messages;
     }
-
-
-
 
     
     /**

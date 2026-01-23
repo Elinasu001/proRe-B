@@ -203,7 +203,7 @@
 	</insert>
 	
 	<!-- 채팅 첨부파일 저장 -->
-	<insert id="saveChatAttachment" parameterType="ChatAttachmentVO">
+	<insert id="saveChatAttachment" parameterType="FileVO">
 		<selectKey keyProperty="fileNo" resultType="long" order="BEFORE">
 			SELECT SEQ_CHAT_ROOM_MESSAGE_ATTACHMENT.NEXTVAL FROM DUAL
 		</selectKey>
@@ -220,7 +220,7 @@
 			   )
 		VALUES 
 		      (
-			  SEQ_MESSAGE_ATTACHMENT.NEXTVAL
+			  #{fileNo}
 			, #{messageNo}
 			, #{filePath}
 			, #{originName}

@@ -2,6 +2,7 @@ package com.kh.even.back.member.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
@@ -57,4 +58,11 @@ public interface MemberMapper {
 	 * @return TB_MEMBER에 업데이트된 행의 개수를 반환해줍니다.
 	 */
 	int updateMemberStatus(WithdrawMemberVO withdrawMember);
+	
+	/**
+	 * 이메일 변경
+	 * @param changeEmail 새로운 이메일과 회원PK
+	 * @return TB_MEMBER에 업데이트 된 행의 개수를 반환해줍니다.
+	 */
+	int changeEmail(ChangeEmailVO changeEmail);
 }

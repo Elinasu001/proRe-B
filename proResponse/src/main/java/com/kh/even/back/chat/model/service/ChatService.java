@@ -3,10 +3,7 @@ package com.kh.even.back.chat.model.service;
 
 import java.util.List;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
-import com.kh.even.back.chat.model.dto.ChatRoomDTO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 

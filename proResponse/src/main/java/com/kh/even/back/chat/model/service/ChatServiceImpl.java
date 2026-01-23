@@ -15,15 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.chat.model.dao.ChatMapper;
 import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
-import com.kh.even.back.chat.model.dto.ChatRoomDTO;
-import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ChatException;
 import com.kh.even.back.file.service.FileUploadService;
-import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.review.model.service.ReviewService;
 import com.kh.even.back.util.CursorPagination;
 
@@ -37,7 +34,6 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
     private final ReviewService reviewService;
-    private final S3Service s3Service;
     private final FileUploadService fileUploadService;
 
     /**
@@ -63,7 +59,7 @@ public class ChatServiceImpl implements ChatService {
             .createDate(LocalDateTime.now())
             .build();
         int roomResult = chatMapper.createRoom(roomVo);
-        ChatValidator.validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
+        validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
 
         // 4. 생성자 등록
         ChatRoomUserVO roomUserVo = ChatRoomUserVO.builder()
@@ -71,7 +67,7 @@ public class ChatServiceImpl implements ChatService {
             .userNo(userNo)
             .build();
         int userResult = chatMapper.createRoomUser(roomUserVo);
-        ChatValidator.validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
+        validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
 
         // 5. 메시지 저장
         ChatMessageVO messageVo = ChatMessageVO.builder()
@@ -83,10 +79,12 @@ public class ChatServiceImpl implements ChatService {
             .type(chatMessageDto.getType())
             .build();
         int messageResult = chatMapper.saveMessage(messageVo);
-        ChatValidator.validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
+        validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
 
         // 5. 첨부파일 저장
-        saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
+        if ("FILE".equals(chatMessageDto.getType())) {
+            saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
+        }
         
         return roomVo;
     }
@@ -98,9 +96,7 @@ public class ChatServiceImpl implements ChatService {
         String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
         String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
 
-        if (!"MATCHED".equals(requestStatus) || !"ACCEPTED".equals(responseStatus)) {
-            throw new ChatException("채팅방 생성 조건이 충족되지 않았습니다.");
-        }
+        ChatValidator.validateCreatable(requestStatus, responseStatus);
     }
 
     /**
@@ -125,16 +121,13 @@ public class ChatServiceImpl implements ChatService {
         String type = chatMessageDto.getType();
 
         // FILE 타입 검증
-        if ("FILE".equals(type)) {
-            if (chatMessageDto.getFiles() == null || chatMessageDto.getFiles().isEmpty()) {
-                throw new ChatException("파일 타입 메시지는 첨부파일이 필수입니다.");
-            }
-        }
+        ChatValidator.validateByType(chatMessageDto);
 
         // 메시지 저장
         String failMsg = getFailMessage(type);
         ChatMessageVO messageVo = buildMessageVO(chatMessageDto, userNo);
-        saveMessageAndValidate(messageVo, failMsg);
+        int result = chatMapper.saveMessage(messageVo);
+        validateDbResult(result, failMsg);
         
         // FILE 타입이면 첨부파일 저장
         if ("FILE".equals(type)) {
@@ -175,9 +168,10 @@ public class ChatServiceImpl implements ChatService {
     /**
      * 메시지 저장 및 검증
      */
-    private void saveMessageAndValidate(ChatMessageVO messageVo, String failMsg) {
-        int result = chatMapper.saveMessage(messageVo);
-        ChatValidator.validateDbResult(result, failMsg);
+    private void validateDbResult(int result, String errorMessage) {
+        if (result != 1) {
+            throw new ChatException(errorMessage);
+        }
     }
     
     /**
@@ -212,18 +206,18 @@ public class ChatServiceImpl implements ChatService {
         // // FILE 타입 메시지의 첨부파일 일괄 조회 및 매핑
         if (!fileMessageNos.isEmpty()) {
             List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(fileMessageNos);
-            // messageNo -> List<ChatAttachmentDTO> 맵핑
             Map<Long, List<ChatAttachmentDTO>> attachMap = new HashMap<>();
             for (ChatAttachmentDTO att : attachments) {
+                ChatValidator.notNull(att.getMessageNo(), "첨부파일 매핑 오류");
                 attachMap.computeIfAbsent(att.getMessageNo(), k -> new ArrayList<>()).add(att);
             }
             for (ChatMessageDTO msg : messages) {
                 if ("FILE".equals(msg.getType())) {
+                    ChatValidator.notNull(msg.getMessageNo(), "메시지 매핑 오류");
                     msg.setAttachments(attachMap.getOrDefault(msg.getMessageNo(), Collections.emptyList()));
                 }
             }
         }
-        
 
         return messages;
     }

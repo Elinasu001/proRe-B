@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,7 +44,7 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<ResponseData<ChatRoomVO>> createRoom(
             @RequestParam("estimateNo") Long estimateNo,
-            @Valid ChatMessageDTO chatMessageDto,
+            @ModelAttribute ChatMessageDTO chatMessageDto,
             @AuthenticationPrincipal CustomUserDetails user) {
         ChatRoomVO chatRoom = chatService.createRoom(estimateNo, chatMessageDto, user.getUserNo());
         return ResponseData.ok(chatRoom, "채팅방이 생성되었습니다.");
@@ -73,7 +74,7 @@ public class ChatController {
      */
     @PostMapping("/{roomNo}")
     public ResponseEntity<ResponseData<ChatMessageVO>> saveMessage(
-            @Valid ChatMessageDTO chatMessageDto,
+            @ModelAttribute ChatMessageDTO chatMessageDto,
             @AuthenticationPrincipal CustomUserDetails user) {
 
         ChatMessageVO saved = chatService.saveMessage(

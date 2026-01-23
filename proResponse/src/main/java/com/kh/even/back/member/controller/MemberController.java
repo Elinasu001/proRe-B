@@ -74,7 +74,7 @@ public class MemberController {
 		return ResponseData.ok(null, "이메일 변경에 성공했습니다."); 
 	}
 	
-	@PatchMapping("/me/")
+	@PatchMapping("/me")
 	public ResponseEntity<ResponseData<Void>> UpdateMe(@Valid @ModelAttribute UpdateMeDTO request, @RequestParam(name = "profileImg", required = false) MultipartFile file,
 			 										   @AuthenticationPrincipal CustomUserDetails user) {
 		

@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
 import com.kh.even.back.file.model.vo.FileVO;
@@ -22,4 +25,14 @@ public interface EstimateMapper {
 
 	List<ResponseEstimateDTO> getResponseEstimateDetails(Map<String, Object> params);
 
+	int getReceivedRequestsCount(Long expertNo);
+	
+	List<ExpertRequestUserDTO> getReceivedRequests(Map<String, Object> params);
+	
+	int getCheckEstimateCountRequested(@Param("userNo")Long userNo,@Param("requestNo") Long requestNo);
+	
+	EstimateRequestDetailDTO getEstimateDetail(Long requestNo);
+	
+	int getCheckEstimateCountOuoted(@Param("userNo")Long userNo,@Param("requestNo") Long requestNo);
+	
 }

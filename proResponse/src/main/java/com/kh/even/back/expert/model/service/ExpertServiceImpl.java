@@ -20,6 +20,7 @@ import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.repository.ExpertRepository;
+import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
 
 import lombok.RequiredArgsConstructor;
@@ -99,7 +100,7 @@ public class ExpertServiceImpl implements ExpertService {
 	private ExpertEstimateEntity toEntity(ExpertEstimateDTO expertEstimateDTO) {
 
 		return ExpertEstimateEntity.builder().requestNo(expertEstimateDTO.getRequestNo())
-				.price(expertEstimateDTO.getPrice()).content(expertEstimateDTO.getContent()).build();
+				.price(expertEstimateDTO.getPrice()).content(expertEstimateDTO.getContent()).status(EstimateResponseStatus.SENT).build();
 
 	}
 

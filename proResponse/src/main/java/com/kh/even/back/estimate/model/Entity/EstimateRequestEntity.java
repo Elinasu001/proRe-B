@@ -57,10 +57,10 @@ public class EstimateRequestEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "STATUS", nullable = false)
-	private EstimateRequestStatus  status;
-	
-	public void changeStatus(EstimateRequestStatus  status) {
-		this.status = status;
+	private EstimateRequestStatus status;
+
+	public void changeStatus(EstimateRequestStatus status) {
+	    this.status = status;
 	}
 	
 }

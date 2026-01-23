@@ -2,8 +2,13 @@ package com.kh.even.back.expert.model.entity;
 
 import java.sql.Date;
 
+import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
+import com.kh.even.back.expert.model.status.EstimateResponseStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,27 +31,31 @@ import lombok.ToString;
 public class ExpertEstimateEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "expert_estimate_seq")
-	@Column(name = "ESTIMATE_NO" , nullable = false)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "expert_estimate_seq")
+	@Column(name = "ESTIMATE_NO", nullable = false)
 	private Long estimateNo;
-	
-	@Column(name = "PRICE" , nullable = false)
+
+	@Column(name = "PRICE", nullable = false)
 	private int price;
-	
-	@Column(name = "CONTENT" , nullable = false)
+
+	@Column(name = "CONTENT", nullable = false)
 	private String content;
-	
-	@Column(name = "ESTIMATE_DATE" , nullable = false , insertable = false, updatable = false)
+
+	@Column(name = "ESTIMATE_DATE", nullable = false, insertable = false, updatable = false)
 	private Date estimateDate;
-	
-	@Column(name = "STATUS" , nullable = false , insertable = false)
-	private String status;
-	
-	@Column(name = "DELETE_AT" , nullable = false , insertable = false)
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "STATUS", nullable = false)
+	private EstimateResponseStatus status;
+
+	@Column(name = "DELETE_AT", nullable = false, insertable = false)
 	private String deleteAt;
-	
-	@Column(name = "REQUEST_NO" , nullable = false)
+
+	@Column(name = "REQUEST_NO", nullable = false)
 	private Long requestNo;
 	
-	
+	public void changeStatus(EstimateResponseStatus status) {
+	    this.status = status;
+	}
+
 }

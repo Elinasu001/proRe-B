@@ -11,14 +11,18 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
+import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
+import com.kh.even.back.exception.EntityNotFoundException;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
-import com.kh.even.back.file.model.vo.FileVO;
+import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
+import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
+import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
-import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
 import com.kh.even.back.util.model.dto.PageResponse;
@@ -34,6 +38,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	private final FileUploadService fileUploadService;
 	private final EstimateMapper mapper;
 	private final EstimateRepository repository;
+	private final ExpertEstimateRepository expertRepository;
 	private final Pagenation pagenation;
 
 	@Override
@@ -47,14 +52,7 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		EstimateRequestEntity savedEntity = repository.save(entity);
 
-		fileUploadService.uploadFiles(
-			    files,
-			    "estimate",
-			    savedEntity.getRequestNo(),
-			    mapper::saveEstimateAttachment
-			);
-			
-		
+		fileUploadService.uploadFiles(files, "estimate", savedEntity.getRequestNo(), mapper::saveEstimateAttachment);
 
 	}
 
@@ -105,10 +103,71 @@ public class EstimateSerivceImpl implements EstimateService {
 		params.put("userNo", userNo);
 
 		List<ResponseEstimateDTO> list = mapper.getResponseEstimateDetails(params);
+
 		PageInfo pageInfo = (PageInfo) params.get("pi");
 
 		return new PageResponse<ResponseEstimateDTO>(list, pageInfo);
 
 	}
 
+	@Override
+	public PageResponse<ExpertRequestUserDTO> getReceivedRequests(int pageNo, CustomUserDetails customUserDetails) {
+
+		Long expertNo = customUserDetails.getUserNo();
+
+		int listCount = mapper.getReceivedRequestsCount(expertNo);
+
+		AssertUtil.notFound(listCount, "받은 견적 요청이 없습니다.");
+
+		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
+
+		params.put("expertNo", expertNo);
+		
+		List<ExpertRequestUserDTO> list = mapper.getReceivedRequests(params);
+
+		PageInfo pageInfo = (PageInfo) params.get("pi");
+		
+		return new PageResponse<ExpertRequestUserDTO>(list, pageInfo);
+		
+	}
+
+	@Override
+	public EstimateRequestDetailDTO getEstimateDetail(CustomUserDetails customUserDetails , Long requestNo) {
+		
+		Long userNo = customUserDetails.getUserNo();
+		
+		int count = mapper.getCheckEstimateCountRequested(userNo,requestNo);
+		
+		AssertUtil.notFound(count, "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
+		
+		return mapper.getEstimateDetail(requestNo);
+		
+	}
+
+	
+	@Override
+	@Transactional
+	public void updateEstimateStatus(Long requestNo, CustomUserDetails customUserDetails) {
+		
+		Long userNo = customUserDetails.getUserNo();
+		
+		int count = mapper.getCheckEstimateCountOuoted(userNo, requestNo);
+		
+		AssertUtil.notFound(count, "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
+		
+		EstimateRequestEntity requestEntity = repository.findById(requestNo)
+									.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
+		
+		
+		requestEntity.changeStatus(EstimateRequestStatus.MATCHED);
+		
+		ExpertEstimateEntity responseEntity = expertRepository.findByRequestNo(requestNo);
+		
+		responseEntity.changeStatus(EstimateResponseStatus.ACCEPTED);
+		
+		
+	}
+
+	
+	
 }

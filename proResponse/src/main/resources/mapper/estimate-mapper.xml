@@ -126,6 +126,108 @@
      OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
 
-
+	<!-- 전문가가 받은 요청 리스트 수 -->
+	<select id="getReceivedRequestsCount">
+		SELECT 
+			   COUNT(*) 
+	      FROM 
+	           TB_ESTIMATE_REQUEST 
+	     WHERE 
+	           expert_No = #{expertNo} 
+	       AND 
+	           STATUS = 'REQUESTED'
+	</select>
 	
+	<!-- 전문가 받은 요청 리스트 -->
+	<select id="getReceivedRequests">
+	SELECT
+		   REQUEST_NO AS requestNo
+		 , USER_NO AS userNo   
+		 , NICKNAME
+		 , ADDRESS
+		 , PROFILE_IMG profileImg 
+	  FROM 
+	       TB_ESTIMATE_REQUEST er 
+	  JOIN 
+	       TB_MEMBER m
+	       USING (USER_NO)
+	 WHERE expert_No = #{expertNo} AND er.STATUS = 'REQUESTED'
+	 ORDER 
+	    BY 
+           er.REQUEST_DATE DESC
+	</select>
+	
+	<!-- 전문가의 견적이 맞는지 확인함 -->
+	<select id="getCheckEstimateCountRequested">
+	SELECT 
+	       COUNT(*)
+	  FROM 
+	       TB_ESTIMATE_REQUEST
+	 WHERE 
+           (EXPERT_NO = #{userNo} OR USER_NO = #{userNo})
+	   AND 
+	       REQUEST_NO = #{requestNo}
+	   AND 
+	       STATUS = 'REQUESTED'    
+	</select>
+	
+	<!-- 승낙할수 있는 견적인지 확인함 -->
+	<select id="getCheckEstimateCountOuoted">
+	SELECT 
+	       COUNT(*)
+	  FROM 
+	       TB_ESTIMATE_REQUEST
+	 WHERE 
+           USER_NO = #{userNo}
+	   AND 
+	       REQUEST_NO = #{requestNo}
+	   AND 
+	       STATUS = 'QUOTED'    
+	</select>
+	
+	<!-- 요청 견적 자세히 보기 -->
+	
+	<resultMap id="estimateDetailMap" type="EstimateRequestDetailDTO">
+    <id property="requestNo" column="REQUEST_NO"/>
+   
+    <result property="nickname"  column="NICKNAME"/>
+    <result property="categoryName"      column="CATEGORY_NAME"/>
+    <result property="profileImg"   column="PROFILE_IMG"/>
+    <result property="requestDate"     column="REQUEST_DATE"/>
+    <result property="address"   column="ADDRESS"/>
+    <result property="requestType" column="REQUEST_TYPE"/>
+    <result property="requestService"     column="REQUEST_SERVICE"/>
+    <result property="content"     column="CONTENT"/>
+    <collection property="filePaths" ofType="string">
+        <result column="FILE_PATH"/>
+    </collection>
+	</resultMap>
+
+
+	<select id="getEstimateDetail" parameterType="long" resultMap="estimateDetailMap">
+	SELECT 
+		   REQUEST_NO 
+		 , NICKNAME  
+		 , CATEGORY_NAME
+		 , PROFILE_IMG
+		 , REQUEST_DATE
+		 , ADDRESS
+		 , REQUEST_TYPE
+		 , REQUEST_SERVICE
+		 , CONTENT
+		 , FILE_PATH
+	  FROM 
+	       TB_ESTIMATE_REQUEST ter
+	  LEFT     
+	  JOIN 
+	       TB_MEMBER m USING (USER_NO)
+	  LEFT
+	  JOIN
+	       TB_EXPERT_DETAIL_CATEGORY USING (CATEGORY_DETAIL_NO)
+	  LEFT     
+	  JOIN
+	       TB_ESTIMATE_REQUEST_ATTACHMENT USING (REQUEST_NO)
+	 WHERE 
+	       REQUEST_NO = #{requestNo}  		
+	</select>
 </mapper>

@@ -98,6 +98,7 @@
 		       TB_MEMBERdeleteTokenByUserNo
 		   SET
 		       USER_PWD = #{newPassword}
+		     , UPDATE_PWD_DATE = SYSDATE
 		 WHERE
 		       USER_NO = #{userNo}          
 	</update>
@@ -129,6 +130,7 @@
 		       STATUS = 'N'
 		 WHERE
 		       USER_NO = #{userNo}
+		     , DELETE_DATE = SYSDATE  
 		   AND   
 		       STATUS = 'Y'
 	</update>
@@ -138,6 +140,7 @@
 		       TB_MEMBER
 		   SET
 		       EMAIL = #{email}
+		     , UPDATE_DATE = SYSDATE  
 		 WHERE
 		       USER_NO = #{userNo}
 	</update>

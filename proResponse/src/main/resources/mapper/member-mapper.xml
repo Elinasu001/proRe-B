@@ -201,4 +201,31 @@
 		 WHERE
 		       USER_NO = #{userNo}           
 	</update>
+	
+	<select id="getMyProfile" parameterType="long" resultType="MyProfileVO">
+		SELECT
+		       M.USER_NO   		 AS "userNo"
+		     , M.EMAIL      	 AS "email"
+		     , M.USER_NAME  	 AS "userName"
+		     , M.NICKNAME  		 AS "nickname"
+		     , M.PROFILE_IMG     AS "profileImage"
+		     , M.POSTCODE        AS "postcode"
+		     , M.ADDRESS         AS "address"
+		     , M.ADDRESS_DETAIL  AS "addressDetail"
+		     , L.LAT             AS "latitude"
+		     , L.LNG             AS "longitude"
+		     , M.PHONE           AS "phone"
+		     , M.USER_ROLE       AS "role"
+		  FROM
+		       TB_MEMBER M
+		  LEFT
+		  JOIN
+		       TB_MEMBER_LOCATION L
+		    ON L.USER_NO = M.USER_NO
+		 WHERE
+		       M.USER_NO = #{userNo}    
+		   AND 
+		       M.STATUS = 'Y'   
+	</select>
+
 </mapper>

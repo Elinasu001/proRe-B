@@ -1,24 +1,24 @@
 package com.kh.even.back.admin.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.even.back.admin.model.dto.AdminMemberDTO;
 import com.kh.even.back.admin.model.dto.AdminMemberListResponse;
-import com.kh.even.back.admin.model.dto.AdminPenaltyUpdateRequest;
-import com.kh.even.back.admin.model.dto.AdminRoleUpdateRequest;
-import com.kh.even.back.admin.model.dto.AdminStatusUpdateRequest;
 import com.kh.even.back.admin.model.dto.AdminMemberSearchRequest;
 import com.kh.even.back.admin.model.service.AdminMemberService;
 import com.kh.even.back.common.ResponseData;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  * 관리자 회원 관리 컨트롤러
  */
 @Slf4j
+@Validated  // 추가
 @RestController
 @RequestMapping("/api/admin/members")
 @RequiredArgsConstructor
@@ -57,7 +58,7 @@ public class AdminMemberController {
      */
     @GetMapping("/{userNo}")
     public ResponseEntity<ResponseData<AdminMemberDTO>> getMemberDetail(
-        @PathVariable Long userNo
+        @PathVariable("userNo") Long userNo  //  수정: name 명시
     ) {
         log.info("회원 상세 조회 - userNo: {}", userNo);
 
@@ -71,12 +72,14 @@ public class AdminMemberController {
      */
     @PutMapping("/{userNo}/status")
     public ResponseEntity<ResponseData<String>> updateMemberStatus(
-        @PathVariable Long userNo,
-        @RequestBody AdminStatusUpdateRequest request
+        @PathVariable("userNo") Long userNo,  // 수정: name 명시
+        @RequestParam(name = "status")  /// 수정: @RequestBody → @RequestParam
+        @NotNull(message = "상태는 필수입니다.")  // 추가: 검증 애노테이션
+        Character status
     ) {
-        log.info("회원 상태 변경 - userNo: {}, status: {}", userNo, request.getStatus());
+        log.info("회원 상태 변경 - userNo: {}, status: {}", userNo, status);
 
-        adminMemberService.updateMemberStatus(userNo, request.getStatus());
+        adminMemberService.updateMemberStatus(userNo, status);
         return ResponseData.ok("회원 상태가 변경되었습니다.");
     }
 
@@ -86,12 +89,14 @@ public class AdminMemberController {
      */
     @PutMapping("/{userNo}/penalty")
     public ResponseEntity<ResponseData<String>> updatePenaltyStatus(
-        @PathVariable Long userNo,
-        @RequestBody AdminPenaltyUpdateRequest request
+        @PathVariable("userNo") Long userNo,  //  수정: name 명시
+        @RequestParam(name = "penaltyYn")  //  수정: @RequestBody → @RequestParam
+        @NotNull(message = "징계 상태는 필수입니다.")  //  추가: 검증 애노테이션
+        Character penaltyYn
     ) {
-        log.info("징계 상태 변경 - userNo: {}, penaltyStatus: {}", userNo, request.getPenaltyStatus());
+        log.info("징계 상태 변경 - userNo: {}, penaltyYn: {}", userNo, penaltyYn);
 
-        adminMemberService.updatePenaltyStatus(userNo, request.getPenaltyStatus());
+        adminMemberService.updatePenaltyStatus(userNo, penaltyYn);
         return ResponseData.ok("징계 상태가 변경되었습니다.");
     }
 
@@ -101,12 +106,14 @@ public class AdminMemberController {
      */
     @PutMapping("/{userNo}/role")
     public ResponseEntity<ResponseData<String>> updateUserRole(
-        @PathVariable Long userNo,
-        @RequestBody AdminRoleUpdateRequest request
+        @PathVariable("userNo") Long userNo,  // 수정: name 명시
+        @RequestParam(name = "userRole")  // 수정: @RequestBody → @RequestParam
+        @NotBlank(message = "권한은 필수입니다.")  // 추가: 검증 애노테이션
+        String userRole
     ) {
-        log.info("권한 변경 - userNo: {}, userRole: {}", userNo, request.getUserRole());
+        log.info("권한 변경 - userNo: {}, userRole: {}", userNo, userRole);
 
-        adminMemberService.updateUserRole(userNo, request.getUserRole());
+        adminMemberService.updateUserRole(userNo, userRole);
         return ResponseData.ok("회원 권한이 변경되었습니다.");
     }
 }

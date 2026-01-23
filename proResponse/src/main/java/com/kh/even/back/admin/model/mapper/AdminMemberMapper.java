@@ -31,7 +31,7 @@ public interface AdminMemberMapper {
     /**
      * 회원 상세 조회
      */
-    MemberVO getMemberDetail(@Param("userNo") Long userNo);
+    MemberVO getMemberDetail(Long userNo);
 
     /**
      * 회원 상태 변경

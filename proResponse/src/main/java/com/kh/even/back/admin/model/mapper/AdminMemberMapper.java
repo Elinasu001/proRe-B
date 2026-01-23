@@ -1,8 +1,10 @@
 package com.kh.even.back.admin.model.mapper;
 
 import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
 import com.kh.even.back.member.model.vo.MemberVO;
 
 @Mapper
@@ -29,7 +31,7 @@ public interface AdminMemberMapper {
     /**
      * 회원 상세 조회
      */
-    MemberVO getMemberDetail(Long userNo);
+    MemberVO getMemberDetail(@Param("userNo") Long userNo);
 
     /**
      * 회원 상태 변경

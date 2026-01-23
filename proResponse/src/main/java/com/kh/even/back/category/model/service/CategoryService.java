@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.category.model.dto.CategoryDTO;
+import com.kh.even.back.category.model.dto.ExpertCategoryDTO;
 import com.kh.even.back.category.model.dto.ExpertListDTO;
 import com.kh.even.back.category.model.entity.CategoryEntity;
 import com.kh.even.back.util.model.dto.PageResponse;
@@ -36,4 +37,11 @@ public interface CategoryService {
 	 * @return 전문가들을 담은 ExpertListDTO
 	 */
 	PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails customUserDetails);
+	
+	/**
+	 * 전문가 등록을 위한 카테고리들을 조회합니다.
+	 * @param user 회원정보
+	 * @return 대/중/소분류 카테고리들을 가공한 DTO
+	 */
+	ExpertCategoryDTO getExpertCategory(CustomUserDetails user);
 }

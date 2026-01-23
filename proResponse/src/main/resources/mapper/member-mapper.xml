@@ -128,9 +128,9 @@
 		       TB_MEMBER
 		   SET
 		       STATUS = 'N'
+		     , DELETE_DATE = SYSDATE
 		 WHERE
-		       USER_NO = #{userNo}
-		     , DELETE_DATE = SYSDATE  
+		       USER_NO = #{userNo}  
 		   AND   
 		       STATUS = 'Y'
 	</update>

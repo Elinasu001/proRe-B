@@ -133,4 +133,13 @@
 		       STATUS = 'Y'
 	</update>
 	
+	<update id="changeEmail" parameterType="ChangeEmailVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       EMAIL = #{email}
+		 WHERE
+		       USER_NO = #{userNo}
+	</update>
+	
 </mapper>

@@ -16,7 +16,6 @@ public interface ExpertMapper {
 	
 	int getCountByExpertNo(Long expertNo);
 	
-	@Select("SELECT COUNT(*) FROM TB_ESTIMATE_REQUEST WHERE REQUEST_NO = #{requestNo} AND EXPERT_NO = #{userNo}")
 	int countByRequestNoAndUserNo(@Param(value = "requestNo") Long requestNo ,@Param(value = "userNo") Long userNo);
 	
 	void saveExpertEstimateAttachment(FileVO file);

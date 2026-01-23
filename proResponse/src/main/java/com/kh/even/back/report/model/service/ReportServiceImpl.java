@@ -28,7 +28,7 @@ public class ReportServiceImpl implements ReportService {
      * 신고 조회
      */
     @Override
-    public ReportDetailDTO getReport(Long estimateNo /*, Long userNo */) {
+    public ReportDetailDTO getReport(Long estimateNo , Long userNo) {
 
         ReportDetailDTO reportDetailDTO = reportMapper.getByEstimateNo(estimateNo);
 
@@ -49,7 +49,7 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     @Transactional
-    public ReportVO saveReport(ReportDTO reportDTO /*, Long userNo */) {
+    public ReportVO saveReport(ReportDTO reportDTO, Long userNo) {
 
         // 견적 기능 구현 후 주석 해제 필요
         /*
@@ -84,7 +84,7 @@ public class ReportServiceImpl implements ReportService {
             .status("WAITING")
             .reasonNo(reportDTO.getReasonNo())
             .estimateNo(reportDTO.getEstimateNo())
-            .reporterUserNo(reportDTO.getReporterUserNo())
+            .reporterUserNo(userNo)
             .targetUserNo(reportDTO.getTargetUserNo())
             .build();
 

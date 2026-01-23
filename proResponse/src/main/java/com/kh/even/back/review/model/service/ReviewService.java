@@ -19,9 +19,7 @@ public interface ReviewService {
      * @param estimateNo
      * @return 리뷰 상세 DTO(ReviewDetailDTO)
      */
-    ReviewDetailDTO getReview(Long estimateNo
-        //, Long userNo
-    );
+    ReviewDetailDTO getReview(Long estimateNo, Long userNo);
 
     /**
      * 전체 태그 목록 조회 (등록 시 필요)
@@ -42,17 +40,13 @@ public interface ReviewService {
      * @param files
      * @return 등록된 리뷰 VO(ReviewVO)
      */
-    ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files
-        //, Long userNo
-    );
+    ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files, Long userNo);
 
     /**
      * 리뷰 삭제 (논리삭제)
      * @param estimateNo
      */
-    ReviewVO deleteByEstimateNo(Long estimateNo
-        //, Long userNo
-    );
+    ReviewVO deleteByEstimateNo(Long estimateNo, Long userNo);
     
     /**
      * 
@@ -60,6 +54,6 @@ public interface ReviewService {
      * @param pageNo 페이지 넘버
      * @return 조회한 리뷰들
      */
-    PageResponse<ExpertReviewVO> getExpertReviews(Long expertNo,int pageNo);
+    PageResponse<ExpertReviewVO> getExpertReviews(Long expertNo, int pageNo);
     
 }

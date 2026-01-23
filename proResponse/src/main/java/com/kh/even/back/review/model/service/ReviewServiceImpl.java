@@ -41,9 +41,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     // 리뷰 조회 (작성 후 상세 조회)
     @Override
-    public ReviewDetailDTO getReview(Long estimateNo
-        //, Long userNo
-    ) {
+    public ReviewDetailDTO getReview(Long estimateNo, Long userNo) {
         // 1. 리뷰 조회
         ReviewDetailDTO reviewDetailDTO = reviewMapper.getByEstimateNo(estimateNo);
         // 2. 리뷰가 없는 경우 예외 처리
@@ -63,9 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
     // 리뷰 등록하기
     @Override
     @Transactional
-    public ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files
-        //, Long userNo
-    ) {
+    public ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files, Long userNo) {
 
 
         // 견적 기능 구현 후 주석 해제 필요
@@ -151,7 +147,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     // 리뷰 삭제
     @Override
-    public ReviewVO deleteByEstimateNo(Long estimateNo) {
+    public ReviewVO deleteByEstimateNo(Long estimateNo, Long userNo) {
         ReviewVO reviewVO = reviewMapper.getReviewByEstimateNo(estimateNo);
         if (reviewVO == null) {
             throw new ReviewException("존재하지 않는 리뷰입니다");
@@ -173,7 +169,7 @@ public class ReviewServiceImpl implements ReviewService {
 		
 		List<ExpertReviewDTO> list = reviewMapper.getExpertReviews(expertNo);
 		
-		List<ExpertReviewVO> vo = new ArrayList();
+		List<ExpertReviewVO> vo = new ArrayList<>();
 		
 		list.forEach(
 				dto -> {

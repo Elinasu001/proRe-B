@@ -1,11 +1,15 @@
 package com.kh.even.back.member.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.member.model.vo.ChangeEmailVO;
 import com.kh.even.back.member.model.vo.ChangePasswordVO;
 import com.kh.even.back.member.model.vo.MemberAuthVO;
 import com.kh.even.back.member.model.vo.MemberVO;
+import com.kh.even.back.member.model.vo.MyProfileVO;
+import com.kh.even.back.member.model.vo.UpdateMeVO;
 import com.kh.even.back.member.model.vo.WithdrawMemberVO;
 
 @Mapper
@@ -65,4 +69,33 @@ public interface MemberMapper {
 	 * @return TB_MEMBER에 업데이트 된 행의 개수를 반환해줍니다.
 	 */
 	int changeEmail(ChangeEmailVO changeEmail);
+	
+	/**
+	 * 연락처 중복검사 (본인 제외)
+	 * @param phone
+	 * @param userNo
+	 * @return DB에 존재하는 동일한 연락처의 개수를 반환해줍니다.
+	 */
+	int countByPhone(@Param("phone")String phone, @Param("userNo")Long userNo);
+	
+	/**
+	 * 내정보 수정
+	 * @param updateVO
+	 * @return 업데이트된 행의 개수를 반환해줍니다.
+	 */
+	int updateMe(UpdateMeVO updateVO);
+	
+	/**
+	 * 회원 위도/경도 수정
+	 * @param updateVO
+	 * @return 업데이트된 행의 개수를 반환해줍니다.
+	 */
+	int updateLocation(UpdateMeVO updateVO);
+	
+	/**
+	 * 내정보 조회
+	 * @param user
+	 * @return VO에 데이터를 담아서 반환해줍니다.
+	 */
+	MyProfileVO getMyProfile(Long userNo);
 }

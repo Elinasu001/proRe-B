@@ -50,9 +50,14 @@
             FROM TB_MEMBER
             <where>
                 <if test="keyword != null and keyword != ''">
-                    AND (USER_NAME LIKE '%' || #{keyword} || '%'
-                     OR EMAIL LIKE '%' || #{keyword} || '%'
-                     OR NICKNAME LIKE '%' || #{keyword} || '%')
+                    <choose>
+                        <when test="isNumeric">
+                            AND USER_NO = #{keyword}
+                        </when>
+                        <otherwise>
+                            AND NICKNAME LIKE '%' || #{keyword} || '%'
+                        </otherwise>
+                    </choose>
                 </if>
             </where>
             ORDER BY CREATE_DATE DESC
@@ -60,21 +65,27 @@
     )
     WHERE RN BETWEEN #{startRow} AND #{endRow}
 </select>
+
 <!-- 회원 전체 인원수 조회 -->
 <select id="getMemberCount" resultType="int">
     SELECT COUNT(*)
     FROM TB_MEMBER
     <where>
         <if test="keyword != null and keyword != ''">
-            AND (USER_NAME LIKE '%' || #{keyword} || '%'
-             OR EMAIL LIKE '%' || #{keyword} || '%'
-             OR NICKNAME LIKE '%' || #{keyword} || '%')
+            <choose>
+                <when test="isNumeric">
+                    AND USER_NO = #{keyword}
+                </when>
+                <otherwise>
+                    AND NICKNAME LIKE '%' || #{keyword} || '%'
+                </otherwise>
+            </choose>
         </if>
     </where>
 </select>
 
 <!-- 회원 상세 조회 -->
-<select id="getMemberDetail" resultMap="memberResultMap">
+<select id="getMemberDetail" resultMap="memberResultMap" parameterType="long">
     SELECT
         USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
         PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
@@ -86,6 +97,7 @@
     FROM TB_MEMBER
     WHERE USER_NO = #{userNo}
 </select>
+
 <!-- 회원 상태 변경 -->
 <update id="updateMemberStatus">
     UPDATE TB_MEMBER

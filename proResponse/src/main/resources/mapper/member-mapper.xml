@@ -6,7 +6,7 @@
 	
 	
 	<!-- 이메일 중복여부를 확인합니다. -->
-	<select id="countByEmail">
+	<select id="countByEmail" resultType="int">
 		SELECT
 		       COUNT(*)
 		  FROM
@@ -145,4 +145,87 @@
 		       USER_NO = #{userNo}
 	</update>
 	
+	<!-- 연락처 중복여부를 확인합니다.(본인 제외) -->
+	<select id="countByPhone" resultType="int">
+		SELECT
+		       COUNT(*)
+		  FROM
+		       TB_MEMBER
+		 WHERE
+		       PHONE = #{phone}
+		   AND 
+		       USER_NO &lt;&gt; #{userNo}           
+	</select>
+	
+	<!-- 내정보 수정 -->
+	<update id="updateMe" parameterType="UpdateMeVO">
+	    UPDATE TB_MEMBER
+	    <set>
+	        <if test="nickname != null">
+	          NICKNAME = #{nickname},
+	        </if>
+	
+	        <if test="profileImgPath != null">
+	          PROFILE_IMG = #{profileImgPath},
+	        </if>
+	
+	        <if test="phone != null">
+	          PHONE = #{phone},
+	        </if>
+	
+	        <if test="postcode != null">
+	          POSTCODE = #{postcode},
+	        </if>
+	
+	        <if test="address != null">
+	          ADDRESS = #{address},
+	        </if>
+	
+	        <if test="addressDetail != null">
+	          ADDRESS_DETAIL = #{addressDetail},
+	        </if>
+	
+	          UPDATE_DATE = SYSDATE
+	    </set>
+	    WHERE 
+	          USER_NO = #{userNo}
+	</update>
+	
+	<!-- 회원의 위도/경도를 수정합니다 -->
+	<update id="updateLocation" parameterType="UpdateMeVO">
+		UPDATE
+		       TB_MEMBER_LOCATION
+		   SET    
+		       LAT = #{latitude}
+		     , LNG = #{longitude}
+		 WHERE
+		       USER_NO = #{userNo}           
+	</update>
+	
+	<select id="getMyProfile" parameterType="long" resultType="MyProfileVO">
+		SELECT
+		       M.USER_NO   		 AS "userNo"
+		     , M.EMAIL      	 AS "email"
+		     , M.USER_NAME  	 AS "userName"
+		     , M.NICKNAME  		 AS "nickname"
+		     , M.PROFILE_IMG     AS "profileImage"
+		     , M.POSTCODE        AS "postcode"
+		     , M.ADDRESS         AS "address"
+		     , M.ADDRESS_DETAIL  AS "addressDetail"
+		     , L.LAT             AS "latitude"
+		     , L.LNG             AS "longitude"
+		     , M.PHONE           AS "phone"
+		     , M.USER_ROLE       AS "role"
+		  FROM
+		       TB_MEMBER M
+		  LEFT
+		  JOIN
+		       TB_MEMBER_LOCATION L
+		    ON L.USER_NO = M.USER_NO
+		 WHERE
+		       M.USER_NO = #{userNo}    
+		   AND 
+		       M.STATUS = 'Y'   
+	</select>
+
 </mapper>

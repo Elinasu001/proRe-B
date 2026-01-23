@@ -29,9 +29,11 @@ public class UpdateMeDTO {
 	@Pattern(regexp = "^[0-9]{5}$", message = "우편번호는 숫자 5자리여야 합니다.")
 	private String postcode;
 	
+	@Size(min = 1, message = "공백은 입력할 수 없습니다.")
 	@Size(max = 100, message = "주소는 100자 이내로 입력해주세요.")
 	private String address;
 	
+	@Size(min = 1, message = "공백은 입력할 수 없습니다.")
 	@Size(max = 20, message = "상세주소는 20자 이내로 입력해주세요.")
 	private String addressDetail;
 	

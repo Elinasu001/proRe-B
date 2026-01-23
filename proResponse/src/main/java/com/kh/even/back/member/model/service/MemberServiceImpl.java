@@ -11,7 +11,6 @@ import com.kh.even.back.exception.CustomServerException;
 import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.exception.EmailDuplicateException;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.member.model.dto.ChangeEmailDTO;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;

@@ -1,7 +1,6 @@
 package com.kh.even.back.admin.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/admin/members")
 @RequiredArgsConstructor
-@Validated
 public class AdminMemberController {
 
     private final AdminMemberService adminMemberService;
@@ -74,7 +72,7 @@ public class AdminMemberController {
     @PutMapping("/{userNo}/status")
     public ResponseEntity<ResponseData<String>> updateMemberStatus(
         @PathVariable Long userNo,
-        @Valid @RequestBody AdminStatusUpdateRequest request
+        @RequestBody AdminStatusUpdateRequest request
     ) {
         log.info("회원 상태 변경 - userNo: {}, status: {}", userNo, request.getStatus());
 
@@ -89,7 +87,7 @@ public class AdminMemberController {
     @PutMapping("/{userNo}/penalty")
     public ResponseEntity<ResponseData<String>> updatePenaltyStatus(
         @PathVariable Long userNo,
-        @Valid @RequestBody AdminPenaltyUpdateRequest request
+        @RequestBody AdminPenaltyUpdateRequest request
     ) {
         log.info("징계 상태 변경 - userNo: {}, penaltyStatus: {}", userNo, request.getPenaltyStatus());
 
@@ -104,7 +102,7 @@ public class AdminMemberController {
     @PutMapping("/{userNo}/role")
     public ResponseEntity<ResponseData<String>> updateUserRole(
         @PathVariable Long userNo,
-        @Valid @RequestBody AdminRoleUpdateRequest request
+        @RequestBody AdminRoleUpdateRequest request
     ) {
         log.info("권한 변경 - userNo: {}, userRole: {}", userNo, request.getUserRole());
 

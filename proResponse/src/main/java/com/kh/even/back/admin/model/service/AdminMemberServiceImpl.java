@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminMemberServiceImpl implements AdminMemberService {
 
     private final AdminMemberMapper adminMemberMapper;
+    private final AdminMemberValidator validator;
     
     // 페이지당 회원 수
     private static final int BOARD_LIMIT = 10;
@@ -37,45 +38,16 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     public AdminMemberListResponse getMemberListWithPaging(int currentPage, String keyword) {
         log.info("회원 목록 조회 - currentPage: {}, keyword: {}", currentPage, keyword);
         
-        // 숫자 판별 로직 추가
-        boolean isNumeric = false;
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            isNumeric = keyword.matches("^[0-9]+$");
-        }
+        // 1. 검색 키워드 처리
+        boolean isNumeric = isNumericKeyword(keyword);
         
-        // 전체 회원 수 조회
-        int totalCount = adminMemberMapper.getMemberCount(keyword, isNumeric);
-        log.debug("전체 회원 수: {}", totalCount);
+        // 2. 페이징 정보 생성
+        PageInfo pageInfo = createPageInfo(currentPage, keyword, isNumeric);
         
-        // 페이징 정보 생성
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setListCount(totalCount);
-        pageInfo.setCurrentPage(currentPage);
-        pageInfo.setBoardLimit(BOARD_LIMIT);
+        // 3. 회원 목록 조회 및 변환
+        List<AdminMemberDTO> memberList = fetchAndConvertMemberList(pageInfo, keyword, isNumeric);
         
-        int pageLimit = 10; // 페이지 버튼 개수
-        int maxPage = (int) Math.ceil((double) totalCount / BOARD_LIMIT);
-        int startPage = ((currentPage - 1) / pageLimit) * pageLimit + 1;
-        int endPage = Math.min(startPage + pageLimit - 1, maxPage);
-        
-        pageInfo.setPageLimit(pageLimit);
-        pageInfo.setMaxPage(maxPage);
-        pageInfo.setStartPage(startPage);
-        pageInfo.setEndPage(endPage);
-        
-        // 페이징 범위 계산
-        int startRow = (currentPage - 1) * BOARD_LIMIT + 1;
-        int endRow = currentPage * BOARD_LIMIT;
-        
-        // 회원 목록 조회
-        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword, isNumeric);
-        log.debug("조회된 회원 수: {}", memberVOList.size());
-        
-        // VO → DTO 변환
-        List<AdminMemberDTO> memberList = memberVOList.stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
-        
+        // 4. 응답 생성
         return AdminMemberListResponse.builder()
             .memberList(memberList)
             .pageInfo(pageInfo)
@@ -108,12 +80,14 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     public void updateMemberStatus(Long userNo, char status) {
         log.info("회원 상태 변경 - userNo: {}, status: {}", userNo, status);
         
-        int result = adminMemberMapper.updateMemberStatus(userNo, status);
+        // 기존 회원 조회 (존재 확인)
+        MemberVO member = findMemberByUserNo(userNo);
         
-        if (result == 0) {
-            log.warn("회원 상태 변경 실패 - 회원을 찾을 수 없음: {}", userNo);
-            throw new ResourceNotFoundException("회원을 찾을 수 없습니다. userNo: " + userNo);
-        }
+        // 검증
+        validator.validateStatusChange(String.valueOf(member.getStatus()), String.valueOf(status));
+        
+        // 상태 변경
+        adminMemberMapper.updateMemberStatus(userNo, status);
         
         log.info("회원 상태 변경 성공 - userNo: {}", userNo);
     }
@@ -126,12 +100,14 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     public void updatePenaltyStatus(Long userNo, char penaltyStatus) {
         log.info("징계 상태 변경 - userNo: {}, penaltyStatus: {}", userNo, penaltyStatus);
         
-        int result = adminMemberMapper.updatePenaltyStatus(userNo, penaltyStatus);
+        // 기존 회원 조회 (존재 확인)
+        MemberVO member = findMemberByUserNo(userNo);
         
-        if (result == 0) {
-            log.warn("징계 상태 변경 실패 - 회원을 찾을 수 없음: {}", userNo);
-            throw new ResourceNotFoundException("회원을 찾을 수 없습니다. userNo: " + userNo);
-        }
+        // 검증
+        validator.validatePenaltyChange(member.getPenaltyStatus(), String.valueOf(penaltyStatus));
+        
+        // 징계 상태 변경
+        adminMemberMapper.updatePenaltyStatus(userNo, penaltyStatus);
         
         log.info("징계 상태 변경 성공 - userNo: {}", userNo);
     }
@@ -144,14 +120,77 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     public void updateUserRole(Long userNo, String userRole) {
         log.info("권한 변경 - userNo: {}, userRole: {}", userNo, userRole);
         
-        int result = adminMemberMapper.updateUserRole(userNo, userRole);
+        // 기존 회원 조회 (존재 확인)
+        MemberVO member = findMemberByUserNo(userNo);
         
-        if (result == 0) {
-            log.warn("권한 변경 실패 - 회원을 찾을 수 없음: {}", userNo);
-            throw new ResourceNotFoundException("회원을 찾을 수 없습니다. userNo: " + userNo);
-        }
+        // 검증
+        validator.validateRoleChange(member.getUserRole(), userRole);
+        
+        // 권한 변경
+        adminMemberMapper.updateUserRole(userNo, userRole);
         
         log.info("권한 변경 성공 - userNo: {}", userNo);
+    }
+
+    /**
+     * 검색 키워드가 숫자인지 판별
+     */
+    private boolean isNumericKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return false;
+        }
+        return keyword.matches("^[0-9]+$");
+    }
+
+    /**
+     * 페이징 정보 생성
+     */
+    private PageInfo createPageInfo(int currentPage, String keyword, boolean isNumeric) {
+        int totalCount = adminMemberMapper.getMemberCount(keyword, isNumeric);
+        log.debug("전체 회원 수: {}", totalCount);
+        
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setListCount(totalCount);
+        pageInfo.setCurrentPage(currentPage);
+        pageInfo.setBoardLimit(BOARD_LIMIT);
+        
+        int pageLimit = 10; // 페이지 버튼 개수
+        int maxPage = (int) Math.ceil((double) totalCount / BOARD_LIMIT);
+        int startPage = ((currentPage - 1) / pageLimit) * pageLimit + 1;
+        int endPage = Math.min(startPage + pageLimit - 1, maxPage);
+        
+        pageInfo.setPageLimit(pageLimit);
+        pageInfo.setMaxPage(maxPage);
+        pageInfo.setStartPage(startPage);
+        pageInfo.setEndPage(endPage);
+        
+        return pageInfo;
+    }
+
+    /**
+     * 회원 목록 조회 및 DTO 변환
+     */
+    private List<AdminMemberDTO> fetchAndConvertMemberList(PageInfo pageInfo, String keyword, boolean isNumeric) {
+        int startRow = (pageInfo.getCurrentPage() - 1) * BOARD_LIMIT + 1;
+        int endRow = pageInfo.getCurrentPage() * BOARD_LIMIT;
+        
+        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword, isNumeric);
+        log.debug("조회된 회원 수: {}", memberVOList.size());
+        
+        return memberVOList.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 회원번호로 회원 조회 (공통 메서드)
+     */
+    private MemberVO findMemberByUserNo(Long userNo) {
+        MemberVO member = adminMemberMapper.getMemberDetail(userNo);
+        if (member == null) {
+            throw new ResourceNotFoundException("회원을 찾을 수 없습니다. userNo: " + userNo);
+        }
+        return member;
     }
 
     /**
@@ -171,9 +210,9 @@ public class AdminMemberServiceImpl implements AdminMemberService {
         dto.setAddressDetail(vo.getAddressDetail());
         dto.setCreateDate(vo.getCreateDate());
         dto.setUpdateDate(vo.getUpdateDate());
-        dto.setStatus(String.valueOf(vo.getStatus()));  // char → String
+        dto.setStatus(String.valueOf(vo.getStatus()));
         dto.setUserRole(vo.getUserRole());
-        dto.setPenaltyStatus(vo.getPenaltyStatus());  // String → String
+        dto.setPenaltyStatus(vo.getPenaltyStatus());
         return dto;
     }
 }

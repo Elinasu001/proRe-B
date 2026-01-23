@@ -16,6 +16,6 @@ public interface MemberService {
 	
 	void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user);
 	
-	void changeEmail(ChangeEmailDTO newEmail, CustomUserDetails user);
+	void changeEmail(String newEmail, CustomUserDetails user);
 	
 }

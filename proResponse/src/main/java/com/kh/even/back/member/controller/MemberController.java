@@ -15,13 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
-import com.kh.even.back.member.model.dto.ChangeEmailDTO;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.WithdrawMemberDTO;
 import com.kh.even.back.member.model.service.MemberService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,7 +63,9 @@ public class MemberController {
 	}
 	
 	@PutMapping("/me/email")
-	public ResponseEntity<ResponseData<Void>> changeEmail(@Valid @RequestBody ChangeEmailDTO newEmail, @AuthenticationPrincipal CustomUserDetails user) {
+	public ResponseEntity<ResponseData<Void>> changeEmail(@RequestParam(name = "newEmail") @NotBlank(message = "이메일은 필수입니다.") @Email(message = "이메일 형식이 올바르지 않습니다.") 
+														  String newEmail, 
+													      @AuthenticationPrincipal CustomUserDetails user) {
 	
 		memberService.changeEmail(newEmail, user);
 		

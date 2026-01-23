@@ -194,23 +194,23 @@ public class MemberServiceImpl implements MemberService {
 				}
 	}
 	
-	public void changeEmail(ChangeEmailDTO newEmail, CustomUserDetails user) {
+	public void changeEmail(String newEmail, CustomUserDetails user) {
 		// 새 이메일과 기존 이메일 일치여부
-		if(newEmail.getEmail().equals(user.getUsername())) {
+		if(newEmail.equals(user.getUsername())) {
 			throw new EmailDuplicateException("새 이메일은 기존 이메일과 달라야 합니다.");
 		}
 		
 		// 이메일 중복여부
-		checkDuplicatedEmail(newEmail.getEmail());
+		checkDuplicatedEmail(newEmail);
 		
 		// 이메일 인증여부
-		String verifiedKey = "email:verified:" + newEmail.getEmail();
+		String verifiedKey = "email:verified:" + newEmail;
 	    if(!redisService.hasKey(verifiedKey)) {
 	        throw new CustomAuthenticationException("이메일 인증이 필요합니다.");
 	    }
 		
 	    // DB에 보낼 데이터 가공
-	    ChangeEmailVO changeEmail = ChangeEmailVO.builder().email(newEmail.getEmail())
+	    ChangeEmailVO changeEmail = ChangeEmailVO.builder().email(newEmail)
 	    		                                           .userNo(user.getUserNo())
 	    		                                           .build();
 		// 이메일 변경요청
@@ -220,7 +220,7 @@ public class MemberServiceImpl implements MemberService {
 	    }
 		
 		// 이메일 인증상태 삭제 (1회 인증으로 중복변경 방지)
-	 	redisService.deleteValues("email:verified:" + newEmail.getEmail());
+	 	redisService.deleteValues("email:verified:" + newEmail);
 	}
 	
 }

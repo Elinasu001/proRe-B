@@ -4,8 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;  // 변경
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  * 관리자 회원 관리 컨트롤러
  */
 @Slf4j
-@Validated  // 추가
+@Validated
 @RestController
 @RequestMapping("/api/admin/members")
 @RequiredArgsConstructor
@@ -58,7 +58,7 @@ public class AdminMemberController {
      */
     @GetMapping("/{userNo}")
     public ResponseEntity<ResponseData<AdminMemberDTO>> getMemberDetail(
-        @PathVariable("userNo") Long userNo  //  수정: name 명시
+        @PathVariable("userNo") Long userNo
     ) {
         log.info("회원 상세 조회 - userNo: {}", userNo);
 
@@ -68,13 +68,13 @@ public class AdminMemberController {
 
     /**
      * 회원 상태 변경 (활성/탈퇴)
-     * PUT /api/admin/members/{userNo}/status
+     * PATCH /api/admin/members/{userNo}/status
      */
-    @PutMapping("/{userNo}/status")
+    @PatchMapping("/{userNo}/status")  // 변경
     public ResponseEntity<ResponseData<String>> updateMemberStatus(
-        @PathVariable("userNo") Long userNo,  // 수정: name 명시
-        @RequestParam(name = "status")  /// 수정: @RequestBody → @RequestParam
-        @NotNull(message = "상태는 필수입니다.")  // 추가: 검증 애노테이션
+        @PathVariable("userNo") Long userNo,
+        @RequestParam(name = "status")
+        @NotNull(message = "상태는 필수입니다.")
         Character status
     ) {
         log.info("회원 상태 변경 - userNo: {}, status: {}", userNo, status);
@@ -85,13 +85,13 @@ public class AdminMemberController {
 
     /**
      * 회원 징계 상태 변경
-     * PUT /api/admin/members/{userNo}/penalty
+     * PATCH /api/admin/members/{userNo}/penalty
      */
-    @PutMapping("/{userNo}/penalty")
+    @PatchMapping("/{userNo}/penalty")  // 변경
     public ResponseEntity<ResponseData<String>> updatePenaltyStatus(
-        @PathVariable("userNo") Long userNo,  //  수정: name 명시
-        @RequestParam(name = "penaltyYn")  //  수정: @RequestBody → @RequestParam
-        @NotNull(message = "징계 상태는 필수입니다.")  //  추가: 검증 애노테이션
+        @PathVariable("userNo") Long userNo,
+        @RequestParam(name = "penaltyYn")
+        @NotNull(message = "징계 상태는 필수입니다.")
         Character penaltyYn
     ) {
         log.info("징계 상태 변경 - userNo: {}, penaltyYn: {}", userNo, penaltyYn);
@@ -102,13 +102,13 @@ public class AdminMemberController {
 
     /**
      * 회원 권한 변경
-     * PUT /api/admin/members/{userNo}/role
+     * PATCH /api/admin/members/{userNo}/role
      */
-    @PutMapping("/{userNo}/role")
+    @PatchMapping("/{userNo}/role")  // 변경
     public ResponseEntity<ResponseData<String>> updateUserRole(
-        @PathVariable("userNo") Long userNo,  // 수정: name 명시
-        @RequestParam(name = "userRole")  // 수정: @RequestBody → @RequestParam
-        @NotBlank(message = "권한은 필수입니다.")  // 추가: 검증 애노테이션
+        @PathVariable("userNo") Long userNo,
+        @RequestParam(name = "userRole")
+        @NotBlank(message = "권한은 필수입니다.")
         String userRole
     ) {
         log.info("권한 변경 - userNo: {}, userRole: {}", userNo, userRole);

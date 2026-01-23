@@ -53,7 +53,8 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.DELETE).permitAll();
 					
 					requests.requestMatchers(HttpMethod.PUT).permitAll();
-
+					
+					requests.requestMatchers(HttpMethod.PATCH).permitAll();
 //					// 3. GET - 로그인 필요 (상세 페이지들)
 					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages").authenticated();
 //					requests.requestMatchers(HttpMethod.GET, "/api/admin/**" , "/api/members/**").authenticated();
@@ -87,7 +88,7 @@ public class SecurityConfigure {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList(instance));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
 		configuration.setAllowCredentials(true);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

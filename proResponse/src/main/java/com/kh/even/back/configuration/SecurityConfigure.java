@@ -55,6 +55,7 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.PUT).permitAll();
 
 //					// 3. GET - 로그인 필요 (상세 페이지들)
+					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages").authenticated();
 //					requests.requestMatchers(HttpMethod.GET, "/api/admin/**" , "/api/members/**").authenticated();
 //
 //					 4. PUT - 로그인 필요

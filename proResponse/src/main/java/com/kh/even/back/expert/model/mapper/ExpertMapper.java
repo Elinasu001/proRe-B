@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.file.model.vo.FileVO;

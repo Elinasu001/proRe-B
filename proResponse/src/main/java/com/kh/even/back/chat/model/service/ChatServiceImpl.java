@@ -1,4 +1,3 @@
-
 package com.kh.even.back.chat.model.service;
 
 import java.time.LocalDateTime;
@@ -15,13 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.chat.model.dao.ChatMapper;
 import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
+import com.kh.even.back.chat.model.dto.ChatMessageResponse;
+import com.kh.even.back.chat.model.dto.ChatMessageSearchDTO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ChatException;
 import com.kh.even.back.file.service.FileUploadService;
-import com.kh.even.back.review.model.service.ReviewService;
 import com.kh.even.back.util.CursorPagination;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
-    private final ReviewService reviewService;
     private final FileUploadService fileUploadService;
 
     /**
@@ -47,7 +46,7 @@ public class ChatServiceImpl implements ChatService {
         validateEstimateStatus(estimateNo);
 
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
-        boolean exists = reviewService.existsByEstimateNo(estimateNo);
+        boolean exists = chatMapper.existsByEstimateNo(estimateNo);
         if (exists) {
             throw new ChatException("이미 채팅방이 존재합니다");
         }
@@ -95,7 +94,6 @@ public class ChatServiceImpl implements ChatService {
     private void validateEstimateStatus(Long estimateNo) {
         String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
         String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
-
         ChatValidator.validateCreatable(requestStatus, responseStatus);
     }
 
@@ -108,6 +106,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
 
+    
     /**
      *  메시지 저장
      * - TEXT: 일반 텍스트 메시지 (첨부파일 X)
@@ -176,25 +175,23 @@ public class ChatServiceImpl implements ChatService {
     
     /**
      * 채팅 메시지 조회 (커서 기반 페이징)
+     * 메시지 목록 + meta 정보(Map) 반환
      */
     @Override
-    public List<ChatMessageDTO> getMessages(Long roomNo, ChatMessageDTO chatMessageDto, Long userNo) {
-        if (chatMessageDto.getSize() <= 0) {
-            chatMessageDto.setSize(50);
-        }
-        ChatValidator.validateGetMessagesParams(roomNo, chatMessageDto.getSize());
+    public ChatMessageResponse getMessages(Long roomNo, ChatMessageSearchDTO searchDto, Long userNo) {
 
-        Map<String, Object> params = CursorPagination.getCursorParams(chatMessageDto.getMessageNo(), chatMessageDto.getSize());
+        ChatValidator.validateGetMessagesParams(roomNo);
+
+        Map<String, Object> params = CursorPagination.getCursorParams(searchDto.getMessageNo(), searchDto.getSize());
         params.put("roomNo", roomNo);
         params.put("userNo", userNo);
-
+        
         List<ChatMessageDTO> messages = chatMapper.getMessagesByCursor(params);
         if (messages == null) {
             throw new ChatException("메시지 조회에 실패했습니다.");
         }
 
-        // 각 메시지의 userNo와 현재 userNo를 비교하여 isMine 값 세팅
-        // 그리고 FILE 타입 메시지의 messageNo 수집
+        // 첨부파일 매핑
         List<Long> fileMessageNos = new ArrayList<>();
         for (ChatMessageDTO msg : messages) {
             msg.setMine(msg.getUserNo() != null && msg.getUserNo().equals(userNo));
@@ -202,8 +199,6 @@ public class ChatServiceImpl implements ChatService {
                 fileMessageNos.add(msg.getMessageNo());
             }
         }
-
-        // // FILE 타입 메시지의 첨부파일 일괄 조회 및 매핑
         if (!fileMessageNos.isEmpty()) {
             List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(fileMessageNos);
             Map<Long, List<ChatAttachmentDTO>> attachMap = new HashMap<>();
@@ -218,8 +213,18 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
         }
+        // meta 정보 생성
+        Long estimateNo = messages.isEmpty()
+                ? null
+                : messages.get(0).getEstimateNo();
 
-        return messages;
+        return new ChatMessageResponse(
+                searchDto.getMessageNo(),   // cursor
+                searchDto.getSize(),        // requestedSize
+                messages.size(),            // size
+                estimateNo,                 // estimateNo
+                messages                    // messages
+        );
     }
 
     
@@ -228,8 +233,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public String getNicknameByUserNo(Long userNo) {
-        return "사용자" + userNo;
-        // return chatMapper.getNicknameByUserNo(userNo);
+        return chatMapper.getNicknameByUserNo(userNo);
     }
 
 

@@ -1,6 +1,6 @@
+
 package com.kh.even.back.review.model.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ReviewException;
-import com.kh.even.back.file.service.S3Service;
+import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.review.model.dao.ReviewMapper;
 import com.kh.even.back.review.model.dto.ExpertReviewDTO;
 import com.kh.even.back.review.model.dto.ReviewDTO;
@@ -34,21 +34,20 @@ import lombok.extern.slf4j.Slf4j;
 public class ReviewServiceImpl implements ReviewService {
     
     private final ReviewMapper reviewMapper;
-    private final S3Service s3Service;
+    //private final S3Service s3Service;
     private final Pagenation pagenation;
-
-
+    private final FileUploadService fileUploadService;
 
     // 리뷰 조회 (작성 후 상세 조회)
     @Override
-    public ReviewDetailDTO getReview(Long estimateNo, Long userNo) {
-        // 1. 리뷰 조회
+    public ReviewDetailDTO getReview(Long estimateNo,  Long userNo) {
+
+        assertRoleUser(userNo, "리뷰를 조회");
+
         ReviewDetailDTO reviewDetailDTO = reviewMapper.getByEstimateNo(estimateNo);
-        // 2. 리뷰가 없는 경우 예외 처리
         if (reviewDetailDTO == null) {
             throw new ReviewException("해당 견적에 대한 리뷰가 존재하지 않습니다");
         }
-        
         return reviewDetailDTO;
     }
 
@@ -62,33 +61,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files, Long userNo) {
-
-
-        // 견적 기능 구현 후 주석 해제 필요
-        /*
-
-        // 1. 견적 응답 확인
-        EstimateResponseVO estimate = estimateMapper.selectEstimateByNo(reviewDTO.getEstimateNo());
-        if (estimate == null) {
-            throw new ReviewException("존재하지 않는 견적입니다");
-        }
         
-        // 2. 견적 상태 확인
-        if (!"ACCEPTED".equals(estimate.getStatus())) {
-            throw new ReviewException("수락된 견적만 리뷰 작성이 가능합니다");
-        }
-        
-        */
+        assertRoleUser(userNo, "리뷰를 작성");
 
-        //log.info("견적 기능 미구현 상태로 - 견적 검증 생략");
-
-        // 3. 이미 리뷰가 있는 지 확인
-        boolean exists = existsByEstimateNo(reviewDTO.getEstimateNo());
+        // 1. 내가 이미 쓴 리뷰가 있는지 확인
+        boolean exists = existsByEstimateNo(reviewDTO.getEstimateNo(), userNo);
         if (exists) {
             throw new ReviewException("이미 리뷰가 작성된 견적서입니다");
         }
 
-        // 4. 리뷰 등록
+        // 2. 리뷰 등록
         ReviewVO reviewVO = ReviewVO.builder()
                 .estimateNo(reviewDTO.getEstimateNo())
                 .content(reviewDTO.getContent())
@@ -100,7 +82,8 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewValidator.validateDbResult(reviewResult, "리뷰 등록에 실패했습니다.");
 
         Long reviewNo = reviewVO.getReviewNo();
-        // 5. 태그 매핑 등록
+
+        // 3. 태그 매핑 등록
         if (reviewDTO.getTagNos() != null && !reviewDTO.getTagNos().isEmpty()) {
             for (Long tagNo : reviewDTO.getTagNos()) {
                 ReviewMapVO mapVO = ReviewMapVO.builder()
@@ -111,37 +94,72 @@ public class ReviewServiceImpl implements ReviewService {
                 ReviewValidator.validateDbResult(mapResult, "리뷰 태그 매핑에 실패했습니다.");
             }
         }
-        
-        // 6. AssertUtil.checkFilesSize(files); - pull 받고 다시 적용 필요
 
-        // 7. 첨부파일 등록
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                String filePath = s3Service.store(file, "reviews");
-                ReviewAttachmentVO attachmentVO = ReviewAttachmentVO.builder()
-                        .reviewNo(reviewNo)
-                        .originName(file.getOriginalFilename())
-                        .filePath(filePath)
-                        .uploadDate(LocalDateTime.now())
-                        .status("Y")
-                        .build();
-                int attachResult = reviewMapper.saveReviewAttachment(attachmentVO);
-                ReviewValidator.validateDbResult(attachResult, "리뷰 첨부파일 저장에 실패했습니다.");
-            }
-        }
+        // 4. 첨부파일 등록 (files 필드 사용)
+        // List<MultipartFile> attachments = reviewDTO.getFiles();
+        // if (attachments != null && !attachments.isEmpty()) {
+        //     for (MultipartFile file : attachments) {
+        //         String filePath = s3Service.store(file, "reviews");
+        //         ReviewAttachmentVO attachmentVO = ReviewAttachmentVO.builder()
+        //                 .reviewNo(reviewNo)
+        //                 .originName(file.getOriginalFilename())
+        //                 .filePath(filePath)
+        //                 .uploadDate(LocalDateTime.now())
+        //                 .status("Y")
+        //                 .build();
+        //         int attachResult = reviewMapper.saveReviewAttachment(attachmentVO);
+        //         ReviewValidator.validateDbResult(attachResult, "리뷰 첨부파일 저장에 실패했습니다.");
+        //     }
+        // }
+
+        saveAttachments(files, reviewNo);
 
         //log.info("리뷰 등록 완료 - reviewNo: {}, estimateNo: {}, 태그수: {}", reviewNo, reviewDTO.getEstimateNo(), reviewDTO.getTagNos() != null ? reviewDTO.getTagNos().size() : 0);
-        
         return reviewVO;
     }
 
 
+    private void saveAttachments(List<MultipartFile> files, Long reviewNo) {
+        AssertUtil.validateImageFiles(files);
+            fileUploadService.uploadFiles(
+                files,
+                "reviews",
+                reviewNo,
+                fileVO -> {
+
+                    ReviewAttachmentVO attachmentVO =
+                        ReviewAttachmentVO.builder()
+                            .reviewNo(reviewNo)
+                            .originName(fileVO.getOriginName())
+                            .filePath(fileVO.getFilePath())
+                            .status("Y")
+                            .build();
+
+                    reviewMapper.saveReviewAttachment(attachmentVO);
+                }
+            );
+    }
+
+
+    
+    // 회원 권한 체크 공통 메서드
+    private void assertRoleUser(Long userNo, String action) {
+        String userRole = reviewMapper.getUserRoleByUserNo(userNo);
+        if (!"ROLE_USER".equals(userRole)) {
+            throw new ReviewException("일반회원만 " + action + "할 수 있습니다.");
+        }
+    }
+
+
     /**
-    * 견적 번호로 리뷰 존재 여부 확인
+    * 견적번호+회원번호로 리뷰 존재 여부 확인
      */
-    @Override
-    public boolean existsByEstimateNo(Long estimateNo) {
-        return reviewMapper.existsByEstimateNo(estimateNo);
+    public boolean existsByEstimateNo(Long estimateNo, Long userNo) {
+        Map<String, Object> params = Map.of(
+            "estimateNo", estimateNo,
+            "userNo", userNo
+        );
+        return reviewMapper.existsByEstimateNo(params);
     }
     
 

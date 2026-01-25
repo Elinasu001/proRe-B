@@ -41,6 +41,16 @@
         <result property="selected" column="SELECTED"/>
     </resultMap>
 
+    <select id="getUserRoleByUserNo" parameterType="long" resultType="string">
+        SELECT 
+               USER_ROLE
+          FROM 
+               TB_MEMBER
+         WHERE 
+       USER_NO = #{userNo}
+    </select>
+
+
     <!-- 리뷰 상세 조회(상세) -->
     <select id="getByEstimateNo" parameterType="Long" resultMap="reviewDetailResultMap">
         SELECT
@@ -103,22 +113,21 @@
 
     <!-- 리뷰 중복 체크 -->
     <select id="existsByEstimateNo"
-        parameterType="Long"
-        resultType="boolean">
-      SELECT
-          CASE
-              WHEN COUNT(*) &gt; 0 THEN 1 <!--존재하면 1(true)-->
-              ELSE 0 <!--존재 안하면 0(false)-->
-          END
-          FROM TB_REVIEW
-       WHERE ESTIMATE_NO = #{value}
+            resultType="boolean">
+        SELECT
+               CASE WHEN COUNT(*) &gt; 0 THEN 1 ELSE 0 END
+          FROM TB_REVIEW r
+          JOIN TB_ESTIMATE_RESPONSE er ON r.ESTIMATE_NO = er.ESTIMATE_NO
+          JOIN TB_ESTIMATE_REQUEST eq ON er.REQUEST_NO = eq.REQUEST_NO
+          WHERE r.ESTIMATE_NO = #{estimateNo}
+          AND eq.USER_NO = #{userNo}
     </select>
 
     <!-- 리뷰 등록 -->
     <insert id="saveReview" parameterType="ReviewVO">
         <selectKey keyProperty="reviewNo" resultType="long" order="BEFORE">
         SELECT SEQ_REVIEW.NEXTVAL FROM DUAL
-    </selectKey>
+        </selectKey>
        INSERT 
          INTO 
               TB_REVIEW
@@ -142,7 +151,7 @@
     </insert>
 
     <!-- 첨부파일 등록 -->
-    <insert id="saveReviewAttachment" parameterType="ReviewAttachmentVO">
+    <!-- <insert id="saveReviewAttachment" parameterType="ReviewAttachmentVO">
         <selectKey keyProperty="fileNo" resultType="Long" order="BEFORE">
             SELECT SEQ_REVIEW_ATTACHMENT.NEXTVAL FROM DUAL
         </selectKey>
@@ -166,13 +175,40 @@
             , #{status}
             , SYSDATE
               )
-    </insert>
+    </insert> -->
+
+
+    <insert id="saveReviewAttachment" parameterType="reviewAttachmentVO">
+		<selectKey keyProperty="fileNo" resultType="long" order="BEFORE">
+			SELECT SEQ_REVIEW_ATTACHMENT.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT
+		  INTO
+		       TB_REVIEW_ATTACHMENT
+			   (
+			   FILE_NO
+			 , REVIEW_NO
+			 , FILE_PATH
+			 , ORIGIN_NAME
+			 , STATUS
+             , UPLOAD_DATE
+			   )
+		VALUES 
+		      (
+			  #{fileNo}
+			, #{reviewNo}
+			, #{filePath}
+			, #{originName}
+			, #{status}
+            , SYSDATE
+			 )
+	</insert>
 
     <!-- 태그 매핑 등록 -->
     <insert id="saveReviewMap" parameterType="ReviewMapVO">
        INSERT 
          INTO 
-              TB_REVIEW_MAP 
+              TB_REVIEW_MAP
               (
               REVIEW_NO
             , TAG_NO

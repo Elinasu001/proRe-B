@@ -1,6 +1,7 @@
 package com.kh.even.back.report.model.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -32,7 +33,7 @@ public interface ReportMapper {
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsByEstimateNo(Long estimateNo);
+    boolean existsReportByEstimateNo(Map<String, Object> params);
     
     // === 신고 등록 ===
 

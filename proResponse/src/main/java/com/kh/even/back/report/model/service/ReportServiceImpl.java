@@ -1,6 +1,7 @@
 package com.kh.even.back.report.model.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,6 @@ import com.kh.even.back.report.model.dto.ReportDTO;
 import com.kh.even.back.report.model.dto.ReportDetailDTO;
 import com.kh.even.back.report.model.dto.ReportTagDTO;
 import com.kh.even.back.report.model.vo.ReportVO;
-import com.kh.even.back.review.model.service.ReviewService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportMapper reportMapper;
-    private final ReviewService reviewService;
 
     /**
      * 신고 조회
      */
     @Override
-    public ReportDetailDTO getReport(Long estimateNo /*, Long userNo */) {
+    public ReportDetailDTO getReport(Long estimateNo , Long userNo) {
 
         ReportDetailDTO reportDetailDTO = reportMapper.getByEstimateNo(estimateNo);
 
@@ -49,42 +48,22 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     @Transactional
-    public ReportVO saveReport(ReportDTO reportDTO /*, Long userNo */) {
-
-        // 견적 기능 구현 후 주석 해제 필요
-        /*
-
-        // 1. 견적 응답 확인
-        EstimateResponseVO estimate = estimateMapper.selectEstimateByNo(reportDTO.getEstimateNo());
-        if (estimate == null) {
-            throw new ReportException("존재하지 않는 견적입니다");
-        }
-        
-        // 2. 견적 상태 확인
-        if (!"ACCEPTED".equals(estimate.getStatus())) {
-            throw new ReportException("수락된 견적만 신고 작성이 가능합니다");
-        }
-        
-        */
-
-        //log.info("견적 기능 미구현 상태로 - 견적 검증 생략");
+    public ReportVO saveReport(ReportDTO reportDTO, Long userNo) {
 
         // 3. 이미 신고가 되어 있는 지 확인
-        boolean exists = reviewService.existsByEstimateNo(reportDTO.getEstimateNo());
-        if (exists) {
-            throw new ReportException("이미 신고가 작성된 견적서입니다");
-        }
+        validateNotReported(reportDTO, userNo);
 
         // 4. 신고 등록
         ReportVO reportVO = ReportVO.builder()
             .estimateNo(reportDTO.getEstimateNo())
             .content(reportDTO.getContent())
+            .userNo(userNo)
             .createDate(reportDTO.getCreateDate())
             .updateDate(reportDTO.getUpdateDate())
             .status("WAITING")
             .reasonNo(reportDTO.getReasonNo())
             .estimateNo(reportDTO.getEstimateNo())
-            .reporterUserNo(reportDTO.getReporterUserNo())
+            .reporterUserNo(userNo)
             .targetUserNo(reportDTO.getTargetUserNo())
             .build();
 
@@ -92,6 +71,20 @@ public class ReportServiceImpl implements ReportService {
         ReportValidator.validateDbResult(reportResult, "신고 등록에 실패했습니다.");
 
         return reportVO;
+    }
+
+
+    public void validateNotReported(ReportDTO reportDTO, Long userNo) {
+        boolean exists = reportMapper.existsReportByEstimateNo(
+            Map.of(
+                "estimateNo", reportDTO.getEstimateNo(),
+                "userNo", userNo
+            )
+        );
+
+        if (exists) {
+            throw new ReportException("이미 신고가 작성된 견적서입니다");
+        }
     }
 
 }

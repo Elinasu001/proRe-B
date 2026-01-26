@@ -15,6 +15,8 @@ import com.kh.even.back.file.model.vo.FileVO;
 @Mapper
 public interface ChatMapper {
 
+    boolean existsByEstimateNo(Long estimateNo);
+
     /**
      * 견적 상태 조회
      */
@@ -44,6 +46,7 @@ public interface ChatMapper {
      * 첨부파일 저장
      */
 	int saveChatAttachment(FileVO fileVo);
+
 
     /**
      * 회원 번호로 닉네임 조회

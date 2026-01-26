@@ -25,7 +25,7 @@ public class ReportDTO {
     private Long estimateNo;          // 신고된 견적서 번호 (FK)
     private Long reporterUserNo;        // 신고자 (FK)
     private Long targetUserNo;        // 신고대상 (FK)
-
+    //private Long userNo;            // 회원 번호 (FK)
 
     // 선택된 태그 번호 목록
     @Size(max = 1, message = "태그는 최대 1개만 선택 가능합니다")

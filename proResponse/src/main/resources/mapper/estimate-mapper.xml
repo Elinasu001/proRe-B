@@ -13,7 +13,8 @@
            FILE_NO
          , ORIGIN_NAME
          , FILE_PATH
-         , REQUEST_NO  
+         , REQUEST_NO
+         , STATUS  
            )
     VALUES
            (
@@ -21,6 +22,7 @@
          , #{originName}
          , #{filePath}
          , #{reqNo} 
+         , 'N'
            )      
 	</insert>
 	
@@ -48,6 +50,7 @@
 	 FROM TB_ESTIMATE_REQUEST r
 	 JOIN TB_EXPERT e
 	   ON e.USER_NO = r.EXPERT_NO
+	  AND e.STATUS = 'Y' 
 	 JOIN TB_MEMBER m
 	   ON m.USER_NO = e.USER_NO
 	 LEFT JOIN (
@@ -67,7 +70,8 @@
 			   ) rs ON rs.EXPERT_NO = r.EXPERT_NO
 	WHERE 
 	      r.USER_NO = #{userNo}
-	  AND r.STATUS = 'REQUESTED'     
+	  AND r.STATUS = 'REQUESTED' 
+	  AND m.STATUS = 'Y'    
 	ORDER 
 	   BY r.REQUEST_NO DESC
 	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
@@ -81,6 +85,7 @@
         ON er.REQUEST_NO = r.REQUEST_NO
      WHERE r.USER_NO = #{userNo}
        AND er.STATUS IN ('SENT', 'ACCEPTED')
+       AND er.DELETE_AT = 'N'
 	</select>
 	
 	<!-- 회원이 받은 견적 요청 내용 -->
@@ -128,14 +133,13 @@
 
 	<!-- 전문가가 받은 요청 리스트 수 -->
 	<select id="getReceivedRequestsCount">
-		SELECT 
-			   COUNT(*) 
-	      FROM 
-	           TB_ESTIMATE_REQUEST 
-	     WHERE 
-	           expert_No = #{expertNo} 
-	       AND 
-	           STATUS = 'REQUESTED'
+	SELECT COUNT(*) 
+  FROM TB_ESTIMATE_REQUEST er
+  JOIN TB_MEMBER m
+    ON m.USER_NO = er.USER_NO
+   AND m.STATUS = 'Y'
+ WHERE er.EXPERT_NO = #{expertNo} 
+   AND er.STATUS = 'REQUESTED'
 	</select>
 	
 	<!-- 전문가 받은 요청 리스트 -->
@@ -151,10 +155,15 @@
 	  JOIN 
 	       TB_MEMBER m
 	       USING (USER_NO)
-	 WHERE expert_No = #{expertNo} AND er.STATUS = 'REQUESTED'
+	 WHERE m.STATUS = 'Y' 
+	   AND 
+	 	   expert_No = #{expertNo} 
+	   AND 
+	       er.STATUS = 'REQUESTED'
 	 ORDER 
 	    BY 
            er.REQUEST_DATE DESC
+     OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY      
 	</select>
 	
 	<!-- 전문가의 견적이 맞는지 확인함 -->
@@ -185,6 +194,18 @@
 	       STATUS = 'QUOTED'    
 	</select>
 	
+	<!-- 견적이 로그인한 유저의 견적인지 확인 -->
+	<select id="getCheckEstimateCount">
+	SELECT 
+	       COUNT(*)
+	  FROM 
+	       TB_ESTIMATE_REQUEST
+	 WHERE 
+           USER_NO = #{userNo}
+	   AND 
+	       REQUEST_NO = #{requestNo}	
+	</select>
+	
 	<!-- 요청 견적 자세히 보기 -->
 	
 	<resultMap id="estimateDetailMap" type="EstimateRequestDetailDTO">
@@ -198,8 +219,10 @@
     <result property="requestType" column="REQUEST_TYPE"/>
     <result property="requestService"     column="REQUEST_SERVICE"/>
     <result property="content"     column="CONTENT"/>
-    <collection property="filePaths" ofType="string">
-        <result column="FILE_PATH"/>
+    <collection property="files"
+                ofType="com.kh.even.back.estimate.model.dto.EstimateFileDTO">
+        <id property="fileNo" column="FILE_NO"/>
+        <result property="filePath" column="FILE_PATH"/>
     </collection>
 	</resultMap>
 
@@ -215,19 +238,140 @@
 		 , REQUEST_TYPE
 		 , REQUEST_SERVICE
 		 , CONTENT
+		 , FILE_NO
 		 , FILE_PATH
 	  FROM 
 	       TB_ESTIMATE_REQUEST ter
 	  LEFT     
 	  JOIN 
-	       TB_MEMBER m USING (USER_NO)
+	       TB_MEMBER m USING (USER_NO) 
+	   AND
+	       m.STATUS = 'Y'
 	  LEFT
 	  JOIN
 	       TB_EXPERT_DETAIL_CATEGORY USING (CATEGORY_DETAIL_NO)
 	  LEFT     
 	  JOIN
-	       TB_ESTIMATE_REQUEST_ATTACHMENT USING (REQUEST_NO)
+	       TB_ESTIMATE_REQUEST_ATTACHMENT era USING (REQUEST_NO)
+	   AND era.STATUS = 'N'
 	 WHERE 
 	       REQUEST_NO = #{requestNo}  		
 	</select>
+	
+	<!-- 받은 견적 자세히 보기 ResultMap-->
+<resultMap id="getReceivedEstimateDetailResultMap"
+           type="com.kh.even.back.estimate.model.dto.EstimateResponseDetailDTO">
+
+    <!-- PK -->
+    <id property="requestNo" column="REQUEST_NO"/>
+
+    <result property="expertNo" column="EXPERT_NO"/>
+    <result property="nickname" column="NICKNAME"/>
+    <result property="profileImg" column="PROFILE_IMG"/>
+    <result property="address" column="ADDRESS"/>
+
+    <result property="starScore" column="STARSCORE"/>
+    <result property="reviewCount" column="REVIEWCOUNT"/>
+    <result property="successCount" column="SUCCESSCOUNT"/>
+
+    <result property="price" column="PRICE"/>
+    <result property="career" column="CAREER"/>
+    <result property="content" column="CONTENT"/>
+    <result property="startTime" column="START_TIME"/>
+    <result property="endTime" column="END_TIME"/>
+
+    <collection property="filePaths" ofType="string">
+        <result column="FILE_PATH"/>
+    </collection>
+
+</resultMap>
+	
+	
+	
+	<!-- 받은 견적 자세히 보기-->
+	<select id="getReceivedEstimateDetail" resultMap="getReceivedEstimateDetailResultMap">
+	 SELECT
+	 		rq.EXPERT_NO
+	 	  , REQUEST_NO	
+	 	  , m.PROFILE_IMG
+	 	  , m.NICKNAME
+	 	  , m.ADDRESS
+	      , PRICE
+	      , NVL(es.AVG_STAR_SCORE, 0) AS starScore
+	      , NVL(es.REVIEW_COUNT, 0) AS reviewCount
+	      , e.CAREER
+	      , rp.CONTENT
+	      , e.START_TIME
+	      , e.END_TIME
+	      ,  (
+	        SELECT COUNT(*)
+	        FROM TB_ESTIMATE_RESPONSE rp2
+	        JOIN TB_ESTIMATE_REQUEST rq2
+	          ON rp2.REQUEST_NO = rq2.REQUEST_NO
+	        WHERE rq2.EXPERT_NO = e.USER_NO
+	          AND rp2.STATUS = 'EXPIRED'
+	      ) AS completedJobs
+	      , FILE_PATH
+	   FROM 
+	        TB_ESTIMATE_RESPONSE rp
+	   LEFT
+	   JOIN
+	        TB_ESTIMATE_REQUEST rq USING (REQUEST_NO)
+	   LEFT
+	   JOIN
+	        TB_EXPERT e ON rq.EXPERT_NO  = e.USER_NO
+	   LEFT
+	   JOIN
+	        TB_ESTIMATE_RESPONSE_ATTACHMENT rpa USING (ESTIMATE_NO)
+	    AND 
+	        rpa.STATUS = 'N'    
+	   LEFT
+	   JOIN
+	        TB_MEMBER m ON rq.EXPERT_NO  = m.USER_NO 
+	    AND 
+	    	m.STATUS = 'Y'     
+	   LEFT 
+	   JOIN 
+	        V_EXPERT_STATS es
+	     ON es.EXPERT_NO = e.USER_NO     
+	  WHERE
+	        REQUEST_NO = #{requestNo}
+	</select>
+	
+	<!-- requestNo 으로 기존 견적 콘텐츠 수정 -->
+	<update id="updateEstimateContent">
+	UPDATE
+	       TB_ESTIMATE_REQUEST
+	   SET
+	       CONTENT = #{content}
+	 WHERE
+	       REQUEST_NO = #{requestNo}  
+	   AND 
+	       STATUS = 'REQUESTED'         
+	</update>
+	<!-- requestNo 으로 기존 견적 이미지 Status 변경 -->
+	<update id="softDeleteAllAttachments">
+	UPDATE
+	       TB_ESTIMATE_REQUEST_ATTACHMENT
+	   SET
+	       STATUS = 'Y'
+	 WHERE
+	       REQUEST_NO = #{requestNo}          
+	</update>
+	
+	<!-- requestNo 파일 조회 -->
+	<select id="findAllbyRequestNo">
+	SELECT
+ 	       FILE_PATH
+ 	  FROM
+ 	       TB_ESTIMATE_REQUEST
+ 	  LEFT
+ 	  JOIN
+ 	       TB_ESTIMATE_REQUEST_ATTACHMENT ra USING (REQUEST_NO)
+ 	 WHERE
+ 	       REQUEST_NO = #{requestNo}
+ 	   AND
+ 	       ra.STATUS = 'N'
+	</select>
+	
 </mapper>

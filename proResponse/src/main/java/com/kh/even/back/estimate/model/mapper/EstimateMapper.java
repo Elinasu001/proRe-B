@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.EstimateResponseDetailDTO;
 import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
@@ -26,13 +27,22 @@ public interface EstimateMapper {
 	List<ResponseEstimateDTO> getResponseEstimateDetails(Map<String, Object> params);
 
 	int getReceivedRequestsCount(Long expertNo);
-	
+
 	List<ExpertRequestUserDTO> getReceivedRequests(Map<String, Object> params);
-	
-	int getCheckEstimateCountRequested(@Param("userNo")Long userNo,@Param("requestNo") Long requestNo);
-	
+
+	int getCheckEstimateCountRequested(@Param("userNo") Long userNo, @Param("requestNo") Long requestNo);
+
 	EstimateRequestDetailDTO getEstimateDetail(Long requestNo);
+
+	int getCheckEstimateCountOuoted(@Param("userNo") Long userNo, @Param("requestNo") Long requestNo);
+
+	int getCheckEstimateCount(@Param("userNo") Long userNo, @Param("requestNo") Long requestNo);
+
+	EstimateResponseDetailDTO getReceivedEstimateDetail(Long requestNo);
+
+	void updateEstimateContent(@Param("requestNo") Long requestNo, @Param("content") String content);
 	
-	int getCheckEstimateCountOuoted(@Param("userNo")Long userNo,@Param("requestNo") Long requestNo);
+	void softDeleteAllAttachments(Long requestNo);
 	
+	List<String> findAllbyRequestNo(Long requestNo);
 }

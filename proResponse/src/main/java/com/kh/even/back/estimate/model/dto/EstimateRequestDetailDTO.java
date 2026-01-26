@@ -25,7 +25,7 @@ public class EstimateRequestDetailDTO {
 	private String requestType;
 	private String requestService;
 	private String content;
-	private List<String> filePaths;
+	private List<EstimateFileDTO> files;
 	
 
 }

@@ -14,10 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
+import com.kh.even.back.category.model.dto.DetailCategoryDTO;
+import com.kh.even.back.category.model.dto.ExpertListDTO;
 import com.kh.even.back.common.ResponseData;
+import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
+import com.kh.even.back.util.model.dto.PageResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,4 +57,37 @@ public class ExpertController {
 
 	}
 
+	@GetMapping("/matches")
+	public ResponseEntity<ResponseData<PageResponse<ExpertRequestUserDTO>>> getMatchedUser(
+			@AuthenticationPrincipal CustomUserDetails user,
+			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
+
+		return ResponseData.ok(expertService.getMatchedUser(pageNo, user), "조회에 성공 했습니다");
+
+	}
+
+	@GetMapping("/{expertNo}/categories")
+	public ResponseEntity<ResponseData<List<DetailCategoryDTO>>> getExpertCategories(
+			@AuthenticationPrincipal CustomUserDetails user, @PathVariable("expertNo") Long expertNo) {
+
+		return ResponseData.ok(expertService.getExpertCategories(expertNo), "조회에 성공 했습니다.");
+
+	}
+	
+	@GetMapping("/map")
+	public ResponseEntity<ResponseData<List<ExpertLocationDTO>>> getExpertMapLocations(@RequestParam(name="latitude") double latitude
+			, @RequestParam(name="longitude") double longitude , @RequestParam(name="radius" , defaultValue = "3") int radius){
+		
+		return ResponseData.ok(expertService.getExpertMapLocations(latitude,longitude,radius),"조회에 성공 했습니다.");
+		
+	}
+	
+	@GetMapping("/likes")
+	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getLikedExperts(@AuthenticationPrincipal CustomUserDetails user , @RequestParam(name = "pageNo", defaultValue = "1") int pageNo){
+		
+		
+		
+		return ResponseData.ok(expertService.getLikedExperts(user,pageNo), "조회에 성공 했습니다.");
+		
+	}
 }

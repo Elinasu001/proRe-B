@@ -40,6 +40,10 @@
 		  JOIN
 		       TB_MEMBER m
 		    ON m.USER_NO = e.USER_NO
+		  AND 
+	     	   m.STATUS = 'Y'
+ 	 	  AND 
+ 	     	   e.STATUS = 'Y'  
 		  LEFT
 		  JOIN
 		       V_EXPERT_STATS es
@@ -58,54 +62,59 @@
 	
 	<!-- 전문가들 조회 -->
 	<select id="getExpertList" resultType="ExpertListDTO">
-		SELECT
-		       e.USER_NO              AS expertNo
-		     , m.PROFILE_IMG          AS profileImg
-		     , m.NICKNAME             AS nickName
-		     , e.CAREER
-		     , e.START_TIME           AS startTime
-		     , e.END_TIME             AS endTime
-		     , NVL(es.AVG_STAR_SCORE, 0)   AS starScore
-		     , NVL(es.REVIEW_COUNT, 0)     AS reviewCount
-		     , m.ADDRESS
-		     , CASE
-		           WHEN #{userNo} IS NULL THEN 0
-		           WHEN EXISTS (
-		               SELECT
-		                      1
-		                 FROM
-		                      TB_LIKE ul
-		                WHERE
-		                      ul.EXPERT_NO = e.USER_NO
-		                  AND ul.USER_NO   = #{userNo}
-		           ) THEN 1
-		           ELSE 0
-		       END                    AS userLiked
-		     , NVL(es.TOTAL_LIKE_COUNT, 0) AS totalLikes
-		  FROM
-		       TB_EXPERT e
-		  JOIN
-		       TB_MEMBER m
-		    ON m.USER_NO = e.USER_NO
-		  LEFT
-		  JOIN
-		       V_EXPERT_STATS es
-		    ON es.EXPERT_NO = e.USER_NO
-		 WHERE
-		       EXISTS (
-		           SELECT
-		                  1
-		             FROM
-		                  TB_EXPERT_SAVE_CATEGORY esc
-		            WHERE
-		                  esc.USER_NO = e.USER_NO
-		              AND esc.CATEGORY_DETAIL_NO = #{categoryDetailNo}
-		       )
-		 ORDER
-		    BY
-		       NVL(es.AVG_STAR_SCORE, 0) DESC
-		     , NVL(es.TOTAL_LIKE_COUNT, 0) DESC
-		     , e.USER_NO DESC
+	SELECT
+	       e.USER_NO              AS expertNo
+	     , m.PROFILE_IMG          AS profileImg
+	     , m.NICKNAME             AS nickName
+	     , e.CAREER
+	     , e.START_TIME           AS startTime
+	     , e.END_TIME             AS endTime
+	     , NVL(es.AVG_STAR_SCORE, 0)   AS starScore
+	     , NVL(es.REVIEW_COUNT, 0)     AS reviewCount
+	     , m.ADDRESS
+	     , CASE
+	           WHEN #{userNo} IS NULL THEN 0
+	           WHEN EXISTS (
+	               SELECT 1
+	                 FROM TB_LIKE ul
+	                WHERE ul.EXPERT_NO = e.USER_NO
+	                  AND ul.USER_NO   = #{userNo}
+	           ) THEN 1
+	           ELSE 0
+	       END                    AS userLiked
+	     , NVL(es.TOTAL_LIKE_COUNT, 0) AS totalLikes
+	     , (
+	         SELECT COUNT(*)
+	           FROM TB_ESTIMATE_RESPONSE rp
+	           JOIN TB_ESTIMATE_REQUEST rq
+	             ON rp.REQUEST_NO = rq.REQUEST_NO
+	          WHERE rq.EXPERT_NO = e.USER_NO
+	            AND rp.STATUS = 'EXPIRED'
+	       ) AS completedJobs
+	FROM
+	       TB_EXPERT e
+	JOIN
+	       TB_MEMBER m
+	  ON m.USER_NO = e.USER_NO
+	 AND 
+	     m.STATUS = 'Y'
+ 	 AND 
+ 	     e.STATUS = 'Y'  
+	LEFT JOIN
+	       V_EXPERT_STATS es
+	  ON es.EXPERT_NO = e.USER_NO
+	WHERE
+	       EXISTS (
+	           SELECT 1
+	             FROM TB_EXPERT_SAVE_CATEGORY esc
+	            WHERE esc.USER_NO = e.USER_NO
+	              AND esc.CATEGORY_DETAIL_NO = #{categoryDetailNo}
+	       )
+	ORDER BY
+	       NVL(es.AVG_STAR_SCORE, 0) DESC
+	     , NVL(es.TOTAL_LIKE_COUNT, 0) DESC
+	     , e.USER_NO DESC
+	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY     
 	</select>
 	
 </mapper>

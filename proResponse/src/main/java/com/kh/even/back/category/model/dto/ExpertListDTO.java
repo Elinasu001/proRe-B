@@ -24,5 +24,6 @@ public class ExpertListDTO {
 	private String address;
 	private int userLiked;
 	private int totalLikes;
-
+	private int completedJobs;
+	
 }

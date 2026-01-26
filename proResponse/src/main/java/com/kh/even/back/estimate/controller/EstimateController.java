@@ -18,6 +18,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.EstimateRequestUpdateDTO;
 import com.kh.even.back.estimate.model.dto.EstimateResponseDetailDTO;
 import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.estimate.model.service.EstimateService;
@@ -55,11 +56,13 @@ public class EstimateController {
 
 	}
 
-	@GetMapping("/response/{requestNo}")
+	@GetMapping("response/{requestNo}")
 	public ResponseEntity<ResponseData<EstimateResponseDetailDTO>> getReceivedEstimateDetail(
-			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+			@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("requestNo") Long requestNo) {
 
-		return null;
+		EstimateResponseDetailDTO dto = estimateService.getReceivedEstimateDetail(customUserDetails, requestNo);
+
+		return ResponseData.ok(dto, "조회에 성공 했습니다.");
 
 	}
 
@@ -92,12 +95,28 @@ public class EstimateController {
 	}
 
 	@PutMapping("/{requestNo}/accept")
-	public ResponseEntity<ResponseData<Void>> updateEstimate(@PathVariable("requestNo") Long requestNo,
+	public ResponseEntity<ResponseData<Void>> updateEstimateStatus(@PathVariable("requestNo") Long requestNo,
 			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 		estimateService.updateEstimateStatus(requestNo, customUserDetails);
 
 		return ResponseData.ok(null, "해당 견적 승낙에 성공하였습니다.");
+
+	}
+
+	@PutMapping("/{requestNo}")
+	public ResponseEntity<ResponseData<Void>> updateRequestEstimate(
+	        @AuthenticationPrincipal CustomUserDetails user,
+	        @PathVariable("requestNo") Long requestNo,
+	        @ModelAttribute @Valid EstimateRequestUpdateDTO dto,
+	        @RequestParam(value = "images", required = false) List<MultipartFile> images
+			){
+	
+		
+			
+		 estimateService.updateRequestEstimate(requestNo, dto, images, user);
+
+		 return ResponseData.ok(null, "견적 요청 수정에 성공했습니다.");
 
 	}
 

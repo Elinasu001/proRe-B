@@ -12,6 +12,8 @@ import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDTO;
 import com.kh.even.back.estimate.model.dto.EstimateRequestDetailDTO;
+import com.kh.even.back.estimate.model.dto.EstimateRequestUpdateDTO;
+import com.kh.even.back.estimate.model.dto.EstimateResponseDetailDTO;
 import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
@@ -23,6 +25,7 @@ import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
+import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
 import com.kh.even.back.util.model.dto.PageResponse;
@@ -40,6 +43,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	private final EstimateRepository repository;
 	private final ExpertEstimateRepository expertRepository;
 	private final Pagenation pagenation;
+	private final S3Service s3Service;
 
 	@Override
 	@Transactional
@@ -122,52 +126,92 @@ public class EstimateSerivceImpl implements EstimateService {
 		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
 
 		params.put("expertNo", expertNo);
-		
+
 		List<ExpertRequestUserDTO> list = mapper.getReceivedRequests(params);
 
 		PageInfo pageInfo = (PageInfo) params.get("pi");
-		
+
 		return new PageResponse<ExpertRequestUserDTO>(list, pageInfo);
-		
+
 	}
 
 	@Override
-	public EstimateRequestDetailDTO getEstimateDetail(CustomUserDetails customUserDetails , Long requestNo) {
-		
+	public EstimateRequestDetailDTO getEstimateDetail(CustomUserDetails customUserDetails, Long requestNo) {
+
 		Long userNo = customUserDetails.getUserNo();
-		
-		int count = mapper.getCheckEstimateCountRequested(userNo,requestNo);
-		
+
+		int count = mapper.getCheckEstimateCountRequested(userNo, requestNo);
+
 		AssertUtil.notFound(count, "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
-		
+
 		return mapper.getEstimateDetail(requestNo);
-		
+
 	}
 
-	
 	@Override
 	@Transactional
 	public void updateEstimateStatus(Long requestNo, CustomUserDetails customUserDetails) {
-		
+
 		Long userNo = customUserDetails.getUserNo();
-		
+
 		int count = mapper.getCheckEstimateCountOuoted(userNo, requestNo);
-		
+
 		AssertUtil.notFound(count, "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
-		
+
 		EstimateRequestEntity requestEntity = repository.findById(requestNo)
-									.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
-		
-		
+				.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
+
 		requestEntity.changeStatus(EstimateRequestStatus.MATCHED);
-		
+
 		ExpertEstimateEntity responseEntity = expertRepository.findByRequestNo(requestNo);
-		
+
 		responseEntity.changeStatus(EstimateResponseStatus.ACCEPTED);
+
+	}
+
+	@Override
+	public EstimateResponseDetailDTO getReceivedEstimateDetail(CustomUserDetails customUserDetails, Long requestNo) {
+
+		Long userNo = customUserDetails.getUserNo();
+
+		int count = mapper.getCheckEstimateCount(userNo, requestNo);
+
+		AssertUtil.notFound(count, "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
+
+		return mapper.getReceivedEstimateDetail(requestNo);
+
+	}
+
+	@Override
+	@Transactional
+	public void updateRequestEstimate(Long requestNo, EstimateRequestUpdateDTO dto, List<MultipartFile> images,
+			CustomUserDetails user) {
+
+		Long userNo = user.getUserNo();
+
+		AssertUtil.notFound(mapper.getCheckEstimateCountRequested(userNo, requestNo), "해당하는 견적을 찾을 수 없거나 회원의 견적이 아닙니다.");
 		
+		AssertUtil.validateImageFiles(images);
+		
+		List<String> filePaths = mapper.findAllbyRequestNo(requestNo);
+		
+		// 기존 컨텐츠 수정
+		mapper.updateEstimateContent(requestNo, dto.getContent());
+
+		// 기존 컨텐츠 이미지 다 Y로 softDelete
+		mapper.softDeleteAllAttachments(requestNo);
+		
+		// 기존 filePath s3에서 삭제
+		filePaths.forEach(s3Service::deleteFile);
+		
+	    // 5. 새 이미지 업로드 + DB 저장
+	    fileUploadService.uploadFiles(
+	        images,
+	        "estimate",
+	        requestNo,
+	        mapper::saveEstimateAttachment
+	    );
 		
 	}
 
-	
-	
 }

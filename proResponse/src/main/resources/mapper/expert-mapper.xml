@@ -51,6 +51,14 @@
 	           ) THEN 1
 	           ELSE 0
 	       END                       AS USER_LIKED
+	     , (
+         SELECT COUNT(*)
+           FROM TB_ESTIMATE_RESPONSE rp
+           JOIN TB_ESTIMATE_REQUEST rq
+             ON rp.REQUEST_NO = rq.REQUEST_NO
+          WHERE rq.EXPERT_NO = e.USER_NO
+            AND rp.STATUS = 'EXPIRED'
+       ) AS completedJobs  
 	  FROM
 	       TB_EXPERT e
 	  JOIN
@@ -132,29 +140,24 @@
 	<!-- 매치된 유저들 조회 -->
 	<select id="getMatchedUser">
 	SELECT
-		   REQUEST_NO requestNo
-		 , USER_NO userNo  
-	     , NICKNAME
-	     , ADDRESS
-	     , PROFILE_IMG
-	  FROM
-	       TB_ESTIMATE_REQUEST rq
-	  LEFT
-	  JOIN
-	       TB_ESTIMATE_RESPONSE rp USING (REQUEST_NO)
-	  LEFT
-	  JOIN
-	       TB_MEMBER m USING (USER_NO)
-	 WHERE
+	       rq.REQUEST_NO AS requestNo,
+	       m.USER_NO AS userNo,
+	       m.NICKNAME,
+	       m.ADDRESS,
+	       m.PROFILE_IMG profileImg
+	FROM
+	     TB_ESTIMATE_REQUEST rq
+	LEFT JOIN TB_ESTIMATE_RESPONSE rp 
+	       ON rq.REQUEST_NO = rp.REQUEST_NO
+	LEFT JOIN TB_MEMBER m 
+	       ON m.USER_NO = rq.USER_NO
+	WHERE
 	       m.STATUS = 'Y'
-	   AND
-	       EXPERT_NO = #{userNo}
-	   AND    
-	       rp.STATUS IN ('ACCEPTED' , 'EXPIRED')
-	 ORDER 
-	    BY 
+	   AND EXPERT_NO = #{userNo}
+	   AND rp.STATUS IN ('ACCEPTED', 'EXPIRED')
+	ORDER BY 
 	       rq.REQUEST_NO DESC
-    OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY      
+	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
 	
 	<select id="getExpertCategories" parameterType="long">

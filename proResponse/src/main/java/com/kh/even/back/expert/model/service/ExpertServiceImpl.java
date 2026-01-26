@@ -95,10 +95,13 @@ public class ExpertServiceImpl implements ExpertService {
 		AssertUtil.validateImageFiles(files);
 
 		ExpertEstimateEntity entity = expertEstimateRepository.save(toEntity(expertEstimate));
+		expertEstimateRepository.flush();
 
 		EstimateRequestEntity requestEntity = estimateRepository.findById(entity.getRequestNo())
 				.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
 
+		log.info("entity : {} " , entity);
+		
 		// JPA의 dirtyCheck
 		requestEntity.changeStatus(EstimateRequestStatus.QUOTED);
 

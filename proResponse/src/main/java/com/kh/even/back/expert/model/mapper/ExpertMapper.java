@@ -36,5 +36,4 @@ public interface ExpertMapper {
 	
 	List<ExpertListDTO> getLikedExperts(Map<String, Object> params);
 	
-	
 }

@@ -27,5 +27,6 @@ public class ExpertDetailDTO {
 	private String address;
 	private int userLiked;
 	private List<String> images;
+	private int completedJobs;
 
 }

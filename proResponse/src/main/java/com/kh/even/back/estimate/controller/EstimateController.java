@@ -38,6 +38,7 @@ public class EstimateController {
 
 	private final EstimateService estimateService;
 
+	// 회원 -> 내 견적 요청 조회
 	@GetMapping
 	public ResponseEntity<ResponseData<PageResponse<ExpertDTO>>> getEstimate(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -47,6 +48,7 @@ public class EstimateController {
 
 	}
 
+	// 회원 -> 전문가에게 견적 응답 조회
 	@GetMapping("/receive")
 	public ResponseEntity<ResponseData<PageResponse<ResponseEstimateDTO>>> getReceivedEstimates(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -56,6 +58,7 @@ public class EstimateController {
 
 	}
 
+	// 회원 -> 전문가 견적 상세
 	@GetMapping("response/{requestNo}")
 	public ResponseEntity<ResponseData<EstimateResponseDetailDTO>> getReceivedEstimateDetail(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("requestNo") Long requestNo) {
@@ -66,6 +69,7 @@ public class EstimateController {
 
 	}
 
+	// 전문가 견적 요청 자세히 보기
 	@GetMapping("/request/{requestNo}")
 	public ResponseEntity<ResponseData<EstimateRequestDetailDTO>> getEsimateDetail(
 			@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable("requestNo") Long requestNo) {
@@ -74,6 +78,7 @@ public class EstimateController {
 
 	}
 
+	// 전문가 회원 -> 전문가 견적 요청 조회
 	@GetMapping("/requests")
 	public ResponseEntity<ResponseData<PageResponse<ExpertRequestUserDTO>>> getReceivedRequests(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -83,6 +88,7 @@ public class EstimateController {
 
 	}
 
+	// 회원 -> 전문가 견적 요청
 	@PostMapping
 	public ResponseEntity<ResponseData<Void>> saveEstimate(@Valid @ModelAttribute EstimateRequestDTO estimateRequest,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
@@ -94,6 +100,7 @@ public class EstimateController {
 
 	}
 
+	// 회원 -> 전문가 견적 승낙
 	@PutMapping("/{requestNo}/accept")
 	public ResponseEntity<ResponseData<Void>> updateEstimateStatus(@PathVariable("requestNo") Long requestNo,
 			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -104,6 +111,7 @@ public class EstimateController {
 
 	}
 
+	// 회원 견적 요청 수정
 	@PutMapping("/{requestNo}")
 	public ResponseEntity<ResponseData<Void>> updateRequestEstimate(
 	        @AuthenticationPrincipal CustomUserDetails user,

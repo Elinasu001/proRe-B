@@ -36,6 +36,7 @@ public class ExpertController {
 
 	private final ExpertService expertService;
 
+	// 전문가 상세 조회
 	@GetMapping("/{expertNo}")
 	public ResponseEntity<ResponseData<ExpertDetailDTO>> getExpertDetails(@PathVariable("expertNo") Long expertNo,
 			@AuthenticationPrincipal CustomUserDetails user) {
@@ -46,6 +47,7 @@ public class ExpertController {
 
 	}
 
+	// 전문가 -> 회원 견적 응답
 	@PostMapping("/estimate")
 	public ResponseEntity<ResponseData<Void>> saveEstimate(@Valid @ModelAttribute ExpertEstimateDTO expertEstimateDTO,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,

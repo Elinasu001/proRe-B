@@ -113,7 +113,9 @@ public class ExpertServiceImpl implements ExpertService {
 
 	}
 	
-	
+	/**
+	 * 전문가 등록을 위해 카테고리를 조회하는 기능
+	 */
 	public CategoryResponseDTO getExpertCategory(CustomUserDetails user) {
 		
 		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.

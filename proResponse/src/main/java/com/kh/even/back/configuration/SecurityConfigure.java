@@ -55,16 +55,19 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.PUT).permitAll();
 
 //					// 3. GET - 로그인 필요 (상세 페이지들)
+					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages", "api/reviews/**", "api/reports/**").authenticated();
 //					requests.requestMatchers(HttpMethod.GET, "/api/admin/**" , "/api/members/**").authenticated();
 //
 //					 4. PUT - 로그인 필요
-					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/members/me/**").authenticated();
+					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
+					requests.requestMatchers(HttpMethod.PATCH, "/api/members/me/**").authenticated();
+
 //
 //					// 5. DELETE - 로그인 필요
 //					requests.requestMatchers(HttpMethod.DELETE, "/api/admin/**").authenticated();
 //
 //					// 6. POST - 게시글/댓글/공지 작성 (로그인 필요)
-//					requests.requestMatchers(HttpMethod.POST, "/api/admin/**").authenticated();
+					requests.requestMatchers(HttpMethod.POST, "/api/reports", "api/reviews/**", "api/likes/**").authenticated();
 //
 //					// 7. 관리자 전용
 //					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ADMIN");

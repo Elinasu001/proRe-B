@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.even.back.like.model.dao.LikeMapper">
+
+	<!-- 좋아요 존재 여부 -->
+	<select id="existsLike" parameterType="LikeVO" resultType="_int">
+	    SELECT 
+	           COUNT(*) 
+	      FROM 
+	           TB_LIKE
+	     WHERE 
+	           EXPERT_NO = #{expertNo}
+	       AND 
+	           USER_NO = #{userNo}
+	</select>
+
+	<!-- 좋아요 추가 -->
+	<insert id="insertLike" parameterType="LikeVO">
+		<selectKey keyProperty="likeNo" resultType="Long" order="BEFORE">
+			SELECT SEQ_LIKE.NEXTVAL FROM DUAL
+		</selectKey>
+	    INSERT 
+	      INTO 
+	           TB_LIKE 
+	           (
+	           LIKE_NO
+	         , EXPERT_NO
+	         , USER_NO
+			 , CREATE_DATE
+	           )
+	    VALUES 
+	           (
+	           #{likeNo}
+	         , #{expertNo}
+			 , #{userNo}
+			 , SYSDATE
+	           )
+	</insert>
+
+	<!-- 좋아요 삭제 -->
+	<delete id="deleteLike" parameterType="LikeVO">
+	    DELETE 
+	      FROM 
+	           TB_LIKE
+	     WHERE 
+	           EXPERT_NO = #{expertNo}
+	       AND 
+	           USER_NO = #{userNo}
+	</delete>
+
+	<!-- 유저 권한 조회 -->
+	<select id="getUserRoleByUserNo" parameterType="long" resultType="string">
+        SELECT 
+               USER_ROLE
+          FROM 
+               TB_MEMBER
+         WHERE 
+       USER_NO = #{userNo}
+    </select>
+	
+	<!-- 전문가 번호 존재 여부 확인 -->
+	<select id="existsExpertNo" parameterType="long" resultType="boolean">
+		SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+		FROM TB_EXPERT
+		WHERE USER_NO = #{expertNo}
+	</select>
+
+</mapper>

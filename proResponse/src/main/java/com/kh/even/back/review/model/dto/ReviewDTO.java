@@ -18,10 +18,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor 
+@NoArgsConstructor
 @ToString
 public class ReviewDTO {
 
+    private Long reviewNo;
     @NotNull(message = "견적 번호는 필수입니다")
     private Long estimateNo;
     

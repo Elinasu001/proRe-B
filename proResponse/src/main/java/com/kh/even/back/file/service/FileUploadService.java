@@ -23,7 +23,7 @@ public class FileUploadService {
 	 * @param requestNo 테이블에 참조하는 No
 	 * @param saveCallback mapper 레퍼런스 메소드
 	 */
-	public void uploadFiles(List<MultipartFile> files, String directory, Long requestNo,
+	public void uploadFiles(List<MultipartFile> files, String directory, Long refNo,
 			Consumer<FileVO> saveCallback) {
 		if (files == null || files.isEmpty()) {
 			return;
@@ -32,7 +32,7 @@ public class FileUploadService {
 		for (MultipartFile file : files) {
 			String filePath = s3Service.store(file, directory);
 
-			FileVO vo = FileVO.builder().originName(file.getOriginalFilename()).filePath(filePath).reqNo(requestNo)
+			FileVO vo = FileVO.builder().originName(file.getOriginalFilename()).filePath(filePath).status("Y").reqNo(refNo)
 					.build();
 			
 			//Consumer<FileVO> saveCallback = vo -> mapper.saveExpertEstimateAttachment(vo); 컴파일 시점에서 바뀌는값 뒤에 mapper.save 는 바뀔수있음

@@ -8,10 +8,10 @@ import lombok.ToString;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor 
 @ToString
-public class ChatRoomUserDTO {
-    private Long roomNo;	  // 채팅방 번호
-    private Long userNo;	  // 회원 번호
+public class ChatMessageSearchDTO {
+    private Long messageNo;				// 메시지 번호 (PK)
+    private int size = 50;
 }

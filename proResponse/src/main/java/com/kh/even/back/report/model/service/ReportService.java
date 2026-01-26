@@ -17,7 +17,7 @@ public interface ReportService {
      * @param estimateNo 견적 번호
      * @return 신고 상세 DTO(ReportDetailDTO)
      */
-    ReportDetailDTO getReport(Long estimateNo /*, Long userNo */);
+    ReportDetailDTO getReport(Long estimateNo, Long userNo);
 
     /**
      * 태그 전체 조회 (등록 시 필요)
@@ -33,9 +33,7 @@ public interface ReportService {
      * @param reportDTO 신고 DTO
      * @return 등록된 신고 VO(ReportVO)
      */
-    ReportVO saveReport(ReportDTO reportDTO
-        //, Long userNo
-    );
+    ReportVO saveReport(ReportDTO reportDTO, Long userNo);
 
 
 }

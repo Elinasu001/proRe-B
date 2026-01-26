@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberSearchRequest {
+public class AdminMemberSearchRequest {
     
     @Min(value = 1, message = "페이지는 1 이상이어야 합니다")
     private int currentPage = 1;

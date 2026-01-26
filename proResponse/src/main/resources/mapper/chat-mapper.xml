@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.kh.even.back.chat.model.dao.ChatMapper">
+
+
+	
+	<!-- 채팅방 ResultMap -->
+	<resultMap id="chatMessageResultMap" type="ChatMessageDTO">
+		<id property="messageNo" column="MESSAGE_NO"/>
+		<result property="userNo" column="USER_NO"/>
+		<result property="content" column="CONTENT"/>
+		<result property="sentDate" column="SENT_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="roomNo" column="ROOM_NO"/>
+		<result property="type" column="TYPE"/>
+		<result property="estimateNo" column="ESTIMATE_NO"/>
+		<result property="nickname" column="NICKNAME"/>
+		<result property="userRole" column="USER_ROLE"/>
+		<association property="actions" javaType="ChatRoomActionsDTO">
+			<result property="reported" column="REPORTED"/>
+			<result property="reviewed" column="REVIEWED"/>
+			<result property="paid" column="PAID"/>
+		</association>
+		<collection property="attachments" ofType="ChatAttachmentDTO" resultMap="ChatAttachmentMap"/>
+	</resultMap>
+
+	<!-- 첨부 파일 ResultMap -->
+	<resultMap id="ChatAttachmentMap" type="ChatAttachmentDTO">
+		<id property="fileNo" column="FILE_NO"/>
+		<result property="messageNo" column="MESSAGE_NO"/>
+		<result property="filePath" column="FILE_PATH"/>
+		<result property="originName" column="ORIGIN_NAME"/>
+		<result property="uploadDate" column="UPLOAD_DATE"/>
+		<result property="status" column="STATUS"/>
+	</resultMap>
+
+
+	<select id="existsByEstimateNo"
+        parameterType="Long"
+        resultType="boolean">
+      SELECT
+          CASE
+              WHEN COUNT(*) &gt; 0 THEN 1 <!--존재하면 1(true)-->
+              ELSE 0 <!--존재 안하면 0(false)-->
+          END
+          FROM TB_REVIEW
+       WHERE ESTIMATE_NO = #{value}
+    </select>
+
+	
+	<!-- 견적 요청 상태 조회 -->
+	<select id="getRequestStatusByEstimateNo" parameterType="long" resultType="string">
+		SELECT
+		       STATUS
+		  FROM
+		       TB_ESTIMATE_REQUEST
+		 WHERE
+		       REQUEST_NO = (
+				SELECT
+				       REQUEST_NO
+				  FROM
+				       TB_ESTIMATE_RESPONSE
+			     WHERE
+				       ESTIMATE_NO = #{estimateNo}
+		       )
+	</select>
+
+	<!-- 견적 응답 상태 조회 -->
+	<select id="getResponseStatusByEstimateNo" parameterType="long" resultType="string">
+		SELECT
+		       STATUS
+		  FROM
+		       TB_ESTIMATE_RESPONSE
+		 WHERE
+		       ESTIMATE_NO = #{estimateNo}
+	</select>
+
+	<!-- 채팅방 생성 -->
+	<insert id="createRoom" parameterType="ChatRoomVO" useGeneratedKeys="true" keyProperty="roomNo">
+		<selectKey keyProperty="roomNo" resultType="Long" order="AFTER">
+            SELECT SEQ_CHAT_ROOM.CURRVAL FROM DUAL
+        </selectKey>
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM
+			   (
+			   ROOM_NO
+			 , STATUS
+			 , CREATED_DATE
+			 , ESTIMATE_NO
+			   )
+		VALUES (
+			   SEQ_CHAT_ROOM.NEXTVAL
+			, #{status}
+			, #{createDate}
+			, #{estimateNo}
+			  )
+	</insert>
+	
+	<!-- 여러 메시지의 첨부파일 일괄 조회 -->
+	<select id="getAttachmentsByMessageNos" parameterType="list" resultMap="ChatAttachmentMap">
+		SELECT
+			   FILE_NO
+			 , MESSAGE_NO
+			 , FILE_PATH
+			 , ORIGIN_NAME
+			 , UPLOAD_DATE
+			 , STATUS
+		  FROM
+			   TB_CHAT_ROOM_MESSAGE_ATTACHMENT
+		 WHERE
+			   MESSAGE_NO IN
+		   <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			  #{item}
+		   </foreach>
+	</select>
+
+	<!--커서 기반 페이징 -->
+	<select id="getMessagesByCursor" parameterType="map" resultMap="chatMessageResultMap">
+		SELECT
+			   m.MESSAGE_NO
+			 , m.USER_NO
+			 , m.CONTENT
+			 , m.SENT_DATE
+			 , m.STATUS
+			 , m.ROOM_NO
+			 , m.TYPE
+			 , ch.ESTIMATE_NO
+			 , u.NICKNAME
+			 , u.USER_ROLE
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_REPORT r
+				WHERE r.ESTIMATE_NO = ch.ESTIMATE_NO
+			 	AND r.REPORTER_USER_NO = #{userNo}
+			 ) THEN 1 ELSE 0 END AS REPORTED
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_REVIEW rv
+				JOIN TB_ESTIMATE_RESPONSE er ON rv.ESTIMATE_NO = er.ESTIMATE_NO
+				JOIN TB_ESTIMATE_REQUEST eq ON er.REQUEST_NO = eq.REQUEST_NO
+				WHERE rv.ESTIMATE_NO = ch.ESTIMATE_NO
+				AND eq.USER_NO = #{userNo}
+			 ) THEN 1 ELSE 0 END AS REVIEWED
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_PAYMENT p
+				WHERE p.ROOM_NO = m.ROOM_NO
+			 ) THEN 1 ELSE 0 END AS PAID
+		  FROM
+			   TB_CHAT_ROOM_MESSAGE m
+		  JOIN
+               TB_CHAT_ROOM ch ON m.ROOM_NO = ch.ROOM_NO
+		  JOIN 
+			   TB_MEMBER u ON m.USER_NO = u.USER_NO
+		 WHERE
+			   m.ROOM_NO = #{roomNo}
+			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
+				AND m.MESSAGE_NO &lt; #{messageNo}
+			</if>
+		ORDER BY m.MESSAGE_NO DESC
+		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
+	</select>
+
+	<select id="getNicknameByUserNo" parameterType="long" resultType="string">
+		SELECT
+			   NICKNAME
+		 FROM
+			  TB_MEMBER
+		WHERE
+			  USER_NO = #{userNo}
+	</select>
+
+	<!-- 견적 번호로 채팅방 번호 조회 -->
+	<select id="getRoomNoByEstimateNo" resultType="Long">
+		SELECT 
+		       ROOM_NO
+		  FROM 
+		       TB_CHAT_ROOM
+		 WHERE 
+		       ESTIMATE_NO = #{estimateNo}
+		   AND
+		       STATUS = 'Y'
+	</select>
+
+	<!-- 채팅방 사용자 생성 -->
+	<insert id="createRoomUser" parameterType="ChatRoomUserVO">
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_USER
+			   (
+			   USER_NO
+			 , ROOM_NO
+			   )
+		VALUES (
+			   #{userNo}
+			 , #{roomNo}
+			   )
+	</insert>
+
+	<!-- 메시지 저장 -->
+	<insert id="saveMessage" parameterType="ChatMessageVO">
+	    <selectKey keyProperty="messageNo" resultType="Long" order="BEFORE">
+			SELECT SEQ_CHAT_ROOM_MESSAGE.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_MESSAGE
+			   (
+			   MESSAGE_NO
+			 , USER_NO
+			 , CONTENT
+			 , SENT_DATE
+			 , STATUS
+			 , ROOM_NO
+			 , TYPE
+			   )
+		VALUES (
+			  #{messageNo}
+			, #{userNo}
+			, #{content}
+			, #{sentDate}
+			, #{status}
+			, #{roomNo}
+			, #{type}
+			  )
+	</insert>
+	
+	<!-- 채팅 첨부파일 저장 -->
+	<insert id="saveChatAttachment" parameterType="FileVO">
+		<selectKey keyProperty="fileNo" resultType="long" order="BEFORE">
+			SELECT SEQ_CHAT_ROOM_MESSAGE_ATTACHMENT.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT
+		  INTO
+		       TB_CHAT_ROOM_MESSAGE_ATTACHMENT
+			   (
+			   FILE_NO
+			 , MESSAGE_NO
+			 , FILE_PATH
+			 , ORIGIN_NAME
+			 , STATUS
+			 , UPLOAD_DATE
+			   )
+		VALUES 
+		      (
+			  #{fileNo}
+			, #{reqNo}
+			, #{filePath}
+			, #{originName}
+			, #{status}
+			, SYSDATE
+			 )
+	</insert>
+
+	
+</mapper>

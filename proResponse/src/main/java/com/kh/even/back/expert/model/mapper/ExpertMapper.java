@@ -19,7 +19,7 @@ public interface ExpertMapper {
 	ExpertDetailDTO getExpertDetails(Map<String, Long> param);
 
 	int getCountByExpertNo(Long expertNo);
-
+	
 	int countByRequestNoAndUserNo(@Param(value = "requestNo") Long requestNo, @Param(value = "userNo") Long userNo);
 
 	void saveExpertEstimateAttachment(FileVO file);

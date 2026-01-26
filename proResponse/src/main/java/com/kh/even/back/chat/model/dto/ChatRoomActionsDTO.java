@@ -1,8 +1,5 @@
 package com.kh.even.back.chat.model.dto;
 
-
-import java.sql.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +11,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor 
 @ToString
-public class ChatRoomDTO {
-    private Long roomNo;
-    private String status;
-    private Date createdDate;
-    private Long estimateNo;
-    private Long userNo;   // 상대방 정보 (JOIN)
-    private String userName;
+public class ChatRoomActionsDTO {
+
+    private boolean reported;   // 신고 여부
+    private boolean reviewed;   // 리뷰 작성 여부
+    private boolean paid;       // 결제 여부
+
 }

@@ -7,23 +7,23 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+import com.kh.even.back.chat.socket.WebSocketChatHandler;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSocket
 @RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketConfigurer{
+public class WebSocketConfig implements WebSocketConfigurer {
 
-	private final WebSocketHandler webSocketHandler;
-	
-	@Value("${instance.url}")
-	private String instance;
-	
+    private final WebSocketChatHandler webSocketChatHandler;
 
-	@Override
-	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(webSocketHandler, "/ws/chat/{roomNo}")
-		.setAllowedOrigins(instance);
-	}
-	
+    @Value("${instance.url}")
+    private String instance;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketChatHandler, "/ws/chat/{estimateNo}")
+                .setAllowedOrigins(instance);
+    }
 }

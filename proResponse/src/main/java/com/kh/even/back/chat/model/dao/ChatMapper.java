@@ -5,114 +5,67 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
-import com.kh.even.back.chat.model.dto.ChatRoomDTO;
-import com.kh.even.back.chat.model.dto.ChatRoomUserDTO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
-import com.kh.even.back.chat.model.vo.ChatRoomMessageAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
+import com.kh.even.back.file.model.vo.FileVO;
 
 @Mapper
 public interface ChatMapper {
 
+    boolean existsByEstimateNo(Long estimateNo);
 
     /**
-     * 채팅방 기본 정보 조회 (권한 체크 포함)
+     * 견적 상태 조회
      */
-    ChatRoomDTO getChatRoom(ChatRoomUserDTO dto);
+	String getRequestStatusByEstimateNo(Long estimateNo);
 
     /**
-     * 채팅방 메시지 목록 조회 (페이징)
-     * param:
-     *  - roomNo
-     *  - lastMessageNo
-     *  - size
+     * 견적 상태 조회
      */
-    List<ChatMessageDTO> getMessages(Map<String, Object> param);
-
-     // ========== 채팅방 ==========
-    
-    /**
-     * 채팅방 조회 (단건)
-     */
-    ChatRoomVO getChatRoomByRoomNo(Long roomNo);
-
-    /**
-     * 팀방 조회
-     */
-    ChatRoomVO getChatRoomByEstimateNo(Long estimateNo);
+	String getResponseStatusByEstimateNo(Long estimateNo);
 
     /**
      * 채팅방 생성
      */
-    int saveChatRoom(ChatRoomVO chatRoomVO);
+	int createRoom(ChatRoomVO roomVo);
 
     /**
-     * 채팅방 상태 변경
+     * 채팅방 사용자 저장
      */
-    int updateChatRoomStatus(ChatRoomVO chatRoomVO);
-
-    // ========== 채팅방 참여자 ==========
+	int createRoomUser(ChatRoomUserVO roomUserVo);
 
     /**
-     * 채팅방 참여자 확인 (권한 체크)
+     * 메시지 저장
      */
-    int checkChatRoomUser(ChatRoomUserVO chatRoomUserVO);
+	int saveMessage(ChatMessageVO messageVo);
 
     /**
-     * 채팅방 참여자 목록 조회 (사용자 정보 포함)
+     * 첨부파일 저장
      */
-    List<ChatRoomUserVO> getChatRoomUsers(Long roomNo);
+	int saveChatAttachment(FileVO fileVo);
+
 
     /**
-     * 채팅방 참여자 등록 (채팅방 생성 시 사용)
-     * 견적 수락 시: 일반회원 + 전문가 2명을 TB_CHAT_ROOM_USER에 추가
+     * 회원 번호로 닉네임 조회
      */
-    int saveChatRoomUser(ChatRoomUserVO chatRoomUserVO);
+    String getNicknameByUserNo(Long userNo);
 
     /**
-     * 상대방 정보 조회
+     * 견적 번호로 채팅방 번호 조회
      */
-    ChatRoomUserVO getOtherUser(ChatRoomUserVO chatRoomUserVO);
+    Long getRoomNoByEstimateNo(Long estimateNo);
 
-    // ========== 메시지 ==========
-    
     /**
-     * 채팅방의 메시지 목록 조회
+     * 커서 기반 메시지 목록 조회
      */
-    List<ChatMessageVO> getMessagesByRoomNo(Long roomNo);
-    
+    List<ChatMessageDTO> getMessagesByCursor(Map<String, Object> params);
+
     /**
-     * 메시지 단건 조회
+     * 여러 메시지의 첨부파일 일괄 조회
      */
-    ChatMessageVO getMessageByMessageNo(Long messageNo);
-    
-    /**
-     * 메시지 등록
-     */
-    int saveMessage(ChatMessageVO chatMessageVO);
-    
-    /**
-     * 메시지 상태 변경 (삭제)
-     */
-    int updateMessageStatus(ChatMessageVO chatMessageVO);
-    
-    
-    // ========== 메시지 첨부파일 ==========
-    
-    /**
-     * 여러 메시지의 첨부파일 조회 (N+1 방지)
-     */
-    List<ChatRoomMessageAttachmentVO> getAttachmentsByMessageNos(List<Long> messageNos);
-    
-    /**
-     * 메시지 첨부파일 등록
-     */
-    int saveMessageAttachment(ChatRoomMessageAttachmentVO attachmentVO);
-    
-    /**
-     * 첨부파일 단건 조회 (다운로드 시)
-     */
-    ChatRoomMessageAttachmentVO getAttachmentByFileNo(Long fileNo);
+    List<ChatAttachmentDTO> getAttachmentsByMessageNos(List<Long> messageNos);
+
 }

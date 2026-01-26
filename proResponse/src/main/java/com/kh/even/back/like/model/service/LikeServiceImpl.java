@@ -25,7 +25,7 @@ public class LikeServiceImpl implements LikeService {
 	@Override
 	public boolean toggleLike(Long expertNo, Long userNo) {
 
-        assertRoleUser(userNo, "좋아요");
+        assertRoleUser(userNo);
 
 		if (!likeMapper.existsExpertNo(expertNo)) {
 		    throw new ReviewException("존재하지 않는 전문가입니다.");
@@ -48,10 +48,13 @@ public class LikeServiceImpl implements LikeService {
 
 
     // 회원 권한 체크 공통 메서드
-    private void assertRoleUser(Long userNo, String action) {
+    private void assertRoleUser(Long userNo) {
+		if (userNo == null) {
+			throw new ReviewException("로그인 후 이용해 주세요.");
+		}
         String userRole = likeMapper.getUserRoleByUserNo(userNo);
         if (!"ROLE_USER".equals(userRole)) {
-            throw new ReviewException("일반회원만 " + action + "할 수 있습니다.");
+            throw new ReviewException("일반회원만 접근할 수 있습니다.");
         }
     }
 

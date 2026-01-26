@@ -13,15 +13,12 @@ import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface ReviewService {
 
-
     /**
      * 견적 번호 기준 리뷰 상세 조회
      * @param estimateNo
      * @return 리뷰 상세 DTO(ReviewDetailDTO)
      */
-    ReviewDetailDTO getReview(Long estimateNo
-        //, Long userNo
-    );
+    ReviewDetailDTO getReview(Long estimateNo, Long userNo);
 
     /**
      * 전체 태그 목록 조회 (등록 시 필요)
@@ -30,29 +27,18 @@ public interface ReviewService {
 	List<ReviewTagDTO> getAllReviewTags();
 
     /**
-     * 견적 번호로 리뷰 존재 여부 확인
-     * @param estimateNo 견적 번호
-     * @return 존재 여부(boolean)
-     */
-    boolean existsByEstimateNo(Long estimateNo);
-
-    /**
      * 리뷰 등록
      * @param reviewDTO 리뷰 DTO
      * @param files
      * @return 등록된 리뷰 VO(ReviewVO)
      */
-    ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files
-        //, Long userNo
-    );
+    ReviewVO saveReview(ReviewDTO reviewDTO, List<MultipartFile> files,  Long userNo);
 
     /**
      * 리뷰 삭제 (논리삭제)
      * @param estimateNo
      */
-    ReviewVO deleteByEstimateNo(Long estimateNo
-        //, Long userNo
-    );
+    ReviewVO deleteByEstimateNo(Long estimateNo, Long userNo);
     
     /**
      * 
@@ -60,6 +46,6 @@ public interface ReviewService {
      * @param pageNo 페이지 넘버
      * @return 조회한 리뷰들
      */
-    PageResponse<ExpertReviewVO> getExpertReviews(Long expertNo,int pageNo);
+    PageResponse<ExpertReviewVO> getExpertReviews(Long expertNo, int pageNo);
     
 }

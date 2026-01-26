@@ -3,6 +3,7 @@ package com.kh.even.back.report.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 // import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.report.model.dto.ReportDTO;
@@ -36,12 +38,12 @@ public class ReportController {
      */
     @GetMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReportDetailDTO>> getReport(
-            @PathVariable("estimateNo") Long estimateNo
-            //, @AuthenticationPrincipal CustomUserDetails user
+            @PathVariable("estimateNo") Long estimateNo,
+            @AuthenticationPrincipal CustomUserDetails user
             ) {
         ReportDetailDTO report = reportService.getReport(
-            estimateNo
-            // , user.getUserNo()
+            estimateNo,
+            user.getUserNo()
         );
         return ResponseData.ok(report, "신고 조회에 성공했습니다");
     }
@@ -63,15 +65,15 @@ public class ReportController {
 	 */
     @PostMapping
     public ResponseEntity<ResponseData<ReportVO>> saveReport(
-            @Valid ReportDTO reportDTO
-            //, @AuthenticationPrincipal CustomUserDetails user
+            @Valid ReportDTO reportDTO,
+            @AuthenticationPrincipal CustomUserDetails user
         ) {
         
         //log.info("신고 등록 요청 - estimateNo: {}, userNo: {}, content: {}", reportDTO.getEstimateNo(), user.getUserNo(), reportDTO.getContent());
         
         // 권한 검증 (해당 견적의 의뢰인인지 확인)
-        ReportVO saved = reportService.saveReport(reportDTO
-            //, user.getUserNo()
+        ReportVO saved = reportService.saveReport(reportDTO,
+            user.getUserNo()
         );
         return ResponseData.created(saved, "신고가 성공적으로 등록되었습니다");
     }

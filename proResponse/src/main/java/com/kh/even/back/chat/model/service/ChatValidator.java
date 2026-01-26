@@ -15,13 +15,13 @@ public final class ChatValidator {
         }
     }
 
-    public static void validateGetMessagesParams(Long roomNo, int size) {
+    public static void validateGetMessagesParams(Long roomNo/*, int size */) {
         if (roomNo == null) {
             throw new ChatException("채팅방 번호가 없습니다.");
         }
-        if (size <= 0) {
-            throw new ChatException("조회할 메시지 개수가 올바르지 않습니다.");
-        }
+        // if (size <= 0) {
+        //     throw new ChatException("조회할 메시지 개수가 올바르지 않습니다.");
+        // }
     }
 
     public static void validateByType(ChatMessageDTO dto) {

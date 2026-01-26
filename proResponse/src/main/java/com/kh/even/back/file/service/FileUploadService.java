@@ -32,7 +32,7 @@ public class FileUploadService {
 		for (MultipartFile file : files) {
 			String filePath = s3Service.store(file, directory);
 
-			FileVO vo = FileVO.builder().originName(file.getOriginalFilename()).filePath(filePath).reqNo(refNo)
+			FileVO vo = FileVO.builder().originName(file.getOriginalFilename()).filePath(filePath).status("Y").reqNo(refNo)
 					.build();
 			
 			//Consumer<FileVO> saveCallback = vo -> mapper.saveExpertEstimateAttachment(vo); 컴파일 시점에서 바뀌는값 뒤에 mapper.save 는 바뀔수있음

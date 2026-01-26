@@ -15,6 +15,7 @@
 		<result property="status" column="STATUS"/>
 		<result property="roomNo" column="ROOM_NO"/>
 		<result property="type" column="TYPE"/>
+		<result property="estimateNo" column="ESTIMATE_NO"/>
 		<result property="nickname" column="NICKNAME"/>
 		<result property="userRole" column="USER_ROLE"/>
 		<association property="actions" javaType="ChatRoomActionsDTO">
@@ -35,13 +36,19 @@
 		<result property="status" column="STATUS"/>
 	</resultMap>
 
-	<!-- ChatRoomActionsDTO ResultMap (신고/리뷰/결제 유무) -->
-	<resultMap id="ChatRoomActionsMap" type="ChatRoomActionsDTO">
-		<result property="reported" column="REPORTED"/>
-		<result property="reviewed" column="REVIEWED"/>
-		<result property="paid" column="PAID"/>
-	</resultMap>
-	
+
+	<select id="existsByEstimateNo"
+        parameterType="Long"
+        resultType="boolean">
+      SELECT
+          CASE
+              WHEN COUNT(*) &gt; 0 THEN 1 <!--존재하면 1(true)-->
+              ELSE 0 <!--존재 안하면 0(false)-->
+          END
+          FROM TB_REVIEW
+       WHERE ESTIMATE_NO = #{value}
+    </select>
+
 	
 	<!-- 견적 요청 상태 조회 -->
 	<select id="getRequestStatusByEstimateNo" parameterType="long" resultType="string">
@@ -120,21 +127,40 @@
 			 , m.STATUS
 			 , m.ROOM_NO
 			 , m.TYPE
+			 , ch.ESTIMATE_NO
 			 , u.NICKNAME
 			 , u.USER_ROLE
-			 , CASE WHEN EXISTS(SELECT 1 FROM TB_REPORT r JOIN TB_CHAT_ROOM cr ON r.ESTIMATE_NO = cr.ESTIMATE_NO WHERE cr.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS REPORTED
-			 , CASE WHEN EXISTS(SELECT 1 FROM TB_REVIEW rv JOIN TB_CHAT_ROOM cr ON rv.ESTIMATE_NO = cr.ESTIMATE_NO WHERE cr.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS REVIEWED
-			 , CASE WHEN EXISTS(SELECT 1 FROM TB_PAYMENT p WHERE p.ROOM_NO = m.ROOM_NO) THEN 1 ELSE 0 END AS PAID
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_REPORT r
+				WHERE r.ESTIMATE_NO = ch.ESTIMATE_NO
+			 	AND r.REPORTER_USER_NO = #{userNo}
+			 ) THEN 1 ELSE 0 END AS REPORTED
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_REVIEW rv
+				JOIN TB_ESTIMATE_RESPONSE er ON rv.ESTIMATE_NO = er.ESTIMATE_NO
+				JOIN TB_ESTIMATE_REQUEST eq ON er.REQUEST_NO = eq.REQUEST_NO
+				WHERE rv.ESTIMATE_NO = ch.ESTIMATE_NO
+				AND eq.USER_NO = #{userNo}
+			 ) THEN 1 ELSE 0 END AS REVIEWED
+			 , CASE WHEN EXISTS (
+				SELECT 1
+				FROM TB_PAYMENT p
+				WHERE p.ROOM_NO = m.ROOM_NO
+			 ) THEN 1 ELSE 0 END AS PAID
 		  FROM
 			   TB_CHAT_ROOM_MESSAGE m
+		  JOIN
+               TB_CHAT_ROOM ch ON m.ROOM_NO = ch.ROOM_NO
 		  JOIN 
 			   TB_MEMBER u ON m.USER_NO = u.USER_NO
 		 WHERE
-			   ROOM_NO = #{roomNo}
+			   m.ROOM_NO = #{roomNo}
 			<if test="messageNo != null"> <!--messageNo가 null이면 최신 메시지부터-->
-				AND MESSAGE_NO &lt; #{messageNo}
+				AND m.MESSAGE_NO &lt; #{messageNo}
 			</if>
-		ORDER BY MESSAGE_NO DESC
+		ORDER BY m.MESSAGE_NO DESC
 		FETCH FIRST #{size} ROWS ONLY <!--아니면 해당 메시지 번호보다 작은(이전) 메시지부터 size만큼 조회-->
 	</select>
 
@@ -175,9 +201,9 @@
 	</insert>
 
 	<!-- 메시지 저장 -->
-	<insert id="saveMessage" parameterType="ChatMessageVO" useGeneratedKeys="true" keyProperty="messageNo">
-	    <selectKey keyProperty="messageNo" resultType="Long" order="AFTER">
-			SELECT SEQ_CHAT_ROOM_MESSAGE.CURRVAL FROM DUAL
+	<insert id="saveMessage" parameterType="ChatMessageVO">
+	    <selectKey keyProperty="messageNo" resultType="Long" order="BEFORE">
+			SELECT SEQ_CHAT_ROOM_MESSAGE.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT
 		  INTO
@@ -192,7 +218,7 @@
 			 , TYPE
 			   )
 		VALUES (
-			   SEQ_CHAT_ROOM_MESSAGE.NEXTVAL
+			  #{messageNo}
 			, #{userNo}
 			, #{content}
 			, #{sentDate}
@@ -215,17 +241,17 @@
 			 , MESSAGE_NO
 			 , FILE_PATH
 			 , ORIGIN_NAME
-			 , UPLOAD_DATE
 			 , STATUS
+			 , UPLOAD_DATE
 			   )
 		VALUES 
 		      (
 			  #{fileNo}
-			, #{messageNo}
+			, #{reqNo}
 			, #{filePath}
 			, #{originName}
-			, #{uploadDate}
 			, #{status}
+			, SYSDATE
 			 )
 	</insert>
 

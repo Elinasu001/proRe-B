@@ -1,6 +1,7 @@
 package com.kh.even.back.review.model.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -23,6 +24,8 @@ public interface ReviewMapper {
      */
     ReviewDetailDTO getByEstimateNo(Long estimateNo);
 
+    
+
     /**
      * 전체 태그 목록 조회
      * @return 태그 DTO 리스트(List<ReviewTagDTO>)
@@ -34,9 +37,14 @@ public interface ReviewMapper {
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsByEstimateNo(Long estimateNo);
+    boolean existsByEstimateNo(Map<String, Object> params);
 
     // === 리뷰 등록 ===
+    /**
+     * ROLE_USER 확인
+     * @param userNo
+    */
+    String getUserRoleByUserNo(Long userNo);
     /**
      * 리뷰 등록
      * @param reviewVO 리뷰 VO
@@ -51,6 +59,7 @@ public interface ReviewMapper {
      */
     int saveReviewAttachment(ReviewAttachmentVO reviewAttachmentVO);
     
+    //int saveReviewAttachment(FileVO fileVo);
 
     /**
      * 리뷰 태그 매핑 등록

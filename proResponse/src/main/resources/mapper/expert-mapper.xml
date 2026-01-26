@@ -108,4 +108,44 @@
 		
 	</select>
 	
+	<!-- 전문가 등록을 위한 대분류 카테고리 조회 -->
+	<select id="getLargeCategory" resultType="LargeCategoryVO"> 
+		SELECT
+		       EXPERT_TYPE_NO AS expertTypeNo
+		     , EXPERT_NAME	  AS expertName
+		  FROM
+		       TB_EXPERT_TYPE
+		 ORDER 
+		    BY 
+		       EXPERT_TYPE_NO ASC          
+	</select>
+	
+	<!-- 전문가 등록을 위한 중분류 카테고리 조회 -->
+	<select id="getMiddleCategory" resultType="MiddleCategoryVO">
+		SELECT
+		       CATEGORY_NO 	  AS categoryNo
+		     , CATEGORY_NAME  AS categoryName
+		     , EXPERT_TYPE_NO AS expertTypeNo
+		  FROM
+		       TB_EXPERT_CATEGORY
+		 ORDER
+		    BY
+	    	   EXPERT_TYPE_NO ASC,
+	           CATEGORY_NO ASC     
+	</select>
+	
+	<!-- 전문가 등록을 위한 소분류 카테고리 조회 -->
+	<select id="getSmallCategory" resultType="SmallCategoryVO">
+		SELECT
+		       CATEGORY_DETAIL_NO AS categoryDetailNo
+		     , CATEGORY_NAME 	  AS categoryDetailName
+		     , CATEGORY_NO        AS categoryNo
+		  FROM
+		       TB_EXPERT_DETAIL_CATEGORY
+		 ORDER 
+		    BY
+    		   CATEGORY_NO ASC,
+    		   CATEGORY_DETAIL_NO ASC     
+	</select>
+	
 </mapper>

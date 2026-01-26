@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-import com.kh.even.back.category.model.dto.ExpertCategoryDTO;
 import com.kh.even.back.common.ResponseData;
+import com.kh.even.back.expert.model.dto.CategoryResponseDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 
 import jakarta.validation.Valid;
@@ -54,11 +55,11 @@ public class ExpertController {
 	}
 	
 	@GetMapping("/registration")
-	public ResponseEntity<ResponseData<ExpertCategoryDTO>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
+	public ResponseEntity<ResponseData<CategoryResponseDTO>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
 		
-		expertService.getExpertCategory(user);
+		CategoryResponseDTO categories = expertService.getExpertCategory(user);
 		
-		return ResponseData.ok(null, "전문가 등록 카테고리 조회가 완료되었습니다.");
+		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
 	}
 
 }

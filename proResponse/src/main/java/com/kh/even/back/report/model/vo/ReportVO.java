@@ -17,4 +17,5 @@ public class ReportVO {
     private Long estimateNo;          // 신고된 견적서 번호 (FK)
     private Long reporterUserNo;      // 신고자 (FK)
     private Long targetUserNo;        // 신고대상 (FK)
+    private Long userNo;              // 회원 번호 (FK)
 }

@@ -1,7 +1,5 @@
 package com.kh.even.back.chat.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
+import com.kh.even.back.chat.model.dto.ChatMessageResponse;
+import com.kh.even.back.chat.model.dto.ChatMessageSearchDTO;
 import com.kh.even.back.chat.model.service.ChatService;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
@@ -48,16 +48,16 @@ public class ChatController {
      * 채팅 메시지 조회 (커서 기반 페이징)
      */
     @GetMapping("/{roomNo}/messages")
-    public ResponseEntity<ResponseData<List<ChatMessageDTO>>> getMessages(
+    public ResponseEntity<ResponseData<ChatMessageResponse>> getMessages(
             @PathVariable("roomNo") Long roomNo,
-            @ModelAttribute ChatMessageDTO chatMessageDto,
+            @ModelAttribute ChatMessageSearchDTO searchDto,
             @AuthenticationPrincipal CustomUserDetails user) {
-        List<ChatMessageDTO> messages = chatService.getMessages(
+        ChatMessageResponse result = chatService.getMessages(
             roomNo,
-            chatMessageDto,
+            searchDto,
             user.getUserNo()
         );
-        return ResponseData.ok(messages, "메시지를 조회했습니다.");
+        return ResponseData.ok(result, "메시지를 조회했습니다.");
     }
 
 

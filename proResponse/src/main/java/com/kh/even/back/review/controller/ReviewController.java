@@ -3,6 +3,7 @@ package com.kh.even.back.review.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.review.model.dto.ReviewDTO;
 import com.kh.even.back.review.model.dto.ReviewDetailDTO;
@@ -38,12 +40,12 @@ public class ReviewController {
     */
     @GetMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewDetailDTO>> getReview(
-            @PathVariable("estimateNo") Long estimateNo
-            //, @AuthenticationPrincipal CustomUserDetails user
+            @PathVariable("estimateNo") Long estimateNo,
+            @AuthenticationPrincipal CustomUserDetails user
         ) {
         ReviewDetailDTO review = reviewService.getReview(
-            estimateNo
-            // , user.getUserNo()
+            estimateNo,
+            user.getUserNo()
         );
         return ResponseData.ok(review, "리뷰 조회에 성공했습니다");
     }
@@ -64,8 +66,8 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ResponseData<ReviewVO>> saveReview(
             @Valid ReviewDTO reviewDTO,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files
-            //, @AuthenticationPrincipal CustomUserDetails user
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal CustomUserDetails user
         ) {
         
         //log.info("리뷰 등록 요청 - estimateNo: {}, userNo: {}, starScore: {}", reviewDTO.getEstimateNo(), user.getUserNo(), reviewDTO.getStarScore());
@@ -74,7 +76,7 @@ public class ReviewController {
         ReviewVO saved = reviewService.saveReview(
             reviewDTO
             , files
-            //, user.getUserNo()
+            , user.getUserNo()
         );
         
         return ResponseData.created(saved, "리뷰가 성공적으로 등록되었습니다");
@@ -86,18 +88,20 @@ public class ReviewController {
 	 */
     @PutMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewVO>> deleteByEstimateNo(
-        @PathVariable("estimateNo") Long estimateNo
-        //, @AuthenticationPrincipal CustomUserDetails user
+        @PathVariable("estimateNo") Long estimateNo,
+        @AuthenticationPrincipal CustomUserDetails user
     ) {
         ReviewVO deleted = reviewService.deleteByEstimateNo(
-            estimateNo
-            //, user.getUserNo()
+            estimateNo,
+            user.getUserNo()
         );
         return ResponseData.created(deleted, "리뷰가 삭제되었습니다");
     }
     
     @GetMapping("/expert/{expertNo}")
-    public ResponseEntity<ResponseData<PageResponse<ExpertReviewVO>>> getExpertReviews(@PathVariable(name="expertNo") Long expertNo , @RequestParam(name="pageNo" , defaultValue = "1") int pageNo){
+    public ResponseEntity<ResponseData<PageResponse<ExpertReviewVO>>> getExpertReviews(
+        @PathVariable(name="expertNo") Long expertNo,
+        @RequestParam(name="pageNo" , defaultValue = "1") int pageNo){
     
     	return ResponseData.ok(reviewService.getExpertReviews(expertNo,pageNo),"조회에 성공했습니다.");
     	

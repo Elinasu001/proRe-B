@@ -62,7 +62,7 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
          chatMessage.setRoomNo(roomNo);
 
          // DB 저장
-         chatService.saveMessage(chatMessage, null);
+         chatService.saveMessage(chatMessage, chatMessage.getUserNo());
 
          // 닉네임 조회 후 sender 세팅
          String nickname = chatService.getNicknameByUserNo(chatMessage.getUserNo());

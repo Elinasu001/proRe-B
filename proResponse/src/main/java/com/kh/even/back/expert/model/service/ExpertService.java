@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-import com.kh.even.back.expert.model.dto.CategoryResponseDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 
 public interface ExpertService {
 
@@ -33,5 +33,5 @@ public interface ExpertService {
 	 * @param user 회원정보
 	 * @return 대/중/소분류 카테고리들을 가공한 DTO
 	 */
-	CategoryResponseDTO getExpertCategory(CustomUserDetails user);
+	List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user);
 }

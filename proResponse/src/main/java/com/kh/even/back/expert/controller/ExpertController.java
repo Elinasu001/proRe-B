@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
-import com.kh.even.back.expert.model.dto.CategoryResponseDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
@@ -55,9 +54,9 @@ public class ExpertController {
 	}
 	
 	@GetMapping("/registration")
-	public ResponseEntity<ResponseData<CategoryResponseDTO>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
+	public ResponseEntity<ResponseData<List<LargeCategoryDTO>>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
 		
-		CategoryResponseDTO categories = expertService.getExpertCategory(user);
+		List<LargeCategoryDTO> categories = expertService.getExpertCategory(user);
 		
 		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
 	}

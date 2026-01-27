@@ -60,6 +60,14 @@ public class ExpertController {
 		return ResponseData.created(null, "견적 응답에 성공했습니다.");
 
 	}
+	
+	@GetMapping("/registration")
+	public ResponseEntity<ResponseData<List<LargeCategoryDTO>>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
+		
+		List<LargeCategoryDTO> categories = expertService.getExpertCategory(user);
+		
+		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
+	}
 
 	// 전문가 -> 매치 성공 회원 조회
 	@GetMapping("/matches")

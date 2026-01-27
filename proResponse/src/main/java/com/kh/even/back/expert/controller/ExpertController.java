@@ -64,13 +64,6 @@ public class ExpertController {
 		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
 	}
 	
-	@PostMapping("/registration")
-	public ResponseEntity<ResponseData<Void>> registerExpert(@AuthenticationPrincipal CustomUserDetails user, 
-															 @Valid @ModelAttribute ExpertRegisterDTO expert, 
-															 @RequestParam(name = "attachment", required=false) MultipartFile file) {
-		log.info("전문가 등록 진위여부 : user = {}, expert = {}, file = {}", user, expert, file);
-		
-		return ResponseData.created(null, "전문가 등록이 완료되었습니다.");
-	}
+
 
 }

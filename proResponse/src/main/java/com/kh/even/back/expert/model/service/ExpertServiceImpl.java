@@ -23,8 +23,10 @@ import com.kh.even.back.exception.NotFoundException;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
 import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
@@ -248,10 +250,7 @@ public class ExpertServiceImpl implements ExpertService {
 	public List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user) {
 		
 		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
-		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
-		if(isExpert) {
-			throw new CustomAuthorizationException("이미 전문가인 회원입니다.");
-		}
+		isExpert(user);
 		
 		List<LargeCategoryDTO> categories = mapper.getExpertCategory();
 		if(categories == null || categories.isEmpty()) {
@@ -260,4 +259,38 @@ public class ExpertServiceImpl implements ExpertService {
 		
 		return categories;
 	}
+	
+	/**
+	 * 전문가 등록을 하는 기능
+	 */
+	@Transactional
+	public RegisterResponseDTO registerExpert(ExpertRegisterDTO expert, List<MultipartFile> files, CustomUserDetails user) {
+		String fileUrl = null;
+		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
+		isExpert(user);
+		
+		// 첨부파일이 있을 경우 S3 업로드
+		if(!files == null || files.isEmpty()) {
+			
+		}
+		
+		
+				
+		  	
+		
+	}
+	
+	private void isExpert(CustomUserDetails user) {
+		
+		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
+		if(isExpert) {
+			throw new CustomAuthorizationException("이미 전문가인 회원입니다."); 
+		}
+	}
+	
+	private boolean hasFiles(List<MultipartFile> files) {
+		return files != null
+		        && files.stream().anyMatch(file -> file != null && !file.isEmpty());
+	}
+	
 }

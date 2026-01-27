@@ -23,8 +23,10 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 import com.kh.even.back.util.model.dto.PageResponse;
 
@@ -134,4 +136,15 @@ public class ExpertController {
 		
 	}
 	
+	@PostMapping("/registration")
+	public ResponseEntity<ResponseData<RegisterResponseDTO>> registerExpert(@Valid @ModelAttribute ExpertRegisterDTO expert,
+			                                                                @RequestParam(name = "attachment", required=false) List<MultipartFile> files,
+			                                                                @AuthenticationPrincipal CustomUserDetails user) {
+		// log.info("전문가 등록 진위여부 : expert = {}, file = {}, user = {}", expert, file, user);
+		
+		expertService.registerExpert(expert, files, user);
+	
+		RegisterResponseDTO dto = null;
+		return ResponseData.created(null, "전문가 등록이 완료되었습니다.");
+	}
 }

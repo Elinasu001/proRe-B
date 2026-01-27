@@ -47,7 +47,7 @@ public class ExpertRegisterDTO {
 	@Size(min = 1, max = 2000, message = "상세 내용은 1~2000자 이내로 입력해주세요.")
 	private String content;
 	
-	@Pattern(regexp = "^\\d{10}$", message = "사업자등록번호는 10자리 숫자입니다.")
+	@Pattern(regexp = "^(\\d{10})?$", message = "사업자등록번호는 10자리 숫자입니다.")
 	private String businessRegNo;
 	
 }

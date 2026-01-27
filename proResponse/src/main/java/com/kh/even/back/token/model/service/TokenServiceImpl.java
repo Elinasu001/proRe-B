@@ -1,13 +1,14 @@
 package com.kh.even.back.token.model.service;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.even.back.exception.CustomAuthenticationException;
+import com.kh.even.back.exception.UsernameNotFoundException;
+import com.kh.even.back.member.model.dto.MemberLogoutDTO;
 import com.kh.even.back.token.dto.TokensDTO;
 import com.kh.even.back.token.model.dao.TokenMapper;
 import com.kh.even.back.token.model.util.JwtUtil;
@@ -110,5 +111,23 @@ public class TokenServiceImpl implements TokenService {
 		
 		// 4. 새 토큰 생성 및 반환
 		return createTokens(username, "ROLE_USER");
+	}
+	
+	@Override
+	public void deleteToken(MemberLogoutDTO logoutDTO) {
+		RefreshToken token = tokenMapper.findByToken(logoutDTO.getRefreshToken());
+		if(token == null) {
+			throw new UsernameNotFoundException("이미 로그아웃된 상태입니다.");
+		}
+		
+		if(!token.getUserNo().equals(logoutDTO.getUserNo())) {
+			throw new CustomAuthenticationException("사용자 정보가 일치하지 않습니다.");
+		}
+		
+		int result = tokenMapper.deleteToken(logoutDTO);
+		if(result == 0) {
+			throw new CustomAuthenticationException("로그아웃에 실패했습니다.");
+		}
+		
 	}
 }

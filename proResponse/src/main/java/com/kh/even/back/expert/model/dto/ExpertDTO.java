@@ -15,6 +15,7 @@ public class ExpertDTO {
 
 	private Long requestNo;
 	private Long expertNo;
+	private String profileImg;
 	private String nickName;
 	private double starScore;
 	private int reviewCount;

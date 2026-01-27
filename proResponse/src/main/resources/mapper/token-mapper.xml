@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.even.back.token.model.dao.TokenMapper">
+	
+	<!-- Refresh Token 삭제 -->
+    <delete id="deleteTokenByUserNo" parameterType="long">
+        DELETE
+          FROM
+               TB_TOKEN
+         WHERE
+               USER_NO = #{userNo}
+    </delete>
+
+    <!-- Refresh Token 저장 -->
+    <insert id="saveToken" parameterType="com.kh.even.back.token.model.vo.RefreshToken">
+        INSERT 
+          INTO
+               TB_TOKEN
+               (
+               TOKEN
+             , USER_NO
+             , EXPIRATION
+               )
+        VALUES
+               (
+               #{token}
+             , #{userNo}
+             , #{expiration}
+               )
+    </insert>
+
+    <!-- 토큰 값으로 Refresh Token 조회 -->
+    <select id="findByToken" parameterType="string" resultType="com.kh.even.back.token.model.vo.RefreshToken">
+        SELECT
+               TOKEN       AS token
+             , USER_NO     AS userNo
+             , EXPIRATION AS expiration
+          FROM 
+               TB_TOKEN
+         WHERE 
+               TOKEN = #{token}
+    </select>
+    
+    <!-- Refresh Token 삭제 -->
+    <delete id="deleteToken" parameterType="MemberLogoutDTO">
+        DELETE
+          FROM
+               TB_TOKEN
+         WHERE
+         	   TOKEN = #{refreshToken}
+           AND	   
+               USER_NO = #{userNo}
+    </delete>
+	
+</mapper>

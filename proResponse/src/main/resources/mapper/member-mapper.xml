@@ -6,7 +6,7 @@
 	
 	
 	<!-- 이메일 중복여부를 확인합니다. -->
-	<select id="countByEmail">
+	<select id="countByEmail" resultType="int">
 		SELECT
 		       COUNT(*)
 		  FROM
@@ -75,7 +75,7 @@
 	</insert>
 	
 	<!-- 로그인을 위해 유저정보를 불러옵니다. -->
-	<select id="loadUser" resultType="MemberAuthDTO">
+	<select id="loadUser" resultType="MemberAuthVO">
 		SELECT
 		       USER_NO userNo
 		     , EMAIL email
@@ -92,4 +92,140 @@
 		       EMAIL = #{email}            
 	</select>
 	
+	<!-- 비밀번호를 변경합니다. -->
+	<update id="changePassword" parameterType="ChangePasswordVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       USER_PWD = #{newPassword}
+		     , UPDATE_PWD_DATE = SYSDATE
+		 WHERE
+		       USER_NO = #{userNo}          
+	</update>
+	
+	<!-- 회원탈퇴 요청을 저장합니다. -->
+	<insert id="saveWithdrawRequest" parameterType="WithdrawMemberVO">
+		INSERT
+		  INTO
+		       TB_MEMBER_WITHDRAW
+		       (
+		       WITHDRAW_NO 
+		     , USER_NO  
+		     , REASON_NO 
+		     , REASON_DETAIL 
+		       )
+		VALUES
+		       (
+		       SEQ_MEMBER_WITHDRAW.NEXTVAL
+		     , #{userNo}
+		     , #{reasonNo}
+		     , #{reasonDetail}
+		       )  
+	</insert>
+	
+	<update id="updateMemberStatus" parameterType="WithdrawMemberVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       STATUS = 'N'
+		     , DELETE_DATE = SYSDATE
+		 WHERE
+		       USER_NO = #{userNo}  
+		   AND   
+		       STATUS = 'Y'
+	</update>
+	
+	<update id="changeEmail" parameterType="ChangeEmailVO">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       EMAIL = #{email}
+		     , UPDATE_DATE = SYSDATE  
+		 WHERE
+		       USER_NO = #{userNo}
+	</update>
+	
+	<!-- 연락처 중복여부를 확인합니다.(본인 제외) -->
+	<select id="countByPhone" resultType="int">
+		SELECT
+		       COUNT(*)
+		  FROM
+		       TB_MEMBER
+		 WHERE
+		       PHONE = #{phone}
+		   AND 
+		       USER_NO &lt;&gt; #{userNo}           
+	</select>
+	
+	<!-- 내정보 수정 -->
+	<update id="updateMe" parameterType="UpdateMeVO">
+	    UPDATE TB_MEMBER
+	    <set>
+	        <if test="nickname != null">
+	          NICKNAME = #{nickname},
+	        </if>
+	
+	        <if test="profileImgPath != null">
+	          PROFILE_IMG = #{profileImgPath},
+	        </if>
+	
+	        <if test="phone != null">
+	          PHONE = #{phone},
+	        </if>
+	
+	        <if test="postcode != null">
+	          POSTCODE = #{postcode},
+	        </if>
+	
+	        <if test="address != null">
+	          ADDRESS = #{address},
+	        </if>
+	
+	        <if test="addressDetail != null">
+	          ADDRESS_DETAIL = #{addressDetail},
+	        </if>
+	
+	          UPDATE_DATE = SYSDATE
+	    </set>
+	    WHERE 
+	          USER_NO = #{userNo}
+	</update>
+	
+	<!-- 회원의 위도/경도를 수정합니다 -->
+	<update id="updateLocation" parameterType="UpdateMeVO">
+		UPDATE
+		       TB_MEMBER_LOCATION
+		   SET    
+		       LAT = #{latitude}
+		     , LNG = #{longitude}
+		 WHERE
+		       USER_NO = #{userNo}           
+	</update>
+	
+	<select id="getMyProfile" parameterType="long" resultType="MyProfileVO">
+		SELECT
+		       M.USER_NO   		 AS "userNo"
+		     , M.EMAIL      	 AS "email"
+		     , M.USER_NAME  	 AS "userName"
+		     , M.NICKNAME  		 AS "nickname"
+		     , M.PROFILE_IMG     AS "profileImage"
+		     , M.POSTCODE        AS "postcode"
+		     , M.ADDRESS         AS "address"
+		     , M.ADDRESS_DETAIL  AS "addressDetail"
+		     , L.LAT             AS "latitude"
+		     , L.LNG             AS "longitude"
+		     , M.PHONE           AS "phone"
+		     , M.USER_ROLE       AS "role"
+		  FROM
+		       TB_MEMBER M
+		  LEFT
+		  JOIN
+		       TB_MEMBER_LOCATION L
+		    ON L.USER_NO = M.USER_NO
+		 WHERE
+		       M.USER_NO = #{userNo}    
+		   AND 
+		       M.STATUS = 'Y'   
+	</select>
+
 </mapper>

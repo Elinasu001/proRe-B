@@ -15,18 +15,17 @@ import lombok.ToString;
 @NoArgsConstructor 
 @ToString
 public class ReportDetailDTO {
-    //private Long reportNo;            // 신고번호
-    private String reportContent;     // 신고내용
-    private Date updateDate;          // 신고 처리 일자(관리자)
-    private Date createDate; // 신고 생성 일자(회원 신고)
-    private String status;            // 신고 상태 WAITING/RESOLVED/REJECTED (대기중/처리완료/ 신고 거절)
-    private Long userNo;              // 신고한 회원 번호
-    private Long roomNo;              // 신고된 채팅방 번호
-    private Integer reasonNo;         // 신고 사유 번호
+    private Long reportNo;            // 신고번호
+    private String content;           // 신고내용
+    private Date createDate;          // 신고 생성 일자(회원 신고)
+    private Date updateDate;          // 신고 처리 일자(관리자) WAITING/RESOLVED/REJECTED (대기중/처리완료/신고거절)
+    private String status;            // 신고 상태 WAITING/RESOLVED/REJECTED (대기중/처리완료/신고거절)
+    private Integer reasonNo;         // 신고 사유 번호 (FK)
+    private Long estimateNo;          // 신고된 견적서 번호 (FK)
+    private Long reporterUserNo;      // 신고자 (FK)
+    private Long targetUserNo;        // 신고대상 (FK)
 
-    private Boolean hasReported;  // 신고 여부
-    private Boolean canReport;    // 신고 가능 여부
-    private String message;       // 안내 메시지
+    // 선택된 태그 목록
+    private List<ReportTagDTO> selectedTags;
 
-    private List<ReportReasonDTO> reportReasons; // 신고 사유 목록
 }

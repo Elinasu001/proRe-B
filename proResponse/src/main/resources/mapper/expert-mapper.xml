@@ -108,4 +108,53 @@
 		
 	</select>
 	
+	<!-- 전문가 등록 카테고리 조회용 ResultMap -->
+	<resultMap id="ExpertCategoryTreeMap" type="com.kh.even.back.expert.model.dto.LargeCategoryDTO">
+    <!-- 대분류 -->
+    <id property="expertTypeNo" column="EXPERT_TYPE_NO"/>
+    <result property="expertName" column="EXPERT_NAME"/>
+
+    <!-- 중분류 -->
+    <collection property="categories" ofType="com.kh.even.back.expert.model.dto.MiddleCategoryDTO">
+        <id property="categoryNo" column="CATEGORY_NO"/>
+        <result property="categoryName" column="CATEGORY_NAME"/>
+
+        <!-- 소분류 -->
+        <collection property="categories" ofType="com.kh.even.back.expert.model.dto.SmallCategoryDTO">
+            <id property="categoryDetailNo" column="CATEGORY_DETAIL_NO"/>
+            <result property="categoryDetailName" column="CATEGORY_DETAIL_NAME"/>
+        </collection>
+        
+    </collection>
+    
+	</resultMap>
+	
+	<!-- 전문가 등록 카테고리 조회 -->
+	<select id="getExpertCategory" resultMap="ExpertCategoryTreeMap">
+    SELECT
+           T.EXPERT_TYPE_NO,
+           T.EXPERT_NAME,
+           
+           C.CATEGORY_NO,
+           C.CATEGORY_NAME,
+
+           D.CATEGORY_DETAIL_NO,
+           D.CATEGORY_NAME AS CATEGORY_DETAIL_NAME
+      FROM 
+           TB_EXPERT_TYPE T
+      JOIN 
+           TB_EXPERT_CATEGORY C
+        ON 
+           C.EXPERT_TYPE_NO = T.EXPERT_TYPE_NO
+      JOIN 
+           TB_EXPERT_DETAIL_CATEGORY D
+        ON 
+           D.CATEGORY_NO = C.CATEGORY_NO
+     ORDER 
+        BY
+           T.EXPERT_TYPE_NO,
+           C.CATEGORY_NO,
+           D.CATEGORY_DETAIL_NO
+</select>
+	
 </mapper>

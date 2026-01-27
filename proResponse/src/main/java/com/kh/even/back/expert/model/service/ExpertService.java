@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 
 public interface ExpertService {
 
@@ -27,5 +28,10 @@ public interface ExpertService {
 	 */
 	void saveEstimate(ExpertEstimateDTO expertEstimate, List<MultipartFile> images , CustomUserDetails user);
 	
-
+	/**
+	 * 전문가 등록을 위한 카테고리들을 조회합니다.
+	 * @param user 회원정보
+	 * @return 대/중/소분류 카테고리들을 가공한 DTO
+	 */
+	List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user);
 }

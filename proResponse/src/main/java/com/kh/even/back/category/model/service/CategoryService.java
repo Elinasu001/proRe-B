@@ -36,4 +36,6 @@ public interface CategoryService {
 	 * @return 전문가들을 담은 ExpertListDTO
 	 */
 	PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails customUserDetails);
+	
+	
 }

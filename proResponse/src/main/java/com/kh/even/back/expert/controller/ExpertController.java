@@ -17,6 +17,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 
 import jakarta.validation.Valid;
@@ -50,6 +51,14 @@ public class ExpertController {
 
 		return ResponseData.created(null, "견적 응답에 성공했습니다.");
 
+	}
+	
+	@GetMapping("/registration")
+	public ResponseEntity<ResponseData<List<LargeCategoryDTO>>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
+		
+		List<LargeCategoryDTO> categories = expertService.getExpertCategory(user);
+		
+		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
 	}
 
 }

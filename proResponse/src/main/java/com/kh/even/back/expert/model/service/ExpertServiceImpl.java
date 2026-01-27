@@ -13,9 +13,12 @@ import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
+import com.kh.even.back.exception.CustomAuthorizationException;
 import com.kh.even.back.exception.EntityNotFoundException;
+import com.kh.even.back.exception.NotFoundException;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
@@ -102,5 +105,24 @@ public class ExpertServiceImpl implements ExpertService {
 				.price(expertEstimateDTO.getPrice()).content(expertEstimateDTO.getContent()).build();
 
 	}
-
+	
+	/**
+	 * 전문가 등록을 위해 카테고리를 조회하는 기능
+	 */
+	public List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user) {
+		
+		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
+		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
+		if(isExpert) {
+			throw new CustomAuthorizationException("이미 전문가인 회원입니다.");
+		}
+		
+		List<LargeCategoryDTO> categories = mapper.getExpertCategory();
+		if(categories == null || categories.isEmpty()) {
+			throw new NotFoundException("카테고리 조회에 실패했습니다.");
+		}
+		
+		return categories;
+	}
+	
 }

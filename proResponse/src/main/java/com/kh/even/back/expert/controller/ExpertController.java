@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 
@@ -28,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/experts")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ExpertController {
 
 	private final ExpertService expertService;
@@ -59,6 +62,15 @@ public class ExpertController {
 		List<LargeCategoryDTO> categories = expertService.getExpertCategory(user);
 		
 		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
+	}
+	
+	@PostMapping("/registration")
+	public ResponseEntity<ResponseData<Void>> registerExpert(@AuthenticationPrincipal CustomUserDetails user, 
+															 @Valid @ModelAttribute ExpertRegisterDTO expert, 
+															 @RequestParam(name = "attachment", required=false) MultipartFile file) {
+		log.info("전문가 등록 진위여부 : user = {}, expert = {}, file = {}", user, expert, file);
+		
+		return ResponseData.created(null, "전문가 등록이 완료되었습니다.");
 	}
 
 }

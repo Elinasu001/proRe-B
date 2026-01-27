@@ -12,6 +12,7 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.file.model.vo.FileVO;
 
 @Mapper
@@ -46,5 +47,7 @@ public interface ExpertMapper {
 	int countExpertsByKeyword(String keyword);
 	
 	List<ExpertSearchDTO> getExpertsByNickname(Map<String, Object> params);
+	
+	List<LargeCategoryDTO> getExpertCategory();
 	
 }

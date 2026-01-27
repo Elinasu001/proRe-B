@@ -47,7 +47,7 @@ public class SecurityConfigure {
 
 					// 1. GET - 비로그인 허용 (목록 / 검색)
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
-							"/api/experts/map", "/api/experts/{expertNo}").permitAll();
+							"/api/experts/map", "/api/experts/{expertNo}", "/api/reviews/tags").permitAll();
 
 					// 2. POST - 비로그인 허용 (기존 유지)
 					requests.requestMatchers(HttpMethod.POST).permitAll();

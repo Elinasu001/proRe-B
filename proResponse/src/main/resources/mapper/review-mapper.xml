@@ -13,9 +13,9 @@
         <result property="createDate" column="CREATE_DATE"/>
         <result property="estimateNo" column="ESTIMATE_NO"/>
 
-        <result property="nickName" column="NICKNAME"/>
+        <result property="nickname" column="NICKNAME"/>
         <result property="categoryName" column="CATEGORY_NAME"/>
-        <result property="createAgo" column="CREATE_AGO"/>
+        <result property="createdAgo" column="CREATED_AGO"/>
 
         <collection property="attachments"
             ofType="ReviewAttachmentDTO"

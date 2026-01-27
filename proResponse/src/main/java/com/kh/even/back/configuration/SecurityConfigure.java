@@ -47,7 +47,8 @@ public class SecurityConfigure {
 
 					// 1. GET - 비로그인 허용 (목록 / 검색)
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
-							"/api/experts/map", "/api/experts/{expertNo}").permitAll();
+							"/api/experts/map", "/api/experts/{expertNo}", "/api/admin/reports",
+						    "/api/admin/reports/*", "/api/admin/reports/target/*").permitAll();
 
 					// 2. POST - 비로그인 허용
 					requests.requestMatchers(HttpMethod.POST).permitAll();
@@ -60,6 +61,10 @@ public class SecurityConfigure {
 							"/api/reports/**",
 							"/api/experts/registration", "/api/experts/matches", "/api/experts/likes",
 							"/api/experts/*/categories").authenticated();
+					// 관리자 전용 - GET
+					requests.requestMatchers(HttpMethod.GET, 
+					    "/api/admin/**"
+					).hasAuthority("ROLE_ADMIN");
 
 					// 4. PUT - 로그인 필요
 					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();

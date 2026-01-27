@@ -17,6 +17,7 @@ import com.kh.even.back.admin.model.service.AdminReportService;
 import com.kh.even.back.common.ResponseData;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,9 @@ public class AdminReportController {
      */
     @GetMapping("/{reportNo}")
     public ResponseEntity<ResponseData<AdminReportDTO>> getReportDetail(
-        @PathVariable("reportNo") Long reportNo
+        @PathVariable("reportNo") 
+        @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 
+        Long reportNo
     ) {
         log.info("신고 상세 조회 - reportNo: {}", reportNo);
 
@@ -72,7 +75,9 @@ public class AdminReportController {
      */
     @GetMapping("/target/{targetUserNo}")
     public ResponseEntity<ResponseData<AdminReportListResponse>> getReportsByTargetUser(
-        @PathVariable("targetUserNo") Long targetUserNo,
+        @PathVariable("targetUserNo") 
+        @Min(value = 1, message = "회원 번호는 1 이상이어야 합니다.") 
+        Long targetUserNo,
         @RequestParam(name = "currentPage", defaultValue = "1") int currentPage
     ) {
         log.info("신고 대상자별 내역 조회 - targetUserNo: {}, currentPage: {}", targetUserNo, currentPage);
@@ -87,7 +92,9 @@ public class AdminReportController {
      */
     @PatchMapping("/{reportNo}/status")
     public ResponseEntity<ResponseData<String>> updateReportStatus(
-        @PathVariable("reportNo") Long reportNo,
+        @PathVariable("reportNo") 
+        @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 
+        Long reportNo,
         @RequestParam(name = "status") 
         @NotBlank(message = "상태는 필수입니다.") 
         String status,
@@ -107,7 +114,9 @@ public class AdminReportController {
      */
     @PatchMapping("/{reportNo}/answer")
     public ResponseEntity<ResponseData<String>> updateAnswer(
-        @PathVariable("reportNo") Long reportNo,
+        @PathVariable("reportNo") 
+        @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 
+        Long reportNo,
         @RequestParam(name = "answer") 
         @NotBlank(message = "답변은 필수입니다.") 
         String answer

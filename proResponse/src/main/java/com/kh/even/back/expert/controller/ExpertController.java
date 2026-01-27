@@ -23,6 +23,7 @@ import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
+import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 import com.kh.even.back.util.model.dto.PageResponse;
 

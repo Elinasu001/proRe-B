@@ -312,10 +312,13 @@
     FROM TB_REVIEW r
     LEFT JOIN TB_ESTIMATE_RESPONSE er
            ON r.ESTIMATE_NO = er.ESTIMATE_NO
+    AND  er.DELETE_AT = 'N'     
     LEFT JOIN TB_ESTIMATE_REQUEST ter
            ON er.REQUEST_NO = ter.REQUEST_NO
+    AND   ter.DELETE_AT = 'N'       
     LEFT JOIN TB_MEMBER m
            ON ter.USER_NO = m.USER_NO
+    AND  m.STATUS = 'Y'      
     LEFT JOIN TB_REVIEW_MAP rm
            ON r.REVIEW_NO = rm.REVIEW_NO
     LEFT JOIN TB_REVIEW_TAG trt
@@ -324,6 +327,7 @@
            ON tedc.CATEGORY_DETAIL_NO = ter.CATEGORY_DETAIL_NO
     LEFT JOIN TB_REVIEW_ATTACHMENT ra
            ON r.REVIEW_NO = ra.REVIEW_NO
+     AND ra.STATUS = 'Y'      
     WHERE ter.EXPERT_NO = #{expertNo}
     GROUP BY
         r.REVIEW_NO,

@@ -6,4 +6,6 @@ import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 
 public interface ExpertEstimateRepository extends JpaRepository<ExpertEstimateEntity, Long>{
 
+	ExpertEstimateEntity findByRequestNo(Long requestNo);
+	
 }

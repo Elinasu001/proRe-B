@@ -13,6 +13,10 @@
         <result property="createDate" column="CREATE_DATE"/>
         <result property="estimateNo" column="ESTIMATE_NO"/>
 
+        <result property="nickname" column="NICKNAME"/>
+        <result property="categoryName" column="CATEGORY_NAME"/>
+        <result property="createdAgo" column="CREATED_AGO"/>
+
         <collection property="attachments"
             ofType="ReviewAttachmentDTO"
             select="getAttachmentsByReviewNo"
@@ -59,12 +63,27 @@
             , r.CONTENT
             , r.STAR_SCORE
             , r.CREATE_DATE
+            , m.NICKNAME
+            , tedc.CATEGORY_NAME
+            , CASE
+                WHEN TRUNC(SYSDATE - r.CREATE_DATE) = 0 THEN '오늘'
+                ELSE TRUNC(SYSDATE - r.CREATE_DATE) || '일 전'
+            END AS CREATED_AGO
          FROM 
               TB_REVIEW r
+         JOIN 
+              TB_ESTIMATE_RESPONSE er ON r.ESTIMATE_NO = er.ESTIMATE_NO
+         JOIN 
+              TB_ESTIMATE_REQUEST ter ON er.REQUEST_NO = ter.REQUEST_NO
+         JOIN 
+              TB_MEMBER m ON ter.USER_NO = m.USER_NO
+         LEFT 
+         JOIN 
+              TB_EXPERT_DETAIL_CATEGORY tedc ON tedc.CATEGORY_DETAIL_NO = ter.CATEGORY_DETAIL_NO
         WHERE 
               r.ESTIMATE_NO = #{estimateNo}
-          AND 
-              r.STATUS = 'Y'
+         AND 
+             r.STATUS = 'Y'
     </select>
 
     <!-- 첨부파일 목록 조회(상세) -->
@@ -80,7 +99,8 @@
               TB_REVIEW_ATTACHMENT
         WHERE 
               REVIEW_NO = #{value}
-          AND STATUS = 'Y'
+          AND 
+              STATUS = 'Y'
     </select>
 
     <!-- 태그 목록 조회 (상세) -->

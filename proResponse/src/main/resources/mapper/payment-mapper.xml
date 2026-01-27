@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.even.back.payment.model.dao.PaymentMapper">
+
+	 <!-- 결제 상세 ResultMap -->
+    <resultMap id="paymentDetailResultMap" type="PaymentDetailDTO">
+        <id property="paymentNo" column="PAYMENT_NO"/>
+        <result property="roomNo" column="ROOM_NO"/>
+        <result property="amount" column="AMOUNT"/>
+        <result property="status" column="STATUS"/>
+		<result property="merchantUid" column="MERCHANT_UID"/>
+		<result property="impUid" column="IMP_UID"/>
+		<result property="createDate" column="CREATE_DATE"/>
+        <result property="estimateNo" column="ESTIMATE_NO"/>
+    </resultMap>
+
+
+	<select id="getByEstimateNo" parameterType="Long"  resultMap="paymentDetailResultMap">
+	    SELECT 
+	           P.PAYMENT_NO
+	         , P.ROOM_NO
+	         , P.AMOUNT
+	         , P.STATUS
+	         , P.MERCHANT_UID
+	         , P.IMP_UID
+	         , P.CREATE_DATE
+	         , CR.ESTIMATE_NO
+	      FROM 
+	           TB_PAYMENT P
+	      JOIN 
+	           TB_CHAT_ROOM CR 
+	        ON 
+	           P.ROOM_NO = CR.ROOM_NO
+         WHERE 
+               CR.ESTIMATE_NO = #{estimateNo}
+           AND 
+               CR.STATUS = 'Y'
+	</select>
+
+
+	<select id="getByRoomNo" parameterType="Long" resultMap="paymentDetailResultMap">
+		SELECT 
+			  P.PAYMENT_NO
+			, P.ROOM_NO
+			, P.AMOUNT
+			, P.STATUS
+			, P.MERCHANT_UID
+			, P.IMP_UID
+			, P.CREATE_DATE
+			, CR.ESTIMATE_NO
+		FROM 
+			  TB_PAYMENT P
+		JOIN 
+			  TB_CHAT_ROOM CR ON P.ROOM_NO = CR.ROOM_NO
+		WHERE 
+			  P.ROOM_NO = #{roomNo}
+		  AND 
+			  CR.STATUS = 'Y'
+	</select>
+
+	<!-- 결제 정보 생성 -->
+	<insert id="savePayment" parameterType="PaymentDetailDTO">
+		<selectKey keyProperty="paymentNo" resultType="long" order="BEFORE">
+			SELECT SEQ_PAYMENT.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT 
+		  INTO 
+		       TB_PAYMENT 
+			   (
+			   PAYMENT_NO
+			 , ROOM_NO
+			 , AMOUNT
+			 , STATUS
+			 , MERCHANT_UID
+			 , CREATE_DATE
+		       ) 
+			   VALUES 
+			   (
+			  #{paymentNo}
+			, #{roomNo}
+			, #{amount}
+			, #{status}
+			, #{merchantUid}
+			, SYSDATE
+	          )
+	</insert>
+
+</mapper>

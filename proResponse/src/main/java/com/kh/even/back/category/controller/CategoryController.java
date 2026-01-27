@@ -29,6 +29,7 @@ public class CategoryController {
 
 	private final CategoryService categorySerivce;
 
+	// 카테고리 조회
 	@GetMapping
 	public ResponseEntity<ResponseData<List<CategoryEntity>>> getEntities() {
 
@@ -40,6 +41,7 @@ public class CategoryController {
 
 	}
 
+	// 카테고리 소분류 조회
 	@GetMapping("/{categoryNo}")
 	public ResponseEntity<ResponseData<List<CategoryDTO>>> getCategories(@PathVariable("categoryNo") Long categoryNo) {
 
@@ -50,6 +52,7 @@ public class CategoryController {
 		return ResponseData.ok(categoryDetails, "조회에 성공했습니다.");
 	}
 
+	// 카테고리 해당 전문가 조회
     @GetMapping("/experts/{categoryDetailNo}")
 	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getExpertList(@PathVariable("categoryDetailNo") Long categoryDetailNo , @RequestParam(name = "pageNo", defaultValue = "1") int pageNo , @AuthenticationPrincipal CustomUserDetails customUserDetails){
     	

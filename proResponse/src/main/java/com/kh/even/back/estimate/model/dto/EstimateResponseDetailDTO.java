@@ -1,4 +1,4 @@
-package com.kh.even.back.expert.model.dto;
+package com.kh.even.back.estimate.model.dto;
 
 import java.util.List;
 
@@ -8,25 +8,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Setter
 @Getter
+@Setter
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
-public class ExpertDetailDTO {
+@AllArgsConstructor
+public class EstimateResponseDetailDTO {
 
+	private Long requestNo;
 	private Long expertNo;
 	private String nickname;
 	private String profileImg;
-	private int career;
+	private String address;
+	private double starScore;
+	private int reviewCount;
+	private int price;
 	private String startTime;
 	private String endTime;
-	private double starScore;
+	private int career;
 	private String content;
-	private int reviewCount;
-	private String address;
-	private int userLiked;
-	private List<String> images;
+	private List<String> filePaths;
 	private int completedJobs;
-
+	
+	
 }

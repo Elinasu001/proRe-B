@@ -14,20 +14,21 @@ import com.kh.even.back.category.model.dto.ExpertListDTO;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
 import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
+import com.kh.even.back.estimate.model.mapper.EstimateMapper;
 import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.exception.EntityNotFoundException;
-import com.kh.even.back.expert.model.dto.ExpertDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
-import com.kh.even.back.expert.model.dto.ResponseEstimateDTO;
+import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.repository.ExpertRepository;
 import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
+import com.kh.even.back.file.service.S3Service;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
 import com.kh.even.back.util.model.dto.PageResponse;
@@ -42,10 +43,12 @@ public class ExpertServiceImpl implements ExpertService {
 
 	private final FileUploadService fileUploadService;
 	private final ExpertMapper mapper;
+	private final EstimateMapper estimateMapper;
 	private final ExpertRepository repository;
 	private final ExpertEstimateRepository expertEstimateRepository;
 	private final EstimateRepository estimateRepository;
 	private final Pagenation pagenation;
+	private final S3Service s3Service;
 
 	public ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user) {
 
@@ -100,8 +103,8 @@ public class ExpertServiceImpl implements ExpertService {
 		EstimateRequestEntity requestEntity = estimateRepository.findById(entity.getRequestNo())
 				.orElseThrow(() -> new EntityNotFoundException("유효하지 않은 요청 번호입니다."));
 
-		log.info("entity : {} " , entity);
-		
+		log.info("entity : {} ", entity);
+
 		// JPA의 dirtyCheck
 		requestEntity.changeStatus(EstimateRequestStatus.QUOTED);
 
@@ -193,7 +196,46 @@ public class ExpertServiceImpl implements ExpertService {
 		PageInfo pageInfo = (PageInfo) params.get("pi");
 
 		return new PageResponse<ExpertListDTO>(list, pageInfo);
-		
+
 	}
 
+	@Override
+	@Transactional
+	public void deleteExpertEstimateByRequestNo(Long requestNo, CustomUserDetails user) {
+
+		Long userNo = user.getUserNo();
+
+		AssertUtil.notFound(mapper.countByRequestNoAndUserNo(requestNo, userNo), "회원의 견적이 아니거나 견적을 찾을수가 없습니다.");
+
+		List<String> responseFiles = mapper.findAllbyRequestNo(requestNo);
+		List<String> requestFiles = estimateMapper.findAllbyRequestNo(requestNo);
+
+		mapper.softDeleteAllAttachments(requestNo);
+		mapper.updateStatusByRequestNo(requestNo);
+
+		estimateMapper.softDeleteAllAttachments(requestNo);
+		estimateMapper.updateStatusByRequestNo(requestNo);
+
+		responseFiles.forEach(s3Service::deleteFile);
+		requestFiles.forEach(s3Service::deleteFile);
+
+	}
+
+	@Override
+	public PageResponse<ExpertSearchDTO> getExpertsByNickname(String keyword, int pageNo) {
+
+		int listCount = mapper.countExpertsByKeyword(keyword);
+
+		AssertUtil.notFound(listCount, "키워드에 해당하는 전문가를 조회할 수 없습니다.");
+
+		Map<String, Object> params = pagenation.pageRequest(pageNo, 10, listCount);
+
+		params.put("keyword", keyword);
+
+		List<ExpertSearchDTO> list = mapper.getExpertsByNickname(params);
+
+		PageInfo pageInfo = (PageInfo) params.get("pi");
+
+		return new PageResponse<ExpertSearchDTO>(list, pageInfo);
+	}
 }

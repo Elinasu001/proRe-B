@@ -110,14 +110,16 @@
 	
 	<!-- userNo 하고 requestNo로 있는지 검증 -->
 	<select id="countByRequestNoAndUserNo" resultType="int">
-		SELECT 
-		       COUNT(*) 
-		  FROM 
-		       TB_ESTIMATE_REQUEST 
-		 WHERE 
-		       REQUEST_NO = #{requestNo} 
-		   AND 
-		       EXPERT_NO = #{userNo}
+    SELECT 
+           COUNT(*) 
+      FROM 
+           TB_ESTIMATE_REQUEST 
+     WHERE 
+           REQUEST_NO = #{requestNo} 
+       AND 
+           (USER_NO = #{userNo} OR EXPERT_NO = #{userNo})
+       AND 
+           DELETE_AT = 'N'   
 	</select>
 	
 	<!-- 성사된 견적 수 조회 -->
@@ -250,4 +252,91 @@
     OFFSET #{offset} ROWS
 	FETCH NEXT #{limit} ROWS ONLY	
 	</select>
+	
+	<!-- requestNo 파일 조회 -->
+	<select id="findAllbyRequestNo">
+	SELECT	
+ 	       FILE_PATH
+ 	  FROM
+ 	       TB_ESTIMATE_RESPONSE
+ 	  LEFT
+ 	  JOIN
+ 	       TB_ESTIMATE_RESPONSE_ATTACHMENT ra USING (ESTIMATE_NO)
+ 	 WHERE
+ 	       REQUEST_NO = #{requestNo}
+ 	   AND
+ 	       ra.STATUS = 'N'
+ 	   AND
+ 	       DELETE_AT = 'N'
+	</select>	
+		
+    <!-- file들 다 softDelete -->		
+	<update id="softDeleteAllAttachments">
+	UPDATE TB_ESTIMATE_RESPONSE_ATTACHMENT a
+	SET a.STATUS = 'Y'
+	WHERE a.ESTIMATE_NO IN (
+    SELECT r.ESTIMATE_NO
+    FROM TB_ESTIMATE_RESPONSE r
+    WHERE r.REQUEST_NO = #{requestNo}
+)          
+	</update>
+	
+	<!-- 견적 스테이터스 수정 -->
+	<update id="updateStatusByRequestNo">
+	UPDATE 
+	       TB_ESTIMATE_RESPONSE
+	   SET
+	       DELETE_AT = 'Y'
+	 WHERE 
+	       REQUEST_NO = #{requestNo}	
+	</update>
+	
+	<!-- 검색어로 전문가 리스트 수 -->
+	<select id="countExpertsByKeyword">
+	 SELECT 
+            COUNT(*)     
+       FROM 
+            TB_EXPERT e
+       LEFT
+       JOIN
+            TB_MEMBER m ON e.USER_NO = m.USER_NO
+        AND 
+            e.STATUS = 'Y'
+        AND
+            m.STATUS = 'Y'
+      WHERE
+            m.NICKNAME LIKE '%'|| #{keyword} ||'%'	
+	</select>
+	
+	<!-- 검색어로 전문가 조회 -->
+	<select id="getExpertsByNickname">
+	SELECT 
+	       e.USER_NO AS expertNo
+	     , m.PROFILE_IMG AS profileImg  
+	     , m.NICKNAME AS nickname
+	     , es.REVIEW_COUNT AS reviewCount
+	     , es.AVG_STAR_SCORE AS starScore
+	     , e.CAREER AS career
+	     , es.TOTAL_LIKE_COUNT AS totalLikeCount
+	     , (
+	         SELECT COUNT(*)
+	           FROM TB_ESTIMATE_RESPONSE rp
+	           JOIN TB_ESTIMATE_REQUEST rq
+	             ON rp.REQUEST_NO = rq.REQUEST_NO
+	          WHERE rq.EXPERT_NO = e.USER_NO
+	            AND rp.STATUS = 'EXPIRED'
+	       ) AS completedJobs
+	     , e.CONTENT AS content
+	FROM TB_EXPERT e
+	JOIN TB_MEMBER m
+	  ON e.USER_NO = m.USER_NO
+	LEFT JOIN V_EXPERT_STATS es
+	  ON es.EXPERT_NO = e.USER_NO
+	WHERE e.STATUS = 'Y'
+	  AND m.STATUS = 'Y'
+	  AND m.NICKNAME LIKE '%' || #{keyword} || '%'
+	ORDER BY NVL(es.TOTAL_LIKE_COUNT, 0) DESC
+	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+	
 </mapper>

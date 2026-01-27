@@ -45,4 +45,6 @@ public interface EstimateMapper {
 	void softDeleteAllAttachments(Long requestNo);
 	
 	List<String> findAllbyRequestNo(Long requestNo);
+	
+	void updateStatusByRequestNo(Long requestNo);
 }

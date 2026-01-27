@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -127,5 +128,16 @@ public class EstimateController {
 		 return ResponseData.ok(null, "견적 요청 수정에 성공했습니다.");
 
 	}
+	
+	// 회원 견적 삭제
+	@DeleteMapping("{requestNo}")
+	public ResponseEntity<ResponseData<Void>> deleteEstimateByRequestNo(@PathVariable("requestNo") Long requestNo , @AuthenticationPrincipal CustomUserDetails user) {
+		
+		
+		estimateService.deleteEstimateByRequestNo(requestNo , user);
+		
+		return ResponseData.ok(null , "견적 취소에 성공 했습니다.");
+	}
+	
 
 }

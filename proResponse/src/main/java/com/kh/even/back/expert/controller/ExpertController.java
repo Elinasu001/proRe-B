@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 import com.kh.even.back.util.model.dto.PageResponse;
 
@@ -59,6 +61,7 @@ public class ExpertController {
 
 	}
 
+	// 전문가 -> 매치 성공 회원 조회
 	@GetMapping("/matches")
 	public ResponseEntity<ResponseData<PageResponse<ExpertRequestUserDTO>>> getMatchedUser(
 			@AuthenticationPrincipal CustomUserDetails user,
@@ -68,6 +71,7 @@ public class ExpertController {
 
 	}
 
+	// 전문가의 카테고리들 조회
 	@GetMapping("/{expertNo}/categories")
 	public ResponseEntity<ResponseData<List<DetailCategoryDTO>>> getExpertCategories(
 			@AuthenticationPrincipal CustomUserDetails user, @PathVariable("expertNo") Long expertNo) {
@@ -75,21 +79,46 @@ public class ExpertController {
 		return ResponseData.ok(expertService.getExpertCategories(expertNo), "조회에 성공 했습니다.");
 
 	}
-	
+
+	// 지도에 나타낼 전문가 조회
 	@GetMapping("/map")
-	public ResponseEntity<ResponseData<List<ExpertLocationDTO>>> getExpertMapLocations(@RequestParam(name="latitude") double latitude
-			, @RequestParam(name="longitude") double longitude , @RequestParam(name="radius" , defaultValue = "3") int radius){
-		
-		return ResponseData.ok(expertService.getExpertMapLocations(latitude,longitude,radius),"조회에 성공 했습니다.");
+	public ResponseEntity<ResponseData<List<ExpertLocationDTO>>> getExpertMapLocations(
+			@RequestParam(name = "latitude") double latitude, @RequestParam(name = "longitude") double longitude,
+			@RequestParam(name = "radius", defaultValue = "3") int radius) {
+
+		return ResponseData.ok(expertService.getExpertMapLocations(latitude, longitude, radius), "조회에 성공 했습니다.");
+
+	}
+
+	// 내가 찜한 전문가 조회
+	@GetMapping("/likes")
+	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getLikedExperts(
+			@AuthenticationPrincipal CustomUserDetails user,
+			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
+
+		return ResponseData.ok(expertService.getLikedExperts(user, pageNo), "조회에 성공 했습니다.");
+
+	}
+
+	// 전문가 견적 삭제
+	@DeleteMapping("/estimate/{requestNo}")
+	public ResponseEntity<ResponseData<Void>> deleteExpertEstimateByRequestNo(@PathVariable("requestNo") Long requestNo,
+			@AuthenticationPrincipal CustomUserDetails user) {
+
+		expertService.deleteExpertEstimateByRequestNo(requestNo, user);
+
+		return ResponseData.ok(null, "견적 삭제에 성공 했습니다.");
+
+	}
+
+	// 검색창 전문가 검색
+	@GetMapping("/search")
+	public ResponseEntity<ResponseData<PageResponse<ExpertSearchDTO>>> getExpertsByNickname(
+			@RequestParam(name = "keyword") String keyword,
+			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
+
+		return ResponseData.ok(expertService.getExpertsByNickname(keyword, pageNo), "조회에 성공 했습니다.");
 		
 	}
 	
-	@GetMapping("/likes")
-	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getLikedExperts(@AuthenticationPrincipal CustomUserDetails user , @RequestParam(name = "pageNo", defaultValue = "1") int pageNo){
-		
-		
-		
-		return ResponseData.ok(expertService.getLikedExperts(user,pageNo), "조회에 성공 했습니다.");
-		
-	}
 }

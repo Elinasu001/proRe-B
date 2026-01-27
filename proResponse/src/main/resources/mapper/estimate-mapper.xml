@@ -356,4 +356,14 @@
  	       ra.STATUS = 'N'
 	</select>
 	
+	<!-- 견적 상태값 변경 -->
+	<update id="updateStatusByRequestNo">
+	UPDATE 
+	       TB_ESTIMATE_REQUEST
+	   SET
+	       DELETE_AT = 'Y'
+	 WHERE 
+	       REQUEST_NO = #{requestNo}		
+	</update>
+	
 </mapper>

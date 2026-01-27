@@ -10,6 +10,7 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface ExpertService {
@@ -54,5 +55,21 @@ public interface ExpertService {
 	 */
 	List<ExpertLocationDTO> getExpertMapLocations(double latitude, double longitude, int radius);
 	
+	/**
+	 * 
+	 * @param user 로그인한 회원
+	 * @param pageNo 페이징 처리
+	 * @return 좋아요한 전문가들
+	 */
 	PageResponse<ExpertListDTO> getLikedExperts(CustomUserDetails user , int pageNo);
+	
+	/**
+	 * 
+	 * @param requestNo 
+	 * @param user
+	 */
+	void deleteExpertEstimateByRequestNo(Long requestNo , CustomUserDetails user);
+	
+	
+	PageResponse<ExpertSearchDTO> getExpertsByNickname(String keyword , int pageNo);
 }

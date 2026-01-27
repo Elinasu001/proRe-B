@@ -76,9 +76,22 @@ public interface EstimateService {
 	 */
 	EstimateResponseDetailDTO getReceivedEstimateDetail(CustomUserDetails customUserDetails, Long requestNo);
 
+	/**
+	 * 
+	 * @param requestNo 견적 번호
+	 * @param dto  견적 수정 내용
+	 * @param images 견적 수정 이미지
+	 * @param user 로그인 유저
+	 */
 	void updateRequestEstimate(Long requestNo, EstimateRequestUpdateDTO dto, List<MultipartFile> images,
 			CustomUserDetails user);
 	
+	/**
+	 * 
+	 * @param requestNo 견적 번호
+	 * @param user 로그인한 유저
+	 */
+	void deleteEstimateByRequestNo(Long requestNo , CustomUserDetails user);
 	
 	
 }

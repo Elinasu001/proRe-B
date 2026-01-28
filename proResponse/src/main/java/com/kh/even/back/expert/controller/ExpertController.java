@@ -142,9 +142,9 @@ public class ExpertController {
 			                                                                @AuthenticationPrincipal CustomUserDetails user) {
 		// log.info("전문가 등록 진위여부 : expert = {}, file = {}, user = {}", expert, file, user);
 		
-		expertService.registerExpert(expert, files, user);
+		RegisterResponseDTO ResponseDTO = expertService.registerExpert(expert, files, user);
 	
-		RegisterResponseDTO dto = null;
-		return ResponseData.created(null, "전문가 등록이 완료되었습니다.");
+		
+		return ResponseData.created(ResponseDTO, "전문가 등록이 완료되었습니다.");
 	}
 }

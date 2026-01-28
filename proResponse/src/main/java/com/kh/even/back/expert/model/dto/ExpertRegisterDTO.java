@@ -1,8 +1,11 @@
 package com.kh.even.back.expert.model.dto;
 
+import java.util.List;
+
 import org.hibernate.validator.constraints.Range;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -27,9 +30,9 @@ public class ExpertRegisterDTO {
 	@Range(min = 1, max = 7, message = "중분류 카테고리가 올바르지 않습니다.")
 	private Long categoryNo;
 	
-	@NotNull(message = "소분류 카테고리를 선택해주세요.")
-	@Range(min = 1, max = 39, message = "소분류 카테고리가 올바르지 않습니다.")
-	private Long categoryDetailNo;
+	@NotEmpty(message = "소분류 카테고리를 선택해주세요.")
+	@Size(max = 2, message = "소분류는 두 개까지 선택 가능합니다.")
+	private List<@Range(min = 1, max = 39, message = "소분류 카테고리가 올바르지 않습니다.") Long> categoryDetailNos;
 	
 	@NotNull(message = "경력을 입력해주세요.")
 	@Range(min = 1, max = 50, message = "경력은 1~50년 사이여야 합니다.")

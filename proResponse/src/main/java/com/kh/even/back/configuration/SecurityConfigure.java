@@ -44,7 +44,8 @@ public class SecurityConfigure {
 					// Swagger 허용
 					requests.requestMatchers("/ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 							"/webjars/**").permitAll();
-					// 관리자 전용 권한 검증 
+					
+					// 관리자 전용 권한 검증
 					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ADMIN");
 					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ROLE_ADMIN");
 					
@@ -52,7 +53,7 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
 							"/api/experts/map", "/api/experts/{expertNo}").permitAll();
 
-					// 2. POST - 비로그인 허용
+					// 2. POST/DELETE/PUT - 비로그인 허용
 					requests.requestMatchers(HttpMethod.POST).permitAll();
 					requests.requestMatchers(HttpMethod.DELETE).permitAll();
 					requests.requestMatchers(HttpMethod.PUT).permitAll();
@@ -61,10 +62,10 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages", "/api/reviews/**",
 							"/api/reports/**",
 							"/api/experts/registration", "/api/experts/matches", "/api/experts/likes",
-							"/api/experts/*/categories").authenticated();
-					
+							"/api/experts/*/categories", "/api/cash/*").authenticated();
+
 					// 4. PUT - 로그인 필요
-					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
+					requests.requestMatchers(HttpMethod.PUT, "/api/members/me/**").authenticated();
 
 					// 5. POST - 로그인 필요
 					requests.requestMatchers(HttpMethod.POST, "/api/reports", "/api/reviews/**", "/api/likes/**")
@@ -79,7 +80,7 @@ public class SecurityConfigure {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList(instance));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));  // PATCH 제거
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
 		configuration.setAllowCredentials(true);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -96,5 +97,5 @@ public class SecurityConfigure {
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
 		return authConfig.getAuthenticationManager();
 	}
-
+	
 }

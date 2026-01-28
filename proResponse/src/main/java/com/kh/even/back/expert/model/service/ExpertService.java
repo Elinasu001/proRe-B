@@ -11,8 +11,10 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface ExpertService {
@@ -81,4 +83,13 @@ public interface ExpertService {
 	 * @return 대/중/소분류 카테고리들을 가공한 DTO
 	 */
 	List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user);
+	
+	/**
+	 * 전문가 등록을 요청합니다.
+	 * @param expert 전문가 등록을 위한 입력값
+	 * @param file 상세이미지 첨부
+	 * @param user 회원정보
+	 * @return 전문가 등록에 성공할 경우 내려줄 응답용 DTO
+	 */
+	RegisterResponseDTO registerExpert(ExpertRegisterDTO expert, List<MultipartFile> files, CustomUserDetails user);
 }

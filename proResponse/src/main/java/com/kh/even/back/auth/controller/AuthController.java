@@ -29,6 +29,8 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<ResponseData<LoginResponseDTO>> login(@Valid @RequestBody MemberLoginDTO member) {
 		
+		log.info("로그인 오류 검증 : ");
+		
 		LoginResponseDTO loginResponse = authService.login(member);
 		
 		return ResponseData.ok(loginResponse, "로그인에 성공했습니다.");

@@ -266,6 +266,7 @@
     <result property="starScore" column="STAR_SCORE"/>
     <result property="content" column="CONTENT"/>
     <result property="createDate" column="CREATE_DATE"/>
+    <result property="profileImg" column="PROFILE_IMG"/>
     
     <collection property="filePaths"
                 javaType="java.util.ArrayList"
@@ -279,6 +280,7 @@
     SELECT
         r.REVIEW_NO REVIEW_NO,
         m.NICKNAME NICKNAME,
+        m.PROFILE_IMG ,
         LISTAGG(trt.TAG_NAME, ',')
             WITHIN GROUP (ORDER BY trt.TAG_NAME) AS TAG_NAMES,
         tedc.CATEGORY_NAME,
@@ -316,7 +318,8 @@
         r.STAR_SCORE,
         r.CONTENT,
         r.CREATE_DATE,
-        ra.FILE_PATH
+        ra.FILE_PATH,
+        m.PROFILE_IMG
     ORDER BY r.CREATE_DATE DESC
 </select>
 	

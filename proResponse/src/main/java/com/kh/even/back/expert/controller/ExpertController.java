@@ -62,6 +62,7 @@ public class ExpertController {
 
 	}
 	
+	// 전문가 등록 카테고리 조회
 	@GetMapping("/registration")
 	public ResponseEntity<ResponseData<List<LargeCategoryDTO>>> getExpertCategory(@AuthenticationPrincipal CustomUserDetails user) {
 		

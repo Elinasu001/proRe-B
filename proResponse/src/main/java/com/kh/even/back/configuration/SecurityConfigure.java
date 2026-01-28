@@ -58,7 +58,7 @@ public class SecurityConfigure {
 					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages", "/api/reviews/**",
 							"/api/reports/**",
 							"/api/experts/registration", "/api/experts/matches", "/api/experts/likes",
-							"/api/experts/*/categories").authenticated();
+							"/api/experts/*/categories", "/api/cash/*").authenticated();
 
 					// 4. PUT - 로그인 필요 (기존)
 					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
@@ -95,5 +95,5 @@ public class SecurityConfigure {
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
 		return authConfig.getAuthenticationManager();
 	}
-
+	
 }

@@ -19,10 +19,8 @@ import com.kh.even.back.chat.model.dto.ChatMessageSearchDTO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
-import com.kh.even.back.chat.socket.WebSocketChatHandler;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ChatException;
-import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.util.CursorPagination;
 
 import lombok.RequiredArgsConstructor;
@@ -34,10 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
-    private final FileUploadService fileUploadService;
+    private final ChatFileUploadService chatFileUploadService;
     
-    private final WebSocketChatHandler webSocketChatHandler;
-
     /**
      * 채팅방 생성 및 초기 메시지 저장
      */
@@ -105,9 +101,9 @@ public class ChatServiceImpl implements ChatService {
      */
     private void saveAttachments(List<MultipartFile> files, Long messageNo) {
         AssertUtil.validateImageFiles(files);
-        fileUploadService.uploadFiles(files, "chat", messageNo, chatMapper::saveChatAttachment);
+        chatFileUploadService.uploadFiles(files, "chat", messageNo, chatMapper::saveChatAttachment);
     }
-
+    
     
     /**
      *  메시지 저장
@@ -117,38 +113,33 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public ChatMessageVO saveMessage(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
+    public ChatMessageDTO saveMessage(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
         
         String type = chatMessageDto.getType();
 
         Long roomNo = getRoomNoByEstimateNo(estimateNo);
         chatMessageDto.setRoomNo(roomNo);
 
-        // FILE 타입 검증
-        ChatValidator.validateByType(chatMessageDto);
+        // 타입 검증 (파일이 있으면 FILE처럼 동작)
+        if ((chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) || "FILE".equals(type)) {
+            ChatValidator.validateByType(chatMessageDto);
+        }
 
         // 메시지 저장
         String failMsg = getFailMessage(type);
         ChatMessageVO messageVo = buildMessageVO(chatMessageDto, userNo);
         int result = chatMapper.saveMessage(messageVo);
+        log.info("[saveMessage] messageVo 저장 결과: result={}, messageNo={}", result, messageVo.getMessageNo());
         validateDbResult(result, failMsg);
-        
-        // FILE 타입이면 첨부파일 저장
-        if ("FILE".equals(type)) {
+
+        // 파일이 있으면 첨부파일 저장 (TEXT라도 files가 있으면 저장)
+        if (chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) {
             saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
         }
-        return messageVo;
-    }
 
-    /**
-     *  메시지 저장 + 브로드캐스트
-     */
-    @Override
-    @Transactional
-    public ChatMessageVO saveMessageAndBroadcast(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
-        ChatMessageVO saved = saveMessage(estimateNo, chatMessageDto, userNo);
-        webSocketChatHandler.broadcastMessage(estimateNo, saved);
-        return saved;
+        ChatMessageDTO savedDto = getMessageBymessageNo(messageVo.getMessageNo());
+        log.info("[saveMessage] getMessageBymessageNo 결과: {}", savedDto);
+        return savedDto;
     }
 
     
@@ -263,4 +254,30 @@ public class ChatServiceImpl implements ChatService {
         }
         return roomNo;
     }
+
+    /**
+     * messageNo(메시지 PK)로 단일 메시지와 첨부파일(attachments)까지 조회
+     */
+    @Override
+    public ChatMessageDTO getMessageBymessageNo(Long messageNo) {
+        ChatMessageDTO chatMessageDto = chatMapper.getMessageByMessageNo(messageNo);
+        if (chatMessageDto == null) {
+            log.warn("[getMessageBymessageNo] messageNo={}에 해당하는 메시지가 없습니다.", messageNo);
+            return null;
+        }
+        List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(List.of(messageNo));
+        log.info("[getMessageBymessageNo] messageNo={} attachments: {}", messageNo, attachments);
+        if (attachments == null) {
+            attachments = Collections.emptyList();
+        }
+        chatMessageDto.setAttachments(attachments);
+        log.info("[getMessageBymessageNo] 반환 DTO: {}", chatMessageDto);
+        return chatMessageDto;
+    }
+
+    @Override
+    public List<ChatAttachmentDTO> getAttachmentsByMessageNo(Long messageNo) {
+        return chatMapper.getAttachmentsByMessageNos(List.of(messageNo));
+    }
+
 }

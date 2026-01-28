@@ -25,10 +25,10 @@ public final class ChatValidator {
     }
 
     public static void validateByType(ChatMessageDTO dto) {
-        if ("FILE".equals(dto.getType())) {
-            if (dto.getFiles() == null || dto.getFiles().isEmpty()) {
-                throw new ChatException("파일 타입 메시지는 첨부파일이 필수입니다.");
-            }
+        boolean hasFiles = dto.getFiles() != null && !dto.getFiles().isEmpty();
+        boolean hasAttachments = dto.getAttachments() != null && !dto.getAttachments().isEmpty();
+        if (!hasFiles && !hasAttachments) {
+            throw new ChatException("파일 타입 메시지는 첨부파일이 필수입니다.");
         }
     }
 

@@ -1,6 +1,10 @@
+
 package com.kh.even.back.chat.model.service;
 
 
+import java.util.List;
+
+import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageResponse;
 import com.kh.even.back.chat.model.dto.ChatMessageSearchDTO;
@@ -37,20 +41,20 @@ public interface ChatService {
      * @param userNo 메시지 발신자 번호
      * @return 저장된 메시지 정보 (messageNo 포함)
      */
-    ChatMessageVO saveMessage(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo);
+    ChatMessageDTO saveMessage(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo);
 
     
+    
     /**
-     * 메시지 저장 + WebSocket 브로드캐스트
-     * HTTP 파일 업로드 시 호출
-     * DB 저장 후 실시간으로 다른 사용자들에게 알림 전송
-     * 
-     * @param estimateNo 견적 번호
-     * @param chatMessageDto 메시지 정보 (파일 포함)
-     * @param userNo 메시지 발신자 번호
-     * @return 저장된 메시지 정보
+     * messageNo(메시지 PK)로 단일 메시지와 첨부파일(attachments)까지 조회
+     * 실시간 브로드캐스트 등에서 방금 저장한 메시지 1건을 정확히 가져올 때 사용
+     * @param messageNo 메시지 번호(PK)
+     * @return 첨부파일 정보까지 포함된 메시지 DTO
      */
-    ChatMessageVO saveMessageAndBroadcast(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo);
+    ChatMessageDTO getMessageBymessageNo(Long messageNo);
+
+    // 파일 URL만 반환
+    List<ChatAttachmentDTO> getAttachmentsByMessageNo(Long messageNo);
     
     /**
      * 회원 번호로 닉네임 조회

@@ -1,5 +1,7 @@
 package com.kh.even.back.chat.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,20 +68,29 @@ public class ChatController {
      * userNo/content/type
      */
     @PostMapping("/{estimateNo}")
-    public ResponseEntity<ResponseData<ChatMessageVO>> saveMessage(
+    public ResponseEntity<ResponseData<ChatMessageDTO>> saveMessage(
             @PathVariable("estimateNo") Long estimateNo,
             @ModelAttribute ChatMessageDTO chatMessageDto,
             @AuthenticationPrincipal CustomUserDetails user) {
 
-        ChatMessageVO saved = chatService.saveMessageAndBroadcast(
+        ChatMessageDTO saved = chatService.saveMessage(
                 estimateNo,
                 chatMessageDto,
                 user.getUserNo()
         );
-
-        return ResponseData.ok(saved, "파일이 전송되었습니다.");
+        
+        return ResponseData.ok(saved, "메시지가 전송되었습니다.");
     }
-    
 
+    // 파일 처리용을 만들어서
+    // 응답할 때 : (fileURL, message)
 
+    // @PostMapping("/{estimateNo}/filePaths")
+    // public ResponseEntity<List<String>> getFileUrls(
+    //         @PathVariable("estimateNo") Long estimateNo,
+    //         @RequestParam("messageNo") Long messageNo
+    // ) {
+    //     List<String> urls = chatService.getFileUrlsByMessageNo(messageNo);
+    //     return ResponseEntity.ok(urls);
+    // }
 }

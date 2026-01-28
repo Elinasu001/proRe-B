@@ -98,7 +98,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
-
     /**
      * 주문번호 생성 메서드
      */

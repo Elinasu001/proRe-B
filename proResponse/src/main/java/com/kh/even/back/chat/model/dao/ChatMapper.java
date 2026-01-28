@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.even.back.chat.model.dto.ChatAttachmentDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageDTO;
+import com.kh.even.back.chat.model.vo.ChatAttachmentVO;
 import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
@@ -45,7 +46,7 @@ public interface ChatMapper {
     /**
      * 첨부파일 저장
      */
-	int saveChatAttachment(FileVO fileVo);
+	int saveChatAttachment(ChatAttachmentVO ChatAttachmentVo);
 
 
     /**
@@ -67,5 +68,10 @@ public interface ChatMapper {
      * 여러 메시지의 첨부파일 일괄 조회
      */
     List<ChatAttachmentDTO> getAttachmentsByMessageNos(List<Long> messageNos);
+
+    /**
+     * messageNo로 단일 메시지 조회
+     */
+    ChatMessageDTO getMessageByMessageNo(Long messageNo);
 
 }

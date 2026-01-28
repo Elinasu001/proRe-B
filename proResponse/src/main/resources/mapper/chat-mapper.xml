@@ -102,8 +102,8 @@
 	<!-- 여러 메시지의 첨부파일 일괄 조회 -->
 	<select id="getAttachmentsByMessageNos" parameterType="list" resultMap="ChatAttachmentMap">
 		SELECT
-			   FILE_NO
-			 , MESSAGE_NO
+			   MESSAGE_NO
+			 , FILE_NO
 			 , FILE_PATH
 			 , ORIGIN_NAME
 			 , UPLOAD_DATE
@@ -116,6 +116,9 @@
 			  #{item}
 		   </foreach>
 	</select>
+
+
+	
 
 	<!--커서 기반 페이징 -->
 	<select id="getMessagesByCursor" parameterType="map" resultMap="chatMessageResultMap">
@@ -174,6 +177,22 @@
 			  USER_NO = #{userNo}
 	</select>
 
+	<!-- messageNo로 단일 메시지 조회 -->
+	<select id="getMessageByMessageNo" parameterType="long" resultType="ChatMessageDTO">
+		SELECT
+			   MESSAGE_NO messageNo
+			 , ROOM_NO roomNo
+			 , USER_NO userNo
+			 , CONTENT content
+			 , STATUS status
+			 , SENT_DATE sentDate
+			 , TYPE type
+		 FROM 
+		       TB_CHAT_ROOM_MESSAGE
+		WHERE 
+		       MESSAGE_NO = #{messageNo}
+	</select>
+
 	<!-- 견적 번호로 채팅방 번호 조회 -->
 	<select id="getRoomNoByEstimateNo" resultType="Long">
 		SELECT 
@@ -230,7 +249,7 @@
 	</insert>
 	
 	<!-- 채팅 첨부파일 저장 -->
-	<insert id="saveChatAttachment" parameterType="FileVO">
+	<insert id="saveChatAttachment" parameterType="ChatAttachmentVO">
 		<selectKey keyProperty="fileNo" resultType="long" order="BEFORE">
 			SELECT SEQ_CHAT_ROOM_MESSAGE_ATTACHMENT.NEXTVAL FROM DUAL
 		</selectKey>
@@ -248,7 +267,7 @@
 		VALUES 
 		      (
 			  #{fileNo}
-			, #{reqNo}
+			, #{messageNo}
 			, #{filePath}
 			, #{originName}
 			, #{status}

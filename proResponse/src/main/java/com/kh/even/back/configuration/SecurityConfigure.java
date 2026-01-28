@@ -44,11 +44,16 @@ public class SecurityConfigure {
 					// Swagger 허용
 					requests.requestMatchers("/ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 							"/webjars/**").permitAll();
-
+					/* 관리자 전용 권한 검증 (임시 주석)
+					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					requests.requestMatchers(HttpMethod.PATCH, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					*/
+					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").permitAll();
+					requests.requestMatchers(HttpMethod.PATCH, "/api/admin/**").permitAll();
 					// 1. GET - 비로그인 허용 (목록 / 검색)
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
-							"/api/experts/map", "/api/experts/{expertNo}", "/api/admin/reports",
-						    "/api/admin/reports/*", "/api/admin/reports/target/*").permitAll();
+							"/api/experts/map", "/api/experts/{expertNo}").permitAll();
 
 					// 2. POST - 비로그인 허용
 					requests.requestMatchers(HttpMethod.POST).permitAll();
@@ -61,17 +66,12 @@ public class SecurityConfigure {
 							"/api/reports/**",
 							"/api/experts/registration", "/api/experts/matches", "/api/experts/likes",
 							"/api/experts/*/categories").authenticated();
-					// 관리자 전용 - GET
-					requests.requestMatchers(HttpMethod.GET, 
-					    "/api/admin/**"
-					).hasAuthority("ROLE_ADMIN");
-
+					
 					// 4. PUT - 로그인 필요
 					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
-
 					requests.requestMatchers(HttpMethod.PATCH, "/api/members/me/**").authenticated();
 
-					// 6. POST - 로그인 필요
+					// 5. POST - 로그인 필요
 					requests.requestMatchers(HttpMethod.POST, "/api/reports", "/api/reviews/**", "/api/likes/**")
 							.authenticated();
 

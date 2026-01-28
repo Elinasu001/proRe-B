@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -146,5 +147,14 @@ public class ExpertController {
 	
 		
 		return ResponseData.created(ResponseDTO, "전문가 등록이 완료되었습니다.");
+	}
+	
+	@PutMapping("/me")
+	public ResponseEntity<ResponseData<ExpertRegisterDTO>> updateExpert(@Valid @ModelAttribute ExpertRegisterDTO request,
+																	    @RequestParam(name = "attachment", required=false) List<MultipartFile> files,
+																		@AuthenticationPrincipal CustomUserDetails user) {
+		log.info("전문가 수정 진위여부 : request = {}, files = {}, user = {}", request, files, user);
+		
+		return ResponseData.ok(null, "전문가 정보수정이 완료되었습니다.");
 	}
 }

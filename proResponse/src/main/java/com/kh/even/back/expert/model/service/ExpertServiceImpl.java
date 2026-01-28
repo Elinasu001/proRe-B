@@ -288,7 +288,7 @@ public class ExpertServiceImpl implements ExpertService {
 			throw new UpdateMemberException("권한 변경에 실패했습니다.");
 		}
 		
-		// 소분류 카테고리 중복 제거 -> 매퍼 호출
+		// 사용자가 선택한 소분류 카테고리 중복값 방지 HashSet -> 매퍼 호출
 		List<Long> categoryDetailNos = expert.getCategoryDetailNos();
 		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
 		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
@@ -366,6 +366,44 @@ public class ExpertServiceImpl implements ExpertService {
 			throw new NotFoundException("해당 전문가 조회에 실패했습니다.");
 		}
 		return dto;
+	}
+	
+	public RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<MultipartFile> files, CustomUserDetails user) {
+		
+		// 일반 회원은 전문가 정보 수정에 접근하지 못한다.
+		isUser(user);
+		
+		// TB_EXPERT에 UPDATE할 VO 가공 -> 매퍼 호출
+		ExpertRegisterVO registerVO = toExpertVO(request, user.getUserNo());
+		int result = mapper.updateExpert(registerVO);
+		if(result <= 0) {
+			throw new ExpertRegisterException("전문가 정보 수정에 실패했습니다.");
+		}
+		Long refNo = registerVO.getUserNo();
+		
+		// 사용자가 선택한 소분류 카테고리 중복값 방지 HashSet -> 매퍼 호출
+	    List<Long> categoryDetailNos = request.getCategoryDetailNos();
+		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
+		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
+			int updateCategory = mapper.updateExpertCategoryDetail(refNo, categoryDetailNo);
+			if(updateCategory <= 0) {
+			    throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
+			}
+	    }
+		
+		
+		
+	}
+	
+	/**
+	 * 해당 회원이 일반회원인지 권한을 검증합니다.
+	 * @param user
+	 */
+	private void isUser(CustomUserDetails user) {
+		boolean isUser = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_USER"));
+		if(isUser) {
+			throw new CustomAuthorizationException("전문가만 접근할 수 있습니다."); 
+		}
 	}
 
 	

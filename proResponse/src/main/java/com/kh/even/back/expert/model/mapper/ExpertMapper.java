@@ -62,4 +62,10 @@ public interface ExpertMapper {
 	
 	List<RegisterResponseDTO> getNewExpert(Long userNo);
 	
+	int updateExpert(ExpertRegisterVO registerVO);
+	
+	int updateExpertCategoryDetail(@Param("userNo")Long userNo, @Param("categoryDetailNo")Long categoryDetailNo);
+	
+	void updateExpertAttachment(FileVO file);
+	
 }

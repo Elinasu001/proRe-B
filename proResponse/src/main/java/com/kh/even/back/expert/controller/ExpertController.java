@@ -153,7 +153,9 @@ public class ExpertController {
 	public ResponseEntity<ResponseData<ExpertRegisterDTO>> updateExpert(@Valid @ModelAttribute ExpertRegisterDTO request,
 																	    @RequestParam(name = "attachment", required=false) List<MultipartFile> files,
 																		@AuthenticationPrincipal CustomUserDetails user) {
-		log.info("전문가 수정 진위여부 : request = {}, files = {}, user = {}", request, files, user);
+		// log.info("전문가 수정 진위여부 : request = {}, files = {}, user = {}", request, files, user);
+		
+		RegisterResponseDTO ResponseDTO = expertService.updateExpert(request, files, user);
 		
 		return ResponseData.ok(null, "전문가 정보수정이 완료되었습니다.");
 	}

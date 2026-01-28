@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -22,8 +23,10 @@ import com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 import com.kh.even.back.util.model.dto.PageResponse;
 
@@ -35,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/experts")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ExpertController {
 
 	private final ExpertService expertService;
@@ -70,6 +74,8 @@ public class ExpertController {
 		
 		return ResponseData.ok(categories, "전문가 등록 카테고리 조회가 완료되었습니다.");
 	}
+	
+
 
 	// 전문가 -> 매치 성공 회원 조회
 	@GetMapping("/matches")
@@ -131,4 +137,15 @@ public class ExpertController {
 		
 	}
 	
+	@PostMapping("/registration")
+	public ResponseEntity<ResponseData<RegisterResponseDTO>> registerExpert(@Valid @ModelAttribute ExpertRegisterDTO expert,
+			                                                                @RequestParam(name = "attachment", required=false) List<MultipartFile> files,
+			                                                                @AuthenticationPrincipal CustomUserDetails user) {
+		// log.info("전문가 등록 진위여부 : expert = {}, file = {}, user = {}", expert, file, user);
+		
+		RegisterResponseDTO ResponseDTO = expertService.registerExpert(expert, files, user);
+	
+		
+		return ResponseData.created(ResponseDTO, "전문가 등록이 완료되었습니다.");
+	}
 }

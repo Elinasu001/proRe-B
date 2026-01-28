@@ -65,6 +65,12 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(PaymentException.class)
+	public ResponseEntity<ResponseData<Object>> handlePaymentException(PaymentException e) {
+		log.warn("결제 오류: {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
 	/* ===================== 회원 / 예약 / 차량 / 게시판 도메인 예외 ===================== */
 
 	/* ===================== 공통 Runtime / Exception ===================== */
@@ -189,6 +195,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UpdateMemberException.class)
 	public ResponseEntity<ResponseData<Object>> handleUpdateMemberException(UpdateMemberException e) {
 		log.error("내정보 수정 오류 : {} ", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(ExpertRegisterException.class)
+	public ResponseEntity<ResponseData<Object>> handleExpertRegisterException(ExpertRegisterException e) {
+		log.error("전문가 등록 오류 : {}", e.getMessage());
 		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	

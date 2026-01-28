@@ -62,7 +62,7 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
          //    log.error("userNo가 null입니다! 프론트엔드에서 userNo를 포함해서 보내는지 확인하세요.");
          //    return;
          // }
-
+         
          Long estimateNoLong = Long.parseLong(estimateNo);
 
          ChatMessageDTO messageToSend;

@@ -1,7 +1,5 @@
 package com.kh.even.back.chat.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +15,6 @@ import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.chat.model.dto.ChatMessageResponse;
 import com.kh.even.back.chat.model.dto.ChatMessageSearchDTO;
 import com.kh.even.back.chat.model.service.ChatService;
-import com.kh.even.back.chat.model.vo.ChatMessageVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.ResponseData;
 
@@ -45,7 +42,6 @@ public class ChatController {
         return ResponseData.ok(chatRoom, "채팅방이 생성되었습니다.");
     }
 
-
     /**
      * 채팅 메시지 조회 (커서 기반 페이징)
      */
@@ -61,7 +57,6 @@ public class ChatController {
         );
         return ResponseData.ok(result, "메시지를 조회했습니다.");
     }
-
 
     /**
      * 기존 채팅방에 파일/텍스트 메시지 전송
@@ -82,15 +77,4 @@ public class ChatController {
         return ResponseData.ok(saved, "메시지가 전송되었습니다.");
     }
 
-    // 파일 처리용을 만들어서
-    // 응답할 때 : (fileURL, message)
-
-    // @PostMapping("/{estimateNo}/filePaths")
-    // public ResponseEntity<List<String>> getFileUrls(
-    //         @PathVariable("estimateNo") Long estimateNo,
-    //         @RequestParam("messageNo") Long messageNo
-    // ) {
-    //     List<String> urls = chatService.getFileUrlsByMessageNo(messageNo);
-    //     return ResponseEntity.ok(urls);
-    // }
 }

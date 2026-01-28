@@ -33,6 +33,7 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
     private final ChatFileUploadService chatFileUploadService;
+    private final ChatValidator chatValidator;
     
     /**
      * 채팅방 생성 및 초기 메시지 저장
@@ -42,7 +43,7 @@ public class ChatServiceImpl implements ChatService {
     public ChatRoomVO createRoom(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
 
         // 1. 견적 상태 체크
-        validateEstimateStatus(estimateNo);
+        chatValidator.validateEstimateStatus(estimateNo);
 
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
         boolean exists = chatMapper.existsByEstimateNo(estimateNo);
@@ -57,7 +58,7 @@ public class ChatServiceImpl implements ChatService {
             .createDate(LocalDateTime.now())
             .build();
         int roomResult = chatMapper.createRoom(roomVo);
-        validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
+        chatValidator.validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
 
         // 4. 생성자 등록
         ChatRoomUserVO roomUserVo = ChatRoomUserVO.builder()
@@ -65,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
             .userNo(userNo)
             .build();
         int userResult = chatMapper.createRoomUser(roomUserVo);
-        validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
+        chatValidator.validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
 
         // 5. 메시지 저장
         ChatMessageVO messageVo = ChatMessageVO.builder()
@@ -77,7 +78,7 @@ public class ChatServiceImpl implements ChatService {
             .type(chatMessageDto.getType())
             .build();
         int messageResult = chatMapper.saveMessage(messageVo);
-        validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
+        chatValidator.validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
 
         // 6. 첨부파일 저장
         if ("FILE".equals(chatMessageDto.getType())) {
@@ -85,15 +86,6 @@ public class ChatServiceImpl implements ChatService {
         }
         
         return roomVo;
-    }
-
-    /**
-     *  견적 상태 검증
-     */
-    private void validateEstimateStatus(Long estimateNo) {
-        String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
-        String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
-        ChatValidator.validateCreatable(requestStatus, responseStatus);
     }
 
     /**
@@ -122,7 +114,7 @@ public class ChatServiceImpl implements ChatService {
 
         // 타입 검증 (파일이 있으면 FILE처럼 동작)
         if ((chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) || "FILE".equals(type)) {
-            ChatValidator.validateByType(chatMessageDto);
+            chatValidator.validateByType(chatMessageDto);
         }
 
         // 메시지 저장
@@ -130,7 +122,7 @@ public class ChatServiceImpl implements ChatService {
         ChatMessageVO messageVo = buildMessageVO(chatMessageDto, userNo);
         int result = chatMapper.saveMessage(messageVo);
         log.info("[saveMessage] messageVo 저장 결과: result={}, messageNo={}", result, messageVo.getMessageNo());
-        validateDbResult(result, failMsg);
+        chatValidator.validateDbResult(result, failMsg);
 
         // 파일이 있으면 첨부파일 저장 (TEXT라도 files가 있으면 저장)
         if (chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) {
@@ -170,14 +162,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
 
-    /**
-     * 메시지 저장 및 검증
-     */
-    private void validateDbResult(int result, String errorMessage) {
-        if (result != 1) {
-            throw new ChatException(errorMessage);
-        }
-    }
+    
     
     /**
      * 채팅 메시지 조회 (커서 기반 페이징)
@@ -189,7 +174,7 @@ public class ChatServiceImpl implements ChatService {
         //  estimateNo → roomNo 변환
         Long roomNo = getRoomNoByEstimateNo(estimateNo);
         
-        ChatValidator.validateGetMessagesParams(roomNo);
+        chatValidator.validateGetMessagesParams(roomNo);
 
         Map<String, Object> params = CursorPagination.getCursorParams(searchDto.getMessageNo(), searchDto.getSize());
         params.put("roomNo", roomNo);

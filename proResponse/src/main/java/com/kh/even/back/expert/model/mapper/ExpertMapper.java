@@ -64,7 +64,7 @@ public interface ExpertMapper {
 	
 	int updateExpert(ExpertRegisterVO registerVO);
 	
-	int updateExpertCategoryDetail(@Param("userNo")Long userNo, @Param("categoryDetailNo")Long categoryDetailNo);
+	int deleteExpertCategoryDetail(Long userNo);
 	
 	void updateExpertAttachment(FileVO file);
 	

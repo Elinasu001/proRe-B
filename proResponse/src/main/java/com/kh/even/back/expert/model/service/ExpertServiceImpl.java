@@ -288,15 +288,8 @@ public class ExpertServiceImpl implements ExpertService {
 			throw new UpdateMemberException("권한 변경에 실패했습니다.");
 		}
 		
-		// 사용자가 선택한 소분류 카테고리 중복값 방지 HashSet -> 매퍼 호출
-		List<Long> categoryDetailNos = expert.getCategoryDetailNos();
-		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
-		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
-			int insertCategory = mapper.insertExpertCategoryDetail(refNo, categoryDetailNo);
-			if(insertCategory <= 0) {
-				throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
-			}
-		}
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 DB에 INSERT하는 메서드
+		insertExpertCategoryDetail(refNo, expert.getCategoryDetailNos());
 		
 		// 파일 유효성 검사
 		List<MultipartFile> validFiles = filterValidFiles(files);
@@ -381,15 +374,14 @@ public class ExpertServiceImpl implements ExpertService {
 		}
 		Long refNo = registerVO.getUserNo();
 		
-		// 사용자가 선택한 소분류 카테고리 중복값 방지 HashSet -> 매퍼 호출
-	    List<Long> categoryDetailNos = request.getCategoryDetailNos();
-		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
-		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
-			int updateCategory = mapper.updateExpertCategoryDetail(refNo, categoryDetailNo);
-			if(updateCategory <= 0) {
-			    throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
-			}
-	    }
+		// DB에 저장된 전문가 소분류 카테고리 삭제(유니크 제약이 있어서 물리적 삭제)
+		int deleteCategory = mapper.deleteExpertCategoryDetail(refNo);
+		
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 DB에 INSERT하는 메서드
+		insertExpertCategoryDetail(refNo, request.getCategoryDetailNos());
+	    
+		
+		
 		
 		
 		
@@ -404,6 +396,24 @@ public class ExpertServiceImpl implements ExpertService {
 		if(isUser) {
 			throw new CustomAuthorizationException("전문가만 접근할 수 있습니다."); 
 		}
+	}
+	
+	/**
+	 * 사용자가 선택한 소분류 카테고리의 중복값 필터 및 유효성 검사 후 DB에 INSERT하는 메서드
+	 * @param userNo 회원PK
+	 * @param categoryDetailNos 사용자가 선택한 소분류 카테고리(1~3개)
+	 */
+	private void insertExpertCategoryDetail (Long userNo, List<Long> categoryDetailNos) {
+		// 사용자가 선택한 소분류 카테고리(1개~3개) 중복값을 HashSet으로 필터
+		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
+		
+		// 유효한 소분류 카테고리를 TB_SAVE_CATEGORY에 INSERT
+		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
+			int insertCategory = mapper.insertExpertCategoryDetail(userNo, categoryDetailNo);
+			if(insertCategory <= 0) {
+			    throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
+			}
+	    }
 	}
 
 	

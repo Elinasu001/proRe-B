@@ -542,19 +542,16 @@
 	       USER_NO = #{userNo}      
 	</update>
 	
-	<!-- 전문가 소분류 카테고리를 수정합니다. -->
+	<!-- DB에 저장된 전문가 소분류 카테고리를 물리적으로 삭제합니다. -->
 	<update id="updateExpertCategoryDetail">
-	UPDATE
-	       TB_EXPERT_SAVE_CATEGORY
-	   SET
-	       USER_NO = #{userNo}
-	     , CATEGORY_DETAIL_NO = #{categoryDetailNo}   
+	DELETE
+	       TB_EXPERT_SAVE_CATEGORY  
 	 WHERE
 	       USER_NO = #{userNo}
 	</update>
 	
 	<!-- 전문가 첨부파일 수정 시 소프트 딜리트 -->
-	<update>
+	<update id="delete">
 	UPDATE
 	       TB_EXPERTING_ATTACHMENT
 	   SET

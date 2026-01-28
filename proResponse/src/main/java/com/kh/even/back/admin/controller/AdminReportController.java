@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -88,9 +88,9 @@ public class AdminReportController {
 
     /**
      * 신고 상태 변경 + 답변 등록
-     * PATCH /api/admin/reports/{reportNo}/status?status=RESOLVED&answer=답변내용
+     * Put /api/admin/reports/{reportNo}/status?status=RESOLVED&answer=답변내용
      */
-    @PatchMapping("/{reportNo}/status")
+    @PutMapping("/{reportNo}/status")
     public ResponseEntity<ResponseData<String>> updateReportStatus(
         @PathVariable("reportNo") 
         @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 
@@ -110,9 +110,9 @@ public class AdminReportController {
 
     /**
      * 신고 답변만 수정
-     * PATCH /api/admin/reports/{reportNo}/answer?answer=수정된답변
+     * Put /api/admin/reports/{reportNo}/answer?answer=수정된답변
      */
-    @PatchMapping("/{reportNo}/answer")
+    @PutMapping("/{reportNo}/answer")
     public ResponseEntity<ResponseData<String>> updateAnswer(
         @PathVariable("reportNo") 
         @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 

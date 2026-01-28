@@ -4,8 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;  // 변경
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;  // 변경
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,9 +68,9 @@ public class AdminMemberController {
 
     /**
      * 회원 상태 변경 (활성/탈퇴)
-     * PATCH /api/admin/members/{userNo}/status
+     * Put /api/admin/members/{userNo}/status
      */
-    @PatchMapping("/{userNo}/status")  // 변경
+    @PutMapping("/{userNo}/status")  // 변경
     public ResponseEntity<ResponseData<String>> updateMemberStatus(
         @PathVariable("userNo") Long userNo,
         @RequestParam(name = "status")
@@ -85,9 +85,9 @@ public class AdminMemberController {
 
     /**
      * 회원 징계 상태 변경
-     * PATCH /api/admin/members/{userNo}/penalty
+     * Put /api/admin/members/{userNo}/penalty
      */
-    @PatchMapping("/{userNo}/penalty")  // 변경
+    @PutMapping("/{userNo}/penalty")  // 변경
     public ResponseEntity<ResponseData<String>> updatePenaltyStatus(
         @PathVariable("userNo") Long userNo,
         @RequestParam(name = "penaltyYn")
@@ -102,9 +102,9 @@ public class AdminMemberController {
 
     /**
      * 회원 권한 변경
-     * PATCH /api/admin/members/{userNo}/role
+     * Put /api/admin/members/{userNo}/role
      */
-    @PatchMapping("/{userNo}/role")  // 변경
+    @PutMapping("/{userNo}/role")  // 변경
     public ResponseEntity<ResponseData<String>> updateUserRole(
         @PathVariable("userNo") Long userNo,
         @RequestParam(name = "userRole")

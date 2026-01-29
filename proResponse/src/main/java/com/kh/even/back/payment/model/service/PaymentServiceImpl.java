@@ -2,16 +2,9 @@ package com.kh.even.back.payment.model.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -111,13 +104,12 @@ public class PaymentServiceImpl implements PaymentService {
         // 랜덤 문자열  + 현재 날짜 및 시간 조합한 주문번호
         return formattedDay + "-" + uniqueString;
     }
-
-	@Override
-	public void verifyAndCompletePayment(String impUid, String merchantUid) {
-		// TODO Auto-generated method stub
-		
-	}
-
+    @Override
+    public void verifyAndCompletePayment(String impUid, String merchantUid) {
+        // TODO: Payment 담당자 구현 예정
+        log.warn("verifyAndCompletePayment 미구현 - impUid: {}, merchantUid: {}", impUid, merchantUid);
+        throw new UnsupportedOperationException("결제 검증 기능은 현재 구현 중입니다.");
+    }
         
 
 }

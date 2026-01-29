@@ -44,8 +44,12 @@ public class SecurityConfigure {
 					// Swagger 허용
 					requests.requestMatchers("/ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 							"/webjars/**").permitAll();
-
-					// 1. GET - 비로그인 허용 (목록 / 검색 / 상세)
+					
+					// 관리자 전용 권한 검증
+					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					
+					// 1. GET - 비로그인 허용 (목록 / 검색)
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
 							"/api/experts/map", "/api/experts/*", // 전문가 상세
 							"/api/reviews/expert/*", // 전문가 리뷰
@@ -59,14 +63,10 @@ public class SecurityConfigure {
 							"/api/reports/**", "/api/experts/registration", "/api/experts/matches",
 							"/api/experts/likes", "/api/experts/*/categories", "/api/estimate", "/api/estimate/**"
 
-				).authenticated();
+					// 4. PUT - 로그인 필요
+					requests.requestMatchers(HttpMethod.PUT, "/api/members/me/**","/api/admin/**").authenticated();
 
-					// 3. PUT / PATCH - 로그인 필요
-					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
-
-					requests.requestMatchers(HttpMethod.PATCH, "/api/members/me/**").authenticated();
-
-					// 4. POST - 로그인 필요
+					// 5. POST - 로그인 필요
 					requests.requestMatchers(HttpMethod.POST, "/api/reports", "/api/reviews/**", "/api/likes/**")
 							.authenticated();
 
@@ -78,7 +78,7 @@ public class SecurityConfigure {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList(instance));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));  // PATCH 제거
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
 		configuration.setAllowCredentials(true);
 

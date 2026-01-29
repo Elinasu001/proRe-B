@@ -92,4 +92,20 @@ public interface ExpertService {
 	 * @return 전문가 등록에 성공할 경우 내려줄 응답용 DTO
 	 */
 	RegisterResponseDTO registerExpert(ExpertRegisterDTO expert, List<MultipartFile> files, CustomUserDetails user);
+	
+	/**
+	 * 내정보를 조회합니다.
+	 * @param user 회원정보
+	 * @return 전문가 내정보 조회 응답용 DTO
+	 */
+	RegisterResponseDTO getExpertForEdit(CustomUserDetails user);
+	
+	/**
+	 * 전문가 정보를 수정합니다.
+	 * @param request 전문가 정보 수정을 위한 입력값
+	 * @param files 상세이미지 첨부
+	 * @param user 회원정보
+	 * @return 전문가 등록에 성공할 경우 내려줄 응답용 DTO
+	 */
+	RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<Long> deleteFileNos, List<MultipartFile> newFiles, CustomUserDetails user);
 }

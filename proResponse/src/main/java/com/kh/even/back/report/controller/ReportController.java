@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
-// import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.report.model.dto.ReportDTO;
 import com.kh.even.back.report.model.dto.ReportDetailDTO;

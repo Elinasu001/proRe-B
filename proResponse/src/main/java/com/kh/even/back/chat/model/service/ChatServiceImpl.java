@@ -21,7 +21,6 @@ import com.kh.even.back.chat.model.vo.ChatRoomUserVO;
 import com.kh.even.back.chat.model.vo.ChatRoomVO;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.exception.ChatException;
-import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.util.CursorPagination;
 
 import lombok.RequiredArgsConstructor;
@@ -33,8 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatServiceImpl implements ChatService {
 
     private final ChatMapper chatMapper;
-    private final FileUploadService fileUploadService;
-
+    private final ChatFileUploadService chatFileUploadService;
+    private final ChatValidator chatValidator;
+    
     /**
      * 채팅방 생성 및 초기 메시지 저장
      */
@@ -43,7 +43,7 @@ public class ChatServiceImpl implements ChatService {
     public ChatRoomVO createRoom(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
 
         // 1. 견적 상태 체크
-        validateEstimateStatus(estimateNo);
+        chatValidator.validateEstimateStatus(estimateNo);
 
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
         boolean exists = chatMapper.existsByEstimateNo(estimateNo);
@@ -58,7 +58,7 @@ public class ChatServiceImpl implements ChatService {
             .createDate(LocalDateTime.now())
             .build();
         int roomResult = chatMapper.createRoom(roomVo);
-        validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
+        chatValidator.validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
 
         // 4. 생성자 등록
         ChatRoomUserVO roomUserVo = ChatRoomUserVO.builder()
@@ -66,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
             .userNo(userNo)
             .build();
         int userResult = chatMapper.createRoomUser(roomUserVo);
-        validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
+        chatValidator.validateDbResult(userResult, "채팅방 유저 등록에 실패했습니다.");
 
         // 5. 메시지 저장
         ChatMessageVO messageVo = ChatMessageVO.builder()
@@ -78,9 +78,9 @@ public class ChatServiceImpl implements ChatService {
             .type(chatMessageDto.getType())
             .build();
         int messageResult = chatMapper.saveMessage(messageVo);
-        validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
+        chatValidator.validateDbResult(messageResult, "메시지 저장에 실패했습니다.");
 
-        // 5. 첨부파일 저장
+        // 6. 첨부파일 저장
         if ("FILE".equals(chatMessageDto.getType())) {
             saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
         }
@@ -89,23 +89,13 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     *  견적 상태 검증
-     */
-    private void validateEstimateStatus(Long estimateNo) {
-        String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
-        String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
-        ChatValidator.validateCreatable(requestStatus, responseStatus);
-    }
-
-    /**
      * 첨부파일 저장
      */
     private void saveAttachments(List<MultipartFile> files, Long messageNo) {
         AssertUtil.validateImageFiles(files);
-        fileUploadService.uploadFiles(files, "chat", messageNo, chatMapper::saveChatAttachment);
+        chatFileUploadService.uploadFiles(files, "chat", messageNo, chatMapper::saveChatAttachment);
     }
-
-
+    
     
     /**
      *  메시지 저장
@@ -115,26 +105,34 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public ChatMessageVO saveMessage(ChatMessageDTO chatMessageDto, Long userNo) {
+    public ChatMessageDTO saveMessage(Long estimateNo, ChatMessageDTO chatMessageDto, Long userNo) {
         
         String type = chatMessageDto.getType();
 
-        // FILE 타입 검증
-        ChatValidator.validateByType(chatMessageDto);
+        Long roomNo = getRoomNoByEstimateNo(estimateNo);
+        chatMessageDto.setRoomNo(roomNo);
+
+        // 타입 검증 (파일이 있으면 FILE처럼 동작)
+        if ((chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) || "FILE".equals(type)) {
+            chatValidator.validateByType(chatMessageDto);
+        }
 
         // 메시지 저장
         String failMsg = getFailMessage(type);
         ChatMessageVO messageVo = buildMessageVO(chatMessageDto, userNo);
         int result = chatMapper.saveMessage(messageVo);
-        validateDbResult(result, failMsg);
-        
-        // FILE 타입이면 첨부파일 저장
-        if ("FILE".equals(type)) {
+        log.info("[saveMessage] messageVo 저장 결과: result={}, messageNo={}", result, messageVo.getMessageNo());
+        chatValidator.validateDbResult(result, failMsg);
+
+        // 파일이 있으면 첨부파일 저장 (TEXT라도 files가 있으면 저장)
+        if (chatMessageDto.getFiles() != null && !chatMessageDto.getFiles().isEmpty()) {
             saveAttachments(chatMessageDto.getFiles(), messageVo.getMessageNo());
         }
-        return messageVo;
-    }
 
+        ChatMessageDTO savedDto = getMessageBymessageNo(messageVo.getMessageNo());
+        log.info("[saveMessage] getMessageBymessageNo 결과: {}", savedDto);
+        return savedDto;
+    }
 
     
     /**
@@ -164,23 +162,19 @@ public class ChatServiceImpl implements ChatService {
     }
 
 
-    /**
-     * 메시지 저장 및 검증
-     */
-    private void validateDbResult(int result, String errorMessage) {
-        if (result != 1) {
-            throw new ChatException(errorMessage);
-        }
-    }
+    
     
     /**
      * 채팅 메시지 조회 (커서 기반 페이징)
-     * 메시지 목록 + meta 정보(Map) 반환
+     * estimateNo를 받아서 내부적으로 roomNo로 변환 후 조회
      */
     @Override
-    public ChatMessageResponse getMessages(Long roomNo, ChatMessageSearchDTO searchDto, Long userNo) {
+    public ChatMessageResponse getMessages(Long estimateNo, ChatMessageSearchDTO searchDto, Long userNo) {
 
-        ChatValidator.validateGetMessagesParams(roomNo);
+        //  estimateNo → roomNo 변환
+        Long roomNo = getRoomNoByEstimateNo(estimateNo);
+        
+        chatValidator.validateGetMessagesParams(roomNo);
 
         Map<String, Object> params = CursorPagination.getCursorParams(searchDto.getMessageNo(), searchDto.getSize());
         params.put("roomNo", roomNo);
@@ -213,16 +207,13 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
         }
-        // meta 정보 생성
-        Long estimateNo = messages.isEmpty()
-                ? null
-                : messages.get(0).getEstimateNo();
-
+        
+        // meta 정보 생성 (estimateNo는 파라미터로 받은 값 사용)
         return new ChatMessageResponse(
                 searchDto.getMessageNo(),   // cursor
                 searchDto.getSize(),        // requestedSize
                 messages.size(),            // size
-                estimateNo,                 // estimateNo
+                estimateNo,                 // 파라미터로 받은 estimateNo 사용
                 messages                    // messages
         );
     }
@@ -248,4 +239,30 @@ public class ChatServiceImpl implements ChatService {
         }
         return roomNo;
     }
+
+    /**
+     * messageNo(메시지 PK)로 단일 메시지와 첨부파일(attachments)까지 조회
+     */
+    @Override
+    public ChatMessageDTO getMessageBymessageNo(Long messageNo) {
+        ChatMessageDTO chatMessageDto = chatMapper.getMessageByMessageNo(messageNo);
+        if (chatMessageDto == null) {
+            log.warn("[getMessageBymessageNo] messageNo={}에 해당하는 메시지가 없습니다.", messageNo);
+            return null;
+        }
+        List<ChatAttachmentDTO> attachments = chatMapper.getAttachmentsByMessageNos(List.of(messageNo));
+        log.info("[getMessageBymessageNo] messageNo={} attachments: {}", messageNo, attachments);
+        if (attachments == null) {
+            attachments = Collections.emptyList();
+        }
+        chatMessageDto.setAttachments(attachments);
+        log.info("[getMessageBymessageNo] 반환 DTO: {}", chatMessageDto);
+        return chatMessageDto;
+    }
+
+    @Override
+    public List<ChatAttachmentDTO> getAttachmentsByMessageNo(Long messageNo) {
+        return chatMapper.getAttachmentsByMessageNos(List.of(messageNo));
+    }
+
 }

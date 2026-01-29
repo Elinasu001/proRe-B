@@ -66,6 +66,7 @@ public class SecurityConfigure {
 							"/api/experts/*",
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
+							"/api/reports/tags",
 							"/ws/chat/**",
 							"/api/main"
 					).permitAll();

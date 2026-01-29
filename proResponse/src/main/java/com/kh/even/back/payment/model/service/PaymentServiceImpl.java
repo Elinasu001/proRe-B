@@ -113,6 +113,12 @@ public class PaymentServiceImpl implements PaymentService {
         return formattedDay + "-" + uniqueString;
     }
 
+	@Override
+	public void verifyAndCompletePayment(String impUid, String merchantUid) {
+		// TODO Auto-generated method stub
+		
+	}
+
         
 
 }

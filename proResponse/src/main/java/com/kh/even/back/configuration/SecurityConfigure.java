@@ -69,8 +69,6 @@ public class SecurityConfigure {
 					
 					requests.requestMatchers(HttpMethod.POST, "/api/estimate").hasRole("USER");
 
-					// 나머지는 전부 인증
-					requests.anyRequest().authenticated();
 
 				}).sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).build();

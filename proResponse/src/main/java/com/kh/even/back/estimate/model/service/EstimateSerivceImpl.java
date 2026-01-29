@@ -1,7 +1,6 @@
 package com.kh.even.back.estimate.model.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +26,8 @@ import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,8 @@ public class EstimateSerivceImpl implements EstimateService {
 	private final ExpertEstimateRepository expertRepository;
 	private final Pagenation pagenation;
 	private final S3Service s3Service;
-
+	private final PagingExecutor pagingExecutor;
+	
 	@Override
 	@Transactional
 	public void saveEstimate(EstimateRequestDTO estimateReqeust, List<MultipartFile> files,
@@ -78,21 +78,14 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long userNo = customUserDetails.getUserNo();
 
-		int listCount = mapper.getMyEstimateCount(userNo);
-
-		AssertUtil.notFound(listCount, "보낸 견적 요청이 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-
-		params.put("userNo", userNo);
-
-		// log.info(" params 데이터 : {}" , params);
-
-		List<ExpertDTO> list = mapper.getMyEstimate(params);
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertDTO>(list, pageInfo);
-
+		return pagingExecutor.execute(
+				pageNo,
+				4,
+				mapper.getMyEstimateCount(userNo),
+				"보낸 견적 요청이 없습니다.",
+				params -> params.put("userNo", userNo),
+				mapper::getMyEstimate
+		);
 	}
 
 	@Override
@@ -100,20 +93,14 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long userNo = customUserDetails.getUserNo();
 
-		int listCount = mapper.getResponseEstimateCount(userNo);
-
-		AssertUtil.notFound(listCount, "받은 견적 내역이 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-
-		params.put("userNo", userNo);
-
-		List<ResponseEstimateDTO> list = mapper.getResponseEstimateDetails(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ResponseEstimateDTO>(list, pageInfo);
-
+		return pagingExecutor.execute(
+				pageNo,
+				4,
+				mapper.getResponseEstimateCount(userNo),
+				"받은 견적 내역이 없습니다.",
+				params -> params.put("userNo", userNo),
+				mapper::getResponseEstimateDetails
+		);
 	}
 
 	@Override
@@ -121,20 +108,14 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long expertNo = customUserDetails.getUserNo();
 
-		int listCount = mapper.getReceivedRequestsCount(expertNo);
-
-		AssertUtil.notFound(listCount, "받은 견적 요청이 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-
-		params.put("expertNo", expertNo);
-
-		List<ExpertRequestUserDTO> list = mapper.getReceivedRequests(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertRequestUserDTO>(list, pageInfo);
-
+		return pagingExecutor.execute(
+				pageNo,
+				4,
+				mapper.getReceivedRequestsCount(expertNo),
+				"받은 견적 요청이 없습니다.",
+				params -> params.put("expertNo", expertNo),
+				mapper::getReceivedRequests
+		);
 	}
 
 	@Override

@@ -34,7 +34,7 @@ public class EstimateRequestEntity {
 	@Column(name = "REQUEST_NO", nullable = false)
 	private Long requestNo;
 
-	@Column(name = "REQUEST_DATE", nullable = false)
+	@Column(name = "REQUEST_DATE", nullable = false, insertable = false, updatable = false)
 	private Date requestDate;
 
 	@Column(name = "REQUEST_TYPE", nullable = false)

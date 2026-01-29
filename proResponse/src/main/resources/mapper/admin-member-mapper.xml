@@ -98,6 +98,13 @@
     WHERE USER_NO = #{userNo}
 </select>
 
+<!-- 회원 번호로 닉네임 조회 -->
+<select id="findNicknameByUserNo" resultType="String">
+    SELECT NICKNAME
+    FROM MEMBER
+    WHERE USER_NO = #{userNo}
+</select>
+
 <!-- 회원 상태 변경 -->
 <update id="updateMemberStatus">
     UPDATE TB_MEMBER
@@ -118,4 +125,6 @@
     SET USER_ROLE = #{userRole}
     WHERE USER_NO = #{userNo}
 </update>
+
+
 </mapper>

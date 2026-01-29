@@ -21,7 +21,7 @@ public interface AdminMemberMapper {
     );
 
     /**
-     * 회원 전체 개수 (검색 포함)
+     * 총 회원 수 (검색 포함)
      */
     int getMemberCount(
         @Param("keyword") String keyword,
@@ -56,4 +56,9 @@ public interface AdminMemberMapper {
         @Param("userNo") Long userNo,
         @Param("userRole") String userRole
     );
+    
+    /**
+     * 회원 번호로 닉네임 조회
+     */
+    String findNicknameByUserNo(Long userNo);
 }

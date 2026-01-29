@@ -14,6 +14,7 @@
         <result property="estimateNo" column="ESTIMATE_NO"/>
 
         <result property="nickname" column="NICKNAME"/>
+        <result property="profileImg" column="PROFILE_IMG"/>
         <result property="categoryName" column="CATEGORY_NAME"/>
         <result property="createdAgo" column="CREATED_AGO"/>
 
@@ -64,6 +65,7 @@
             , r.STAR_SCORE
             , r.CREATE_DATE
             , m.NICKNAME
+            , m.PROFILE_IMG
             , tedc.CATEGORY_NAME
             , CASE
                 WHEN TRUNC(SYSDATE - r.CREATE_DATE) = 0 THEN '오늘'

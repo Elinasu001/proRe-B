@@ -13,6 +13,8 @@ import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
+import com.kh.even.back.expert.model.vo.ExpertRegisterVO;
 import com.kh.even.back.file.model.vo.FileVO;
 
 @Mapper
@@ -49,5 +51,29 @@ public interface ExpertMapper {
 	List<ExpertSearchDTO> getExpertsByNickname(Map<String, Object> params);
 	
 	List<LargeCategoryDTO> getExpertCategory();
+	
+	int insertExpert(ExpertRegisterVO registerVO);
+	
+	int insertExpertCategoryDetail(@Param("userNo")Long userNo, @Param("categoryDetailNo")Long categoryDetailNo);
+	
+	void insertExpertAttachment(FileVO file);
+	
+	int updateRoleToExpert(Long userNo);
+	
+	List<RegisterResponseDTO> getNewExpert(Long userNo);
+	
+	RegisterResponseDTO getExpertForEdit(Long userNo);
+	
+	int updateExpert(ExpertRegisterVO registerVO);
+	
+	int deleteExpertCategoryDetail(Long userNo);
+	
+	void updateExpertAttachment(FileVO file);
+	
+	int countActiveAttachments(Long userNo);
+	
+	int countDeletableAttachments(@Param("userNo")Long userNo, @Param("deleteFileNos")List<Long> deleteFileNos);
+	
+	void deleteExpertAttachments(@Param("userNo")Long userNo, @Param("deleteFileNos")List<Long> deleteFileNos);
 	
 }

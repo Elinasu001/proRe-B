@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 public class EstimateRequestDTO {
 
-	@NotNull(message="요청 일자는 필수입니다.")
+	
 	private Date requestDate;
 
 	@NotNull(message="유형은 필수입니다.")

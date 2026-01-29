@@ -388,6 +388,254 @@
            D.CATEGORY_DETAIL_NO
 </select>
 
-
+	<!-- 전문가 등록 -->
+	<insert id="insertExpert" parameterType="ExpertRegisterVO">
+	INSERT
+	  INTO
+	       TB_EXPERT
+	       (
+	       USER_NO
+	     , CAREER
+	     , START_TIME
+	     , END_TIME
+	     , CONTENT
+	     , EXPERT_TYPE_NO  
+	       )
+	VALUES (
+		   #{userNo}
+		 , #{career}
+		 , #{startTime}
+		 , #{endTime}
+		 , #{content}
+		 , #{expertTypeNo}  
+	       )       
+	</insert>
 	
+	<!-- 전문가 등록 시 소분류 카테고리 저장 -->
+	<insert id="insertExpertCategoryDetail">
+	INSERT
+	  INTO
+	       TB_EXPERT_SAVE_CATEGORY
+	       (
+	       USER_NO
+	     , CATEGORY_DETAIL_NO
+	       )	
+	VALUES
+	       (
+	       #{userNo}
+	     , #{categoryDetailNo}  
+	       )       
+	</insert>
+	
+	<!-- 전문가 등록 시 첨부파일 저장 -->
+	<insert id="insertExpertAttachment" parameterType="FileVO">
+	INSERT
+	  INTO
+	       TB_EXPERTING_ATTACHMENT
+	       (
+	       FILE_NO
+	     , ORIGIN_NAME
+	     , FILE_PATH
+	     , UPLOAD_DATE
+	     , STATUS
+	     , USER_NO
+	       )
+    VALUES
+           (
+           SEQ_EXPERTING_ATTACHMENT.NEXTVAL
+         , #{originName}
+         , #{filePath}
+         , SYSDATE
+         , 'N'  
+         , #{reqNo}  
+           )        	
+	</insert>
+	
+	<update id="updateRoleToExpert">
+	UPDATE
+	       TB_MEMBER
+	   SET
+	       USER_ROLE = 'ROLE_EXPERT'
+	 WHERE
+	       USER_NO = #{userNo}          
+	</update>
+	
+	<!-- 새로 등록한 전문가 응답 데이터 조회용 ResultMap -->
+	<resultMap id="registerResponseMap" type="com.kh.even.back.expert.model.dto.RegisterResponseDTO">
+	  <id property="expert.userNo" column="USER_NO"/>
+	  <!-- expert (새로 등록한 전문가의 정보) -->
+	  <association property="expert"
+	               javaType="com.kh.even.back.expert.model.dto.NewExpertDTO">
+	    <id     property="userNo"       column="USER_NO"/>
+	    <result property="expertTypeNo" column="EXPERT_TYPE_NO"/>
+	    <result property="career"       column="CAREER"/>
+	    <result property="startTime"    column="START_TIME"/>
+	    <result property="endTime"      column="END_TIME"/>
+	    <result property="content"      column="CONTENT"/>
+	  </association>
+	
+	  <!-- List<Long> categories (소분류 카테고리) -->
+	  <collection property="categories" ofType="java.lang.Long">
+		<result column="CATEGORY_DETAIL_NO"/>
+	  </collection>
+	
+	  <!-- List<AttachmentDTO> attachments (상세 이미지) -->
+	  <collection property="attachments" ofType="com.kh.even.back.file.model.dto.AttachmentDTO">
+	    <id     property="fileNo"     column="FILE_NO"/>
+	    <result property="originName" column="ORIGIN_NAME"/>
+	    <result property="filePath"   column="FILE_PATH"/>
+	    <result property="uploadDate" column="UPLOAD_DATE"/>
+	    <result property="status"     column="FILE_STATUS"/>
+	  </collection>
+	
+	</resultMap>
+	
+	<!-- 새로 등록한 전문가 응답 데이터 조회 -->
+	<select id="getNewExpert" resultMap="registerResponseMap">
+ 	SELECT
+		   E.USER_NO            AS USER_NO
+		 , E.EXPERT_TYPE_NO     AS EXPERT_TYPE_NO
+		 , E.CAREER             AS CAREER
+		 , E.START_TIME         AS START_TIME
+		 , E.END_TIME           AS END_TIME
+		 , E.CONTENT            AS CONTENT
+
+         , C.CATEGORY_DETAIL_NO AS CATEGORY_DETAIL_NO
+
+	     , A.FILE_NO            AS FILE_NO
+	     , A.ORIGIN_NAME        AS ORIGIN_NAME
+	     , A.FILE_PATH          AS FILE_PATH
+	     , A.UPLOAD_DATE        AS UPLOAD_DATE
+	     , A.STATUS             AS FILE_STATUS
+	  FROM 
+	       TB_EXPERT E
+	  LEFT 
+	  JOIN 
+	       TB_EXPERT_SAVE_CATEGORY C
+	    ON 
+	       C.USER_NO = E.USER_NO
+	  LEFT 
+	  JOIN 
+	       TB_EXPERTING_ATTACHMENT A
+	    ON A.USER_NO = E.USER_NO
+	   AND A.STATUS = 'N'
+  	 WHERE E.USER_NO = #{userNo}
+  	 ORDER 
+  	    BY 
+  	       E.USER_NO
+  	     , C.CATEGORY_DETAIL_NO
+  	     , A.FILE_NO
+	</select>
+	
+	<!-- 전문가 수정 폼 조회 (등록 응답과 동일 구조) -->
+	<select id="getExpertForEdit" parameterType="long" resultMap="registerResponseMap">
+	  SELECT
+	         E.USER_NO             AS USER_NO
+	       , E.EXPERT_TYPE_NO      AS EXPERT_TYPE_NO
+	       , E.CAREER              AS CAREER
+	       , E.START_TIME          AS START_TIME
+	       , E.END_TIME            AS END_TIME
+	       , E.CONTENT             AS CONTENT
+	
+	       , C.CATEGORY_DETAIL_NO  AS CATEGORY_DETAIL_NO
+	
+	       , A.FILE_NO             AS FILE_NO
+	       , A.ORIGIN_NAME         AS ORIGIN_NAME
+	       , A.FILE_PATH           AS FILE_PATH
+	       , A.UPLOAD_DATE         AS UPLOAD_DATE
+	       , A.STATUS              AS FILE_STATUS
+	    FROM 
+	         TB_EXPERT E
+	    LEFT 
+	    JOIN 
+	         TB_EXPERT_SAVE_CATEGORY C
+	      ON 
+	         C.USER_NO = E.USER_NO
+	    LEFT 
+	    JOIN 
+	         TB_EXPERTING_ATTACHMENT A
+	      ON 
+	         A.USER_NO = E.USER_NO
+	     AND 
+	         A.STATUS = 'N'
+	   WHERE 
+	         E.USER_NO = #{userNo}
+	   ORDER 
+	      BY
+	         E.USER_NO
+	       , C.CATEGORY_DETAIL_NO
+	       , A.FILE_NO
+	</select>
+	
+	
+	<!-- 전문가 정보를 수정합니다. -->
+	<update id="updateExpert" parameterType="ExpertRegisterDTO">
+	UPDATE
+	       TB_EXPERT
+	   SET
+	       USER_NO = #{userNo}
+	     , CAREER = #{career}
+	     , START_TIME = #{startTime}
+	     , END_TIME = #{endTime}
+	     , CONTENT = #{content}
+	     , EXPERT_TYPE_NO = #{expertTypeNo}
+	 WHERE
+	       USER_NO = #{userNo}      
+	</update>
+	
+	<!-- DB에 저장된 전문가 소분류 카테고리를 물리적으로 삭제합니다. -->
+	<delete id="deleteExpertCategoryDetail" parameterType="long">
+	DELETE
+	       TB_EXPERT_SAVE_CATEGORY  
+	 WHERE
+	       USER_NO = #{userNo}
+	</delete>
+	
+	<!-- 전문가의 활성화 중인 상세이미지 개수 -->
+	<select id="countActiveAttachments" parameterType="long" resultType="int">
+  	SELECT 
+  	       COUNT(*)
+      FROM 
+           TB_EXPERTING_ATTACHMENT
+   	 WHERE 
+   	       USER_NO = #{userNo}
+       AND 
+           STATUS = 'N'
+	</select>
+	
+	<!-- 전문가의 삭제될 상세이미지 개수 -->
+	<select id="countDeletableAttachments" resultType="int">
+  	SELECT
+  	       COUNT(*)
+      FROM 
+           TB_EXPERTING_ATTACHMENT
+     WHERE
+           USER_NO = #{userNo}
+       AND
+           STATUS = 'N'
+       AND 
+           FILE_NO IN
+     <foreach collection="deleteFileNos" item="id" open="(" close=")" separator=",">
+       #{id}
+     </foreach>
+	</select>
+	
+	<!-- 전문가 상세이미지 삭제 처리 ((삭제여부)STATUS = 'Y' 논리삭제) -->
+	<update id="deleteExpertAttachments">
+    UPDATE 
+           TB_EXPERTING_ATTACHMENT
+       SET 
+           STATUS = 'Y'
+     WHERE
+           USER_NO = #{userNo}
+       AND 
+           STATUS = 'N'
+       AND 
+           FILE_NO IN
+	  <foreach collection="deleteFileNos" item="id" open="(" close=")" separator=",">
+	    #{id}
+	  </foreach>
+	</update>
+	
+	                     
 </mapper>

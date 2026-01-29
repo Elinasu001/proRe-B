@@ -38,83 +38,40 @@ public class SecurityConfigure {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-		return httpSecurity
-				.formLogin(AbstractHttpConfigurer::disable)
-				.csrf(AbstractHttpConfigurer::disable)
-				.cors(Customizer.withDefaults())
-				.authorizeHttpRequests(requests -> {
+		return httpSecurity.formLogin(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
+				.cors(Customizer.withDefaults()).authorizeHttpRequests(requests -> {
 
 					// Swagger 허용
-					requests.requestMatchers(
-							"/ui.html",
-							"/swagger-ui/**",
-							"/v3/api-docs/**",
-							"/swagger-resources/**",
-							"/webjars/**"
-					).permitAll();
+					requests.requestMatchers("/ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+							"/webjars/**").permitAll();
 
 					// 1. GET - 비로그인 허용 (목록 / 검색 / 상세)
-					requests.requestMatchers(
-							HttpMethod.GET,
-							"/api/categories/**",
-							"/api/experts/search",
-							"/api/experts/map",
-							"/api/experts/*",              // 전문가 상세
-							"/api/reviews/expert/*",       // 전문가 리뷰
-							"/api/reviews/tags",
-							"/ws/chat/**"
-					).permitAll();
+					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",
+							"/api/experts/map", "/api/experts/*", // 전문가 상세
+							"/api/reviews/expert/*", // 전문가 리뷰
+							"/api/reviews/tags", "/ws/chat/**", "/api/main").permitAll();
 
 					// POST - 인증 관련
-					requests.requestMatchers(
-							HttpMethod.POST,
-							"/api/auth/login"
-					).permitAll();
+					requests.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
 
 					// 2. GET - 로그인 필요
-					requests.requestMatchers(
-							HttpMethod.GET,
-							"/api/rooms/*/messages",
-							"/api/reviews/**",
-							"/api/reports/**",
-							"/api/experts/registration",
-							"/api/experts/matches",
-							"/api/experts/likes",
-							"/api/experts/*/categories"
-					).authenticated();
+					requests.requestMatchers(HttpMethod.GET, "/api/rooms/*/messages", "/api/reviews/**",
+							"/api/reports/**", "/api/experts/registration", "/api/experts/matches",
+							"/api/experts/likes", "/api/experts/*/categories", "/api/estimate", "/api/estimate/**"
+
+				).authenticated();
 
 					// 3. PUT / PATCH - 로그인 필요
-					requests.requestMatchers(
-							HttpMethod.PUT,
-							"/api/admin/**",
-							"/api/members/me/**"
-					).authenticated();
+					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**", "/api/members/me/**").authenticated();
 
-					requests.requestMatchers(
-							HttpMethod.PATCH,
-							"/api/members/me/**"
-					).authenticated();
+					requests.requestMatchers(HttpMethod.PATCH, "/api/members/me/**").authenticated();
 
 					// 4. POST - 로그인 필요
-					requests.requestMatchers(
-							HttpMethod.POST,
-							"/api/reports",
-							"/api/reviews/**",
-							"/api/likes/**"
-					).authenticated();
+					requests.requestMatchers(HttpMethod.POST, "/api/reports", "/api/reviews/**", "/api/likes/**")
+							.authenticated();
 
-					// 견적 요청 - USER 권한만
-					requests.requestMatchers(
-							HttpMethod.POST,
-							"/api/estimate"
-					).hasRole("USER");
-
-				})
-				.sessionManagement(manager ->
-						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				)
-				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-				.build();
+				}).sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).build();
 	}
 
 	@Bean

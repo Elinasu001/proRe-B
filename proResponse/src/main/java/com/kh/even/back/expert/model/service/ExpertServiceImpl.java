@@ -40,8 +40,8 @@ import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.expert.model.vo.ExpertRegisterVO;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -60,6 +60,7 @@ public class ExpertServiceImpl implements ExpertService {
 	private final EstimateRepository estimateRepository;
 	private final Pagenation pagenation;
 	private final S3Service s3Service;
+	private final PagingExecutor pagingExecutor;
 
 	public ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user) {
 
@@ -135,21 +136,17 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertRequestUserDTO> getMatchedUser(int pageNo, CustomUserDetails user) {
 
-		Long userNo = user.getUserNo();
+	    Long userNo = user.getUserNo();
+	    int listCount = mapper.countMatchedByUserNo(userNo);
 
-		int listCount = mapper.countMatchedByUserNo(userNo);
-
-		AssertUtil.notFound(listCount, "받은 견적 내역이 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-
-		params.put("userNo", userNo);
-
-		List<ExpertRequestUserDTO> list = mapper.getMatchedUser(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertRequestUserDTO>(list, pageInfo);
+	    return pagingExecutor.execute(
+	            pageNo,
+	            4,
+	            listCount,
+	            "받은 견적 내역이 없습니다.",
+	            params -> params.put("userNo", userNo),
+	            mapper::getMatchedUser
+	    );
 	}
 
 	@Override
@@ -192,22 +189,17 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertListDTO> getLikedExperts(CustomUserDetails user, int pageNo) {
 
-		Long userNo = user.getUserNo();
+	    Long userNo = user.getUserNo();
+	    int listCount = mapper.getLikedExpertsCount(userNo);
 
-		int listCount = mapper.getLikedExpertsCount(userNo);
-
-		AssertUtil.notFound(listCount, "찜한 전문가가 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 6, listCount);
-
-		params.put("userNo", userNo);
-
-		List<ExpertListDTO> list = mapper.getLikedExperts(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertListDTO>(list, pageInfo);
-
+	    return pagingExecutor.execute(
+	            pageNo,
+	            6,
+	            listCount,
+	            "찜한 전문가가 없습니다.",
+	            params -> params.put("userNo", userNo),
+	            mapper::getLikedExperts
+	    );
 	}
 
 	@Override
@@ -235,19 +227,16 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertSearchDTO> getExpertsByNickname(String keyword, int pageNo) {
 
-		int listCount = mapper.countExpertsByKeyword(keyword);
+	    int listCount = mapper.countExpertsByKeyword(keyword);
 
-		AssertUtil.notFound(listCount, "키워드에 해당하는 전문가를 조회할 수 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 10, listCount);
-
-		params.put("keyword", keyword);
-
-		List<ExpertSearchDTO> list = mapper.getExpertsByNickname(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertSearchDTO>(list, pageInfo);
+	    return pagingExecutor.execute(
+	            pageNo,
+	            10,
+	            listCount,
+	            "키워드에 해당하는 전문가를 조회할 수 없습니다.",
+	            params -> params.put("keyword", keyword),
+	            mapper::getExpertsByNickname
+	    );
 	}
 	
 	/**

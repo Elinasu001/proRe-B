@@ -23,5 +23,6 @@ public class ExpertReviewDTO {
 	private String content;
 	private String createDate;
 	private List<String> filePaths;	
+	private String profileImg;
 	
 }

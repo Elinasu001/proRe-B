@@ -29,7 +29,7 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<ResponseData<LoginResponseDTO>> login(@Valid @RequestBody MemberLoginDTO member) {
 		
-		log.info("로그인 오류 검증 : ");
+		//log.info("로그인 오류 검증 : ");
 		
 		LoginResponseDTO loginResponse = authService.login(member);
 		

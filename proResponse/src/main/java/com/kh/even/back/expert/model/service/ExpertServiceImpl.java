@@ -21,6 +21,7 @@ import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.exception.CustomAuthorizationException;
 import com.kh.even.back.exception.EntityNotFoundException;
+import com.kh.even.back.exception.ExpertNotFoundException;
 import com.kh.even.back.exception.ExpertRegisterException;
 import com.kh.even.back.exception.NotFoundException;
 import com.kh.even.back.exception.UpdateMemberException;
@@ -288,15 +289,8 @@ public class ExpertServiceImpl implements ExpertService {
 			throw new UpdateMemberException("권한 변경에 실패했습니다.");
 		}
 		
-		// 소분류 카테고리 중복 제거 -> 매퍼 호출
-		List<Long> categoryDetailNos = expert.getCategoryDetailNos();
-		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
-		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
-			int insertCategory = mapper.insertExpertCategoryDetail(refNo, categoryDetailNo);
-			if(insertCategory <= 0) {
-				throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
-			}
-		}
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 TB_EXPERT_SAVE_CATEGORY에 INSERT드
+		insertExpertCategoryDetail(refNo, expert.getCategoryDetailNos());
 		
 		// 파일 유효성 검사
 		List<MultipartFile> validFiles = filterValidFiles(files);
@@ -366,6 +360,126 @@ public class ExpertServiceImpl implements ExpertService {
 			throw new NotFoundException("해당 전문가 조회에 실패했습니다.");
 		}
 		return dto;
+	}
+	
+	/**
+	 * 전문가 수정폼을 위해 내정보를 조회합니다.
+	 */
+	public RegisterResponseDTO getExpertForEdit(CustomUserDetails user) {
+		
+		// 전문가만 접근 가능합니다.
+		validateExpert(user);
+		
+		RegisterResponseDTO responseDTO = mapper.getExpertForEdit(user.getUserNo());
+		if(responseDTO == null) {
+			throw new ExpertNotFoundException("내정보 조회에 실패했습니다.");
+		}
+		
+		return responseDTO;
+		
+	}
+	
+	/**
+	 * 전문가 내정보 수정하기
+	 */
+	@Transactional
+	public RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<Long> deleteFileNos, 
+											List<MultipartFile> newFiles, CustomUserDetails user) {
+		
+		// 일반 회원은 전문가 정보 수정에 접근하지 못한다.
+		validateExpert(user);
+		
+		// TB_EXPERT에 UPDATE할 VO 가공 -> 매퍼 호출
+		ExpertRegisterVO registerVO = toExpertVO(request, user.getUserNo());
+		int result = mapper.updateExpert(registerVO);
+		if(result <= 0) {
+			throw new ExpertRegisterException("전문가 정보 수정에 실패했습니다.");
+		}
+		Long refNo = registerVO.getUserNo();
+		
+		// TB_EXPERT_SAVE_CATEGORY 기존값 물리적 삭제(유니크 제약 이슈)
+		int deleteCategory = mapper.deleteExpertCategoryDetail(refNo);
+		if(deleteCategory == 0) {
+			throw new ExpertRegisterException("전문가 정보 수정에 실패했습니다.");
+		}
+		
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 TB_EXPERT_SAVE_CATEGORY에 INSERT
+		insertExpertCategoryDetail(refNo, request.getCategoryDetailNos());
+		
+		// 전문가에게 허용한 상세이미지 개수를 초과하게 될지 검증
+		validateAttachmentLimit(refNo, deleteFileNos, newFiles);
+	    
+		// 상세이미지 삭제
+		if (deleteFileNos != null && !deleteFileNos.isEmpty()) {
+		    mapper.deleteExpertAttachments(refNo, deleteFileNos);
+		}
+		
+		// 새로운 상세이미지 추가를 위한 유효성 검사
+		List<MultipartFile> validFiles = filterValidFiles(newFiles);
+		// 파일 개수 및 형식 검사
+		AssertUtil.validateImageFiles(validFiles);
+		// 매퍼 호출
+		if(!validFiles.isEmpty()) {
+		   fileUploadService.uploadFiles(validFiles, "expertRegistration", refNo, mapper::insertExpertAttachment);
+	    }
+		
+		return getNewExpert(refNo);
+	}
+	
+	/**
+	 * 전문가 기능에 접근 권한이 있는지 검증합니다.
+	 * @param user
+	 */
+	private void validateExpert(CustomUserDetails user) {
+		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
+		if(!isExpert) {
+			throw new CustomAuthorizationException("전문가만 접근할 수 있습니다."); 
+		}
+	}
+	
+	/**
+	 * 사용자가 선택한 소분류 카테고리의 중복값 필터 및 유효성 검사 후 DB에 INSERT하는 메서드
+	 * @param userNo 회원PK
+	 * @param categoryDetailNos 사용자가 선택한 소분류 카테고리(1~3개)
+	 */
+	private void insertExpertCategoryDetail (Long userNo, List<Long> categoryDetailNos) {
+		// 사용자가 선택한 소분류 카테고리(1개~3개) 중복값을 HashSet으로 필터
+		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
+		
+		// 유효한 소분류 카테고리를 TB_SAVE_CATEGORY에 INSERT
+		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
+			int insertCategory = mapper.insertExpertCategoryDetail(userNo, categoryDetailNo);
+			if(insertCategory <= 0) {
+			    throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
+			}
+	    }
+	}
+	
+	/**
+	 * 전문가가 정보를 수정할 때 상세이미지가 4개를 초과하게 될지 검증합니다.
+	 * @param userNo 회원PK
+	 * @param deleteFileNos 삭제할 상세이미지 개수
+	 * @param newFiles 새로 추가할 상세이미지 개수
+	 */
+	private void validateAttachmentLimit(Long userNo, List<Long> deleteFileNos, List<MultipartFile> newFiles) {
+		// 현재 활성화 중인 상세이미지 개수
+	    int currentActive = mapper.countActiveAttachments(userNo); // STATUS='N'
+	    
+	    // 삭제할 상세이미지 개수
+	    int validDelete = 0;
+	    if (deleteFileNos != null && !deleteFileNos.isEmpty()) {
+	        validDelete = mapper.countDeletableAttachments(userNo, deleteFileNos); // STATUS='N' AND FILE_NO IN (...)
+	    }
+	    
+	    // 새로 추가할 상세이미지 개수
+	    int newCount = (newFiles == null) ? 0 : (int) newFiles.stream()
+	        .filter(f -> f != null && !f.isEmpty())
+	        .count();
+	    
+	    int expected = currentActive - validDelete + newCount;
+	    if (expected > 4) {
+	        throw new IllegalArgumentException("상세 이미지는 최대 4개까지 등록할 수 있습니다.");
+	    }
 	}
 
 	

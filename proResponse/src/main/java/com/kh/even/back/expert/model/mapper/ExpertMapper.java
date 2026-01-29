@@ -62,4 +62,18 @@ public interface ExpertMapper {
 	
 	List<RegisterResponseDTO> getNewExpert(Long userNo);
 	
+	RegisterResponseDTO getExpertForEdit(Long userNo);
+	
+	int updateExpert(ExpertRegisterVO registerVO);
+	
+	int deleteExpertCategoryDetail(Long userNo);
+	
+	void updateExpertAttachment(FileVO file);
+	
+	int countActiveAttachments(Long userNo);
+	
+	int countDeletableAttachments(@Param("userNo")Long userNo, @Param("deleteFileNos")List<Long> deleteFileNos);
+	
+	void deleteExpertAttachments(@Param("userNo")Long userNo, @Param("deleteFileNos")List<Long> deleteFileNos);
+	
 }

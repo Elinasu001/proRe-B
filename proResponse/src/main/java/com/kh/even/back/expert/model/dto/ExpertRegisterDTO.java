@@ -31,7 +31,7 @@ public class ExpertRegisterDTO {
 	private Long categoryNo;
 	
 	@NotEmpty(message = "소분류 카테고리를 선택해주세요.")
-	@Size(max = 2, message = "소분류는 두 개까지 선택 가능합니다.")
+	@Size(max = 3, message = "소분류는 세 개까지 선택 가능합니다.")
 	private List<@Range(min = 1, max = 39, message = "소분류 카테고리가 올바르지 않습니다.") Long> categoryDetailNos;
 	
 	@NotNull(message = "경력을 입력해주세요.")

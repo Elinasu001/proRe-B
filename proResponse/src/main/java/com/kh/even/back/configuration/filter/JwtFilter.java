@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 
 		String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-		if (authorization == null || uri.equals("/api/members/login")) {
+		if (authorization == null || uri.equals("/api/auth/login")) {
 			filterChain.doFilter(request, response);
 			return;
 		}

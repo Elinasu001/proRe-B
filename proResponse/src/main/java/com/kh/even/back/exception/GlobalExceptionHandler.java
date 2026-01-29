@@ -198,4 +198,16 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
+	@ExceptionHandler(ExpertRegisterException.class)
+	public ResponseEntity<ResponseData<Object>> handleExpertRegisterException(ExpertRegisterException e) {
+		log.error("전문가 등록 오류 : {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@ExceptionHandler(ExpertNotFoundException.class)
+	public ResponseEntity<ResponseData<Object>> handleExpertNotFoundException(ExpertNotFoundException e) {
+		log.error("전문가 조회 오류 : {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
 }

@@ -79,7 +79,7 @@ public class EstimateController {
 
 	}
 
-	// 전문가 회원 -> 전문가 견적 요청 조회
+	// 전문가  -> 전문가 견적 요청 조회
 	@GetMapping("/requests")
 	public ResponseEntity<ResponseData<PageResponse<ExpertRequestUserDTO>>> getReceivedRequests(
 			@AuthenticationPrincipal CustomUserDetails userDetails,

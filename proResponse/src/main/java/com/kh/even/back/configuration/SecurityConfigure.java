@@ -30,110 +30,112 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfigure {
 
-   private final JwtFilter jwtFilter;
+	private final JwtFilter jwtFilter;
 
-   @Value("${instance.url}")
-   private String instance;
+	@Value("${instance.url}")
+	private String instance;
 
-   @Bean
-   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
-      return httpSecurity
-            .formLogin(AbstractHttpConfigurer::disable)
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(requests -> {
+		return httpSecurity
+				.formLogin(AbstractHttpConfigurer::disable)
+				.csrf(AbstractHttpConfigurer::disable)
+				.cors(Customizer.withDefaults())
+				.authorizeHttpRequests(requests -> {
 
-               // Swagger 허용
-               requests.requestMatchers(
-                     "/ui.html",
-                     "/swagger-ui/**",
-                     "/v3/api-docs/**",
-                     "/swagger-resources/**",
-                     "/webjars/**"
-               ).permitAll();
+					/* ================= Swagger ================= */
+					requests.requestMatchers(
+							"/ui.html",
+							"/swagger-ui/**",
+							"/v3/api-docs/**",
+							"/swagger-resources/**",
+							"/webjars/**"
+					).permitAll();
 
-               // 1. GET - 비로그인 허용 (목록 / 검색 / 상세)
-               requests.requestMatchers(
-                     HttpMethod.GET,
-                     "/api/categories/**",
-                     "/api/experts/search",
-                     "/api/experts/map",
-                     "/api/experts/*",              // 전문가 상세
-                     "/api/reviews/expert/*",       // 전문가 리뷰
-                     "/api/reviews/tags",
-                     "/ws/chat/**"
-               ).permitAll();
+					/* ================= 관리자 전용 ================= */
+					requests.requestMatchers("/api/admin/**")
+							.hasAuthority("ROLE_ADMIN");
 
-               // POST - 인증 관련
-               requests.requestMatchers(
-                     HttpMethod.POST,
-                     "/api/auth/login"
-               ).permitAll();
+					/* ================= 비로그인 허용 (GET) ================= */
+					requests.requestMatchers(
+							HttpMethod.GET,
+							"/api/categories/**",
+							"/api/experts/search",
+							"/api/experts/map",
+							"/api/experts/*",
+							"/api/reviews/expert/*",
+							"/api/reviews/tags",
+							"/ws/chat/**",
+							"/api/main"
+					).permitAll();
 
-               // 2. GET - 로그인 필요
-               requests.requestMatchers(
-                     HttpMethod.GET,
-                     "/api/rooms/*/messages",
-                     "/api/reviews/**",
-                     "/api/reports/**",
-                     "/api/experts/registration",
-                     "/api/experts/matches",
-                     "/api/experts/likes",
-                     "/api/experts/*/categories",
-                     "/api/estimate",
-                     "/api/estimate/**"
-               ).authenticated();
+					/* ================= 인증 관련 ================= */
+					requests.requestMatchers(
+							HttpMethod.POST,
+							"/api/auth/login"
+					).permitAll();
 
-               // 3. PUT / PATCH - 로그인 필요
-               requests.requestMatchers(
-                     HttpMethod.PUT,
-                     "/api/admin/**",
-                     "/api/members/me/**"
-               ).authenticated();
+					/* ================= 로그인 필요 (GET) ================= */
+					requests.requestMatchers(
+							HttpMethod.GET,
+							"/api/rooms/*/messages",
+							"/api/reviews/**",
+							"/api/reports/**",
+							"/api/experts/registration",
+							"/api/experts/matches",
+							"/api/experts/likes",
+							"/api/experts/*/categories",
+							"/api/estimate",
+							"/api/estimate/**"
+					).authenticated();
 
-               requests.requestMatchers(
-                     HttpMethod.PATCH,
-                     "/api/members/me/**"
-               ).authenticated();
+					/* ================= 로그인 필요 (PUT / PATCH) ================= */
+					requests.requestMatchers(
+							HttpMethod.PUT,
+							"/api/members/me/**"
+					).authenticated();
 
-               // 4. POST - 로그인 필요
-               requests.requestMatchers(
-                     HttpMethod.POST,
-                     "/api/reports",
-                     "/api/reviews/**",
-                     "/api/likes/**"
-               ).authenticated();
+					requests.requestMatchers(
+							HttpMethod.PATCH,
+							"/api/members/me/**"
+					).authenticated();
 
-               
-            })
-            .sessionManagement(manager ->
-                  manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-   }
+					/* ================= 로그인 필요 (POST) ================= */
+					requests.requestMatchers(
+							HttpMethod.POST,
+							"/api/reports",
+							"/api/reviews/**",
+							"/api/likes/**"
+					).authenticated();
+				})
+				.sessionManagement(manager ->
+						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				)
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+				.build();
+	}
 
-   @Bean
-   public CorsConfigurationSource corsConfigurationSource() {
-      CorsConfiguration configuration = new CorsConfiguration();
-      configuration.setAllowedOrigins(Arrays.asList(instance));
-      configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-      configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
-      configuration.setAllowCredentials(true);
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(Arrays.asList(instance));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
+		configuration.setAllowCredentials(true);
 
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**", configuration);
-      return source;
-   }
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
 
-   @Bean
-   public PasswordEncoder passwordEncoder() {
-      return new BCryptPasswordEncoder();
-   }
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-   @Bean
-   public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-      return authConfig.getAuthenticationManager();
-   }
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
 }

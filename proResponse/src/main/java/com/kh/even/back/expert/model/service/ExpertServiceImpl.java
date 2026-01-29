@@ -1,8 +1,10 @@
 package com.kh.even.back.expert.model.service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,21 +21,27 @@ import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.exception.CustomAuthorizationException;
 import com.kh.even.back.exception.EntityNotFoundException;
+import com.kh.even.back.exception.ExpertNotFoundException;
+import com.kh.even.back.exception.ExpertRegisterException;
 import com.kh.even.back.exception.NotFoundException;
+import com.kh.even.back.exception.UpdateMemberException;
 import com.kh.even.back.expert.model.dto.ExpertDetailDTO;
 import com.kh.even.back.expert.model.dto.ExpertEstimateDTO;
 import com.kh.even.back.expert.model.dto.ExpertLocationDTO;
+import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
+import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
 import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.repository.ExpertRepository;
 import com.kh.even.back.expert.model.status.EstimateResponseStatus;
+import com.kh.even.back.expert.model.vo.ExpertRegisterVO;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +60,7 @@ public class ExpertServiceImpl implements ExpertService {
 	private final EstimateRepository estimateRepository;
 	private final Pagenation pagenation;
 	private final S3Service s3Service;
+	private final PagingExecutor pagingExecutor;
 
 	public ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user) {
 
@@ -127,21 +136,17 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertRequestUserDTO> getMatchedUser(int pageNo, CustomUserDetails user) {
 
-		Long userNo = user.getUserNo();
+	    Long userNo = user.getUserNo();
+	    int listCount = mapper.countMatchedByUserNo(userNo);
 
-		int listCount = mapper.countMatchedByUserNo(userNo);
-
-		AssertUtil.notFound(listCount, "받은 견적 내역이 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 4, listCount);
-
-		params.put("userNo", userNo);
-
-		List<ExpertRequestUserDTO> list = mapper.getMatchedUser(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertRequestUserDTO>(list, pageInfo);
+	    return pagingExecutor.execute(
+	            pageNo,
+	            4,
+	            listCount,
+	            "받은 견적 내역이 없습니다.",
+	            params -> params.put("userNo", userNo),
+	            mapper::getMatchedUser
+	    );
 	}
 
 	@Override
@@ -184,22 +189,17 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertListDTO> getLikedExperts(CustomUserDetails user, int pageNo) {
 
-		Long userNo = user.getUserNo();
+	    Long userNo = user.getUserNo();
+	    int listCount = mapper.getLikedExpertsCount(userNo);
 
-		int listCount = mapper.getLikedExpertsCount(userNo);
-
-		AssertUtil.notFound(listCount, "찜한 전문가가 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 6, listCount);
-
-		params.put("userNo", userNo);
-
-		List<ExpertListDTO> list = mapper.getLikedExperts(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertListDTO>(list, pageInfo);
-
+	    return pagingExecutor.execute(
+	            pageNo,
+	            6,
+	            listCount,
+	            "찜한 전문가가 없습니다.",
+	            params -> params.put("userNo", userNo),
+	            mapper::getLikedExperts
+	    );
 	}
 
 	@Override
@@ -227,19 +227,16 @@ public class ExpertServiceImpl implements ExpertService {
 	@Override
 	public PageResponse<ExpertSearchDTO> getExpertsByNickname(String keyword, int pageNo) {
 
-		int listCount = mapper.countExpertsByKeyword(keyword);
+	    int listCount = mapper.countExpertsByKeyword(keyword);
 
-		AssertUtil.notFound(listCount, "키워드에 해당하는 전문가를 조회할 수 없습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 10, listCount);
-
-		params.put("keyword", keyword);
-
-		List<ExpertSearchDTO> list = mapper.getExpertsByNickname(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertSearchDTO>(list, pageInfo);
+	    return pagingExecutor.execute(
+	            pageNo,
+	            10,
+	            listCount,
+	            "키워드에 해당하는 전문가를 조회할 수 없습니다.",
+	            params -> params.put("keyword", keyword),
+	            mapper::getExpertsByNickname
+	    );
 	}
 	
 	/**
@@ -248,10 +245,7 @@ public class ExpertServiceImpl implements ExpertService {
 	public List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user) {
 		
 		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
-		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
-		if(isExpert) {
-			throw new CustomAuthorizationException("이미 전문가인 회원입니다.");
-		}
+		isExpert(user);
 		
 		List<LargeCategoryDTO> categories = mapper.getExpertCategory();
 		if(categories == null || categories.isEmpty()) {
@@ -260,4 +254,222 @@ public class ExpertServiceImpl implements ExpertService {
 		
 		return categories;
 	}
+	
+	/**
+	 * 전문가 등록을 하는 기능
+	 */
+	@Transactional
+	public RegisterResponseDTO registerExpert(ExpertRegisterDTO expert, List<MultipartFile> files, CustomUserDetails user) {
+
+		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
+		isExpert(user);
+		
+		// TB_EXPERT에 INSERT할 VO 가공 -> 매퍼 호출
+		ExpertRegisterVO registerVO = toExpertVO(expert, user.getUserNo());
+		int result = mapper.insertExpert(registerVO);
+		if(result <= 0) {
+			throw new ExpertRegisterException("전문가 등록에 실패했습니다.");
+		}
+		Long refNo = registerVO.getUserNo();
+		
+		// TB_MEMBER USER_ROLE -> EXPERT 업데이트
+		int updateRole = mapper.updateRoleToExpert(refNo);
+		if(updateRole == 0) {
+			throw new UpdateMemberException("권한 변경에 실패했습니다.");
+		}
+		
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 TB_EXPERT_SAVE_CATEGORY에 INSERT드
+		insertExpertCategoryDetail(refNo, expert.getCategoryDetailNos());
+		
+		// 파일 유효성 검사
+		List<MultipartFile> validFiles = filterValidFiles(files);
+		// 파일 개수 및 형식 검사
+		AssertUtil.validateImageFiles(validFiles);
+		// 매퍼 호출
+		if(!validFiles.isEmpty()) {
+	       fileUploadService.uploadFiles(validFiles, "expertRegistration", refNo, mapper::insertExpertAttachment);
+	    }
+		
+		// 응답용 DTO 요청 후 반환
+		return getNewExpert(refNo);
+		
+	}
+	
+	/**
+	 * 해당 회원이 전문가인지 권한을 검증합니다.
+	 * @param user
+	 */
+	private void isExpert(CustomUserDetails user) {
+		
+		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
+		if(isExpert) {
+			throw new CustomAuthorizationException("이미 전문가인 회원입니다."); 
+		}
+	}
+	
+	/**
+	 * 전문가 등록에 필요한 값을 VO로 가공합니다.
+	 * @param expert 프론트에서 받아온 전문가 등록 입력값
+	 * @param userNo 회원PK
+	 * @return DB에 INSERT할 전문가 등록 VO
+	 */
+	private ExpertRegisterVO toExpertVO(ExpertRegisterDTO expert, Long userNo) {
+		
+		return ExpertRegisterVO.builder().userNo(userNo)
+										 .career(expert.getCareer())
+										 .startTime(expert.getStartTime())
+										 .endTime(expert.getEndTime())
+										 .content(expert.getContent())
+										 .expertTypeNo(expert.getExpertTypeNo())
+										 .build();
+	}
+	
+	/**
+	 * 리스트로 받아온 파일의 유효성 검사
+	 * @param files 전문가 등록에 첨부된 파일
+	 * @return 유효성 검사를 마친 파일
+	 */
+	private List<MultipartFile> filterValidFiles(List<MultipartFile> files) {
+	    if (files == null) return List.of();
+	    return files.stream()
+	            .filter(file -> file != null && !file.isEmpty())
+	            .toList();
+	}
+	
+	/**
+	 * 새로 등록한 전문가의 응답 데이터를 받아옵니다.
+	 * @param userNo 회원PK
+	 * @return 전문가를 조회해온 응답용 DTO
+	 */
+	private RegisterResponseDTO getNewExpert(Long userNo) {
+		List<RegisterResponseDTO> rows = mapper.getNewExpert(userNo);
+		RegisterResponseDTO dto =
+		        rows.isEmpty() ? null : rows.get(0);
+		if(dto == null) {
+			throw new NotFoundException("해당 전문가 조회에 실패했습니다.");
+		}
+		return dto;
+	}
+	
+	/**
+	 * 전문가 수정폼을 위해 내정보를 조회합니다.
+	 */
+	public RegisterResponseDTO getExpertForEdit(CustomUserDetails user) {
+		
+		// 전문가만 접근 가능합니다.
+		validateExpert(user);
+		
+		RegisterResponseDTO responseDTO = mapper.getExpertForEdit(user.getUserNo());
+		if(responseDTO == null) {
+			throw new ExpertNotFoundException("내정보 조회에 실패했습니다.");
+		}
+		
+		return responseDTO;
+		
+	}
+	
+	/**
+	 * 전문가 내정보 수정하기
+	 */
+	@Transactional
+	public RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<Long> deleteFileNos, 
+											List<MultipartFile> newFiles, CustomUserDetails user) {
+		
+		// 일반 회원은 전문가 정보 수정에 접근하지 못한다.
+		validateExpert(user);
+		
+		// TB_EXPERT에 UPDATE할 VO 가공 -> 매퍼 호출
+		ExpertRegisterVO registerVO = toExpertVO(request, user.getUserNo());
+		int result = mapper.updateExpert(registerVO);
+		if(result <= 0) {
+			throw new ExpertRegisterException("전문가 정보 수정에 실패했습니다.");
+		}
+		Long refNo = registerVO.getUserNo();
+		
+		// TB_EXPERT_SAVE_CATEGORY 기존값 물리적 삭제(유니크 제약 이슈)
+		int deleteCategory = mapper.deleteExpertCategoryDetail(refNo);
+		if(deleteCategory == 0) {
+			throw new ExpertRegisterException("전문가 정보 수정에 실패했습니다.");
+		}
+		
+		// 사용자가 선택한 소분류 카테고리를 중복값 필터/유효성 검사 후 TB_EXPERT_SAVE_CATEGORY에 INSERT
+		insertExpertCategoryDetail(refNo, request.getCategoryDetailNos());
+		
+		// 전문가에게 허용한 상세이미지 개수를 초과하게 될지 검증
+		validateAttachmentLimit(refNo, deleteFileNos, newFiles);
+	    
+		// 상세이미지 삭제
+		if (deleteFileNos != null && !deleteFileNos.isEmpty()) {
+		    mapper.deleteExpertAttachments(refNo, deleteFileNos);
+		}
+		
+		// 새로운 상세이미지 추가를 위한 유효성 검사
+		List<MultipartFile> validFiles = filterValidFiles(newFiles);
+		// 파일 개수 및 형식 검사
+		AssertUtil.validateImageFiles(validFiles);
+		// 매퍼 호출
+		if(!validFiles.isEmpty()) {
+		   fileUploadService.uploadFiles(validFiles, "expertRegistration", refNo, mapper::insertExpertAttachment);
+	    }
+		
+		return getNewExpert(refNo);
+	}
+	
+	/**
+	 * 전문가 기능에 접근 권한이 있는지 검증합니다.
+	 * @param user
+	 */
+	private void validateExpert(CustomUserDetails user) {
+		boolean isExpert = user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_EXPERT"));
+		if(!isExpert) {
+			throw new CustomAuthorizationException("전문가만 접근할 수 있습니다."); 
+		}
+	}
+	
+	/**
+	 * 사용자가 선택한 소분류 카테고리의 중복값 필터 및 유효성 검사 후 DB에 INSERT하는 메서드
+	 * @param userNo 회원PK
+	 * @param categoryDetailNos 사용자가 선택한 소분류 카테고리(1~3개)
+	 */
+	private void insertExpertCategoryDetail (Long userNo, List<Long> categoryDetailNos) {
+		// 사용자가 선택한 소분류 카테고리(1개~3개) 중복값을 HashSet으로 필터
+		Set<Long> uniqueCategoryDetailNos = new HashSet<>(categoryDetailNos);
+		
+		// 유효한 소분류 카테고리를 TB_SAVE_CATEGORY에 INSERT
+		for(Long categoryDetailNo : uniqueCategoryDetailNos) {
+			int insertCategory = mapper.insertExpertCategoryDetail(userNo, categoryDetailNo);
+			if(insertCategory <= 0) {
+			    throw new ExpertRegisterException("소분류 카테고리 저장에 실패했습니다.");
+			}
+	    }
+	}
+	
+	/**
+	 * 전문가가 정보를 수정할 때 상세이미지가 4개를 초과하게 될지 검증합니다.
+	 * @param userNo 회원PK
+	 * @param deleteFileNos 삭제할 상세이미지 개수
+	 * @param newFiles 새로 추가할 상세이미지 개수
+	 */
+	private void validateAttachmentLimit(Long userNo, List<Long> deleteFileNos, List<MultipartFile> newFiles) {
+		// 현재 활성화 중인 상세이미지 개수
+	    int currentActive = mapper.countActiveAttachments(userNo); // STATUS='N'
+	    
+	    // 삭제할 상세이미지 개수
+	    int validDelete = 0;
+	    if (deleteFileNos != null && !deleteFileNos.isEmpty()) {
+	        validDelete = mapper.countDeletableAttachments(userNo, deleteFileNos); // STATUS='N' AND FILE_NO IN (...)
+	    }
+	    
+	    // 새로 추가할 상세이미지 개수
+	    int newCount = (newFiles == null) ? 0 : (int) newFiles.stream()
+	        .filter(f -> f != null && !f.isEmpty())
+	        .count();
+	    
+	    int expected = currentActive - validDelete + newCount;
+	    if (expected > 4) {
+	        throw new IllegalArgumentException("상세 이미지는 최대 4개까지 등록할 수 있습니다.");
+	    }
+	}
+
+	
 }

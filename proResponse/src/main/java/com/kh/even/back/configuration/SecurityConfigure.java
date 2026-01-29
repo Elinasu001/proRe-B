@@ -48,6 +48,8 @@ public class SecurityConfigure {
 					// 관리자 전용 권한 검증
 					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ADMIN");
 					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ROLE_ADMIN");
+					requests.requestMatchers(HttpMethod.GET, "/api/admin/**").hasAuthority("ROLE_ROOT");
+					requests.requestMatchers(HttpMethod.PUT, "/api/admin/**").hasAuthority("ROLE_ROOT");
 					
 					// 1. GET - 비로그인 허용 (목록 / 검색)
 					requests.requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/experts/search",

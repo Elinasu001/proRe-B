@@ -27,12 +27,14 @@ public class AssertUtil {
 	public static void validateImageFiles(List<MultipartFile> files) {
 
 		checkFileSize(files);
-
+		System.out.println("1");
 		if (files == null || files.isEmpty()) {
 			return;
 		}
-
+		System.out.println("2");
+		
 		for (MultipartFile file : files) {
+			System.out.println("3");
 			validateImageFile(file);
 		}
 	}

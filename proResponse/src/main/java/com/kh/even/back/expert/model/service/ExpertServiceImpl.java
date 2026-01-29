@@ -40,9 +40,8 @@ import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.expert.model.vo.ExpertRegisterVO;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
-import com.kh.even.back.util.PagingExcutor;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -61,7 +60,7 @@ public class ExpertServiceImpl implements ExpertService {
 	private final EstimateRepository estimateRepository;
 	private final Pagenation pagenation;
 	private final S3Service s3Service;
-	private final PagingExcutor pagingExcutor;
+	private final PagingExecutor pagingExecutor;
 
 	public ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user) {
 
@@ -140,7 +139,7 @@ public class ExpertServiceImpl implements ExpertService {
 	    Long userNo = user.getUserNo();
 	    int listCount = mapper.countMatchedByUserNo(userNo);
 
-	    return pagingExcutor.execute(
+	    return pagingExecutor.execute(
 	            pageNo,
 	            4,
 	            listCount,
@@ -193,7 +192,7 @@ public class ExpertServiceImpl implements ExpertService {
 	    Long userNo = user.getUserNo();
 	    int listCount = mapper.getLikedExpertsCount(userNo);
 
-	    return pagingExcutor.execute(
+	    return pagingExecutor.execute(
 	            pageNo,
 	            6,
 	            listCount,
@@ -230,7 +229,7 @@ public class ExpertServiceImpl implements ExpertService {
 
 	    int listCount = mapper.countExpertsByKeyword(keyword);
 
-	    return pagingExcutor.execute(
+	    return pagingExecutor.execute(
 	            pageNo,
 	            10,
 	            listCount,

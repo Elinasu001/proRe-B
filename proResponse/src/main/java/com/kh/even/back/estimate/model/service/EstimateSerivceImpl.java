@@ -1,7 +1,6 @@
 package com.kh.even.back.estimate.model.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,8 @@ import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
-import com.kh.even.back.util.PagingExcutor;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -47,7 +45,7 @@ public class EstimateSerivceImpl implements EstimateService {
 	private final ExpertEstimateRepository expertRepository;
 	private final Pagenation pagenation;
 	private final S3Service s3Service;
-	private final PagingExcutor pagingExcutor;
+	private final PagingExecutor pagingExecutor;
 	
 	@Override
 	@Transactional
@@ -80,7 +78,7 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long userNo = customUserDetails.getUserNo();
 
-		return pagingExcutor.execute(
+		return pagingExecutor.execute(
 				pageNo,
 				4,
 				mapper.getMyEstimateCount(userNo),
@@ -95,7 +93,7 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long userNo = customUserDetails.getUserNo();
 
-		return pagingExcutor.execute(
+		return pagingExecutor.execute(
 				pageNo,
 				4,
 				mapper.getResponseEstimateCount(userNo),
@@ -110,7 +108,7 @@ public class EstimateSerivceImpl implements EstimateService {
 
 		Long expertNo = customUserDetails.getUserNo();
 
-		return pagingExcutor.execute(
+		return pagingExecutor.execute(
 				pageNo,
 				4,
 				mapper.getReceivedRequestsCount(expertNo),

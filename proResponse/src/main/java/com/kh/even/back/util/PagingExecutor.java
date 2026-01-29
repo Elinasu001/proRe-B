@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class PagingExcutor {
+public class PagingExecutor {
 
 	private final Pagenation pagenation;
 

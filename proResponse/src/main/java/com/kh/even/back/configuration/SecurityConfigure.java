@@ -69,6 +69,7 @@ public class SecurityConfigure {
 					
 					requests.requestMatchers(HttpMethod.POST, "/api/estimate").hasRole("USER");
 
+				
 
 				}).sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).build();

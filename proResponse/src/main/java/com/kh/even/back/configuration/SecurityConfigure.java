@@ -62,6 +62,7 @@ public class SecurityConfigure {
                      "/api/experts/*",              // 전문가 상세
                      "/api/reviews/expert/*",       // 전문가 리뷰
                      "/api/reviews/tags",
+					 "/api/reports/tags",
                      "/ws/chat/**"
                ).permitAll();
 

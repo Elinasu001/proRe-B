@@ -53,9 +53,9 @@ public class SecurityConfigure {
 							"/webjars/**"
 					).permitAll();
 
-					/* ================= 관리자 전용 ================= */
+					/* ================= 관리자 전용 (ROLE_ADMIN, ROLE_ROOT 모두 허용) ================= */
 					requests.requestMatchers("/api/admin/**")
-							.hasAuthority("ROLE_ADMIN");
+							.hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");
 
 					/* ================= 비로그인 허용 (GET) ================= */
 					requests.requestMatchers(

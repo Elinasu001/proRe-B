@@ -104,8 +104,9 @@ public class SecurityConfigure {
 
 					/* ================= 로그인 필요 (POST) ================= */
 					requests.requestMatchers(
-							HttpMethod.POST,
+							HttpMethod.POST,	
 							"/api/reports",
+							"/api/rooms/**",
 							"/api/reviews/**",
 							"/api/likes/**"
 					).authenticated();

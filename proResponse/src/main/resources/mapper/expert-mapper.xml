@@ -151,12 +151,14 @@
 	     TB_ESTIMATE_REQUEST rq
 	INNER JOIN TB_ESTIMATE_RESPONSE rp
 	     ON rq.REQUEST_NO = rp.REQUEST_NO
-	    AND rp.STATUS IN ('ACCEPTED', 'EXPIRED')
 	INNER JOIN TB_MEMBER m
 	     ON m.USER_NO = rq.USER_NO
 	    AND m.STATUS = 'Y'
 	WHERE
 	       rq.EXPERT_NO = #{userNo}
+	  AND
+	       rq.DELETE_AT = 'N'      
+	  AND rp.STATUS IN ('ACCEPTED', 'EXPIRED')     
 	ORDER BY
 	       rq.REQUEST_NO DESC
 	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY

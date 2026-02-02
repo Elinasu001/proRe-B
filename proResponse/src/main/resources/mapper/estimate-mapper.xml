@@ -32,6 +32,7 @@
 	FROM TB_ESTIMATE_REQUEST
 	WHERE USER_NO = #{userNo}
 	  AND STATUS = 'REQUESTED'
+	  AND DELETE_AT = 'N'
 	</select>
 	
 	<!-- 회원이 보낸 견적 전문가 정보 -->
@@ -71,7 +72,8 @@
 	WHERE 
 	      r.USER_NO = #{userNo}
 	  AND r.STATUS = 'REQUESTED' 
-	  AND m.STATUS = 'Y'    
+	  AND m.STATUS = 'Y' 
+	  AND r.DELETE_AT = 'N'   
 	ORDER 
 	   BY r.REQUEST_NO DESC
 	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
@@ -127,6 +129,7 @@
         ON rs.EXPERT_NO = r.EXPERT_NO
      WHERE r.USER_NO = #{userNo}
        AND r.STATUS IN ('QUOTED' , 'MATCHED')
+       AND r.DELETE_AT = 'N'
      ORDER BY er.ESTIMATE_DATE DESC
      OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
@@ -140,6 +143,7 @@
    AND m.STATUS = 'Y'
  WHERE er.EXPERT_NO = #{expertNo} 
    AND er.STATUS = 'REQUESTED'
+   AND er.DELETE_AT = 'N'
 	</select>
 	
 	<!-- 전문가 받은 요청 리스트 -->
@@ -160,6 +164,8 @@
 	 	   expert_No = #{expertNo} 
 	   AND 
 	       er.STATUS = 'REQUESTED'
+	   AND
+	       er.DELETE_AT = 'N'    
 	 ORDER 
 	    BY 
            er.REQUEST_DATE DESC
@@ -175,9 +181,7 @@
 	 WHERE 
            (EXPERT_NO = #{userNo} OR USER_NO = #{userNo})
 	   AND 
-	       REQUEST_NO = #{requestNo}
-	   AND 
-	       STATUS = 'REQUESTED'    
+	       REQUEST_NO = #{requestNo}   
 	</select>
 	
 	<!-- 승낙할수 있는 견적인지 확인함 -->
@@ -191,19 +195,23 @@
 	   AND 
 	       REQUEST_NO = #{requestNo}
 	   AND 
-	       STATUS = 'QUOTED'    
+	       STATUS = 'QUOTED'  
+	   AND 
+	       DELETE_AT = 'N'      
 	</select>
 	
 	<!-- 견적이 로그인한 유저의 견적인지 확인 -->
 	<select id="getCheckEstimateCount">
 	SELECT 
-	       COUNT(*)
+		   COUNT(*) 
 	  FROM 
-	       TB_ESTIMATE_REQUEST
+	       TB_ESTIMATE_REQUEST 
 	 WHERE 
-           USER_NO = #{userNo}
-	   AND 
-	       REQUEST_NO = #{requestNo}	
+	       REQUEST_NO = #{requestNo}
+  	   AND 
+  	       (USER_NO = #{userNo} OR EXPERT_NO = #{userNo})
+  	   AND 
+  	       DELETE_AT = 'N'    
 	</select>
 	
 	<!-- 요청 견적 자세히 보기 -->

@@ -66,7 +66,8 @@ public class SecurityConfigure {
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
 							"/ws/chat/**",
-							"/api/main"
+							"/api/main",
+							"/api/experts/{expertNo}/categories"
 					).permitAll();
 
 					/* ================= 인증 관련 ================= */
@@ -108,8 +109,14 @@ public class SecurityConfigure {
 							"/api/reviews/**",
 							"/api/likes/**",
 							"/api/estimate",
-							"/api/estimate/**"
+							"/api/estimate/**",
+							"/api/experts/**"
 					).authenticated();
+					
+					
+					requests.requestMatchers(HttpMethod.DELETE,"api/estimate/**").authenticated();
+					
+					
 				})
 				.sessionManagement(manager ->
 						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

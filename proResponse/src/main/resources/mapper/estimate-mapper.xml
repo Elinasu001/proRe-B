@@ -219,11 +219,11 @@
     <result property="requestType" column="REQUEST_TYPE"/>
     <result property="requestService"     column="REQUEST_SERVICE"/>
     <result property="content"     column="CONTENT"/>
-    <collection property="files"
-                ofType="com.kh.even.back.estimate.model.dto.EstimateFileDTO">
-        <id property="fileNo" column="FILE_NO"/>
-        <result property="filePath" column="FILE_PATH"/>
-    </collection>
+	<collection property="files"
+	            ofType="com.kh.even.back.estimate.model.dto.EstimateFileDTO">
+	    <id property="fileNo" column="FILE_NO"/>
+	    <result property="filePath" column="FILE_PATH"/>
+	</collection>
 	</resultMap>
 
 

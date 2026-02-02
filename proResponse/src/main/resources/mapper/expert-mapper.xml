@@ -25,7 +25,7 @@
 </resultMap>
 	
 	<!-- 전문가 디테일 조회 sql -->
-	<select id="getExpertDetails" parameterType="long" resultMap="expertDetailMap">
+	<select id="getExpertDetails" parameterType="map" resultMap="expertDetailMap">
 	SELECT
 	       e.USER_NO                 AS EXPERT_NO
 	     , m.PROFILE_IMG             AS PROFILE_IMG
@@ -140,28 +140,28 @@
 	</select>
 	
 	<!-- 매치된 유저들 조회 -->
-	<select id="getMatchedUser">
+	<select id="getMatchedUser" resultType="com.kh.even.back.estimate.model.dto.ExpertRequestUserDTO">
 	SELECT
 	       rq.REQUEST_NO AS requestNo,
-	       m.USER_NO AS userNo,
+	       m.USER_NO     AS userNo,
 	       m.NICKNAME,
 	       m.ADDRESS,
-	       m.PROFILE_IMG profileImg
+	       m.PROFILE_IMG AS profileImg
 	FROM
 	     TB_ESTIMATE_REQUEST rq
-	LEFT JOIN TB_ESTIMATE_RESPONSE rp 
-	       ON rq.REQUEST_NO = rp.REQUEST_NO
-	LEFT JOIN TB_MEMBER m 
-	       ON m.USER_NO = rq.USER_NO
+	INNER JOIN TB_ESTIMATE_RESPONSE rp
+	     ON rq.REQUEST_NO = rp.REQUEST_NO
+	    AND rp.STATUS IN ('ACCEPTED', 'EXPIRED')
+	INNER JOIN TB_MEMBER m
+	     ON m.USER_NO = rq.USER_NO
+	    AND m.STATUS = 'Y'
 	WHERE
-	       m.STATUS = 'Y'
-	   AND EXPERT_NO = #{userNo}
-	   AND rp.STATUS IN ('ACCEPTED', 'EXPIRED')
-	ORDER BY 
+	       rq.EXPERT_NO = #{userNo}
+	ORDER BY
 	       rq.REQUEST_NO DESC
 	OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
 	</select>
-	
+		
 	<select id="getExpertCategories" parameterType="long">
 	SELECT 
 	       CATEGORY_DETAIL_NO categoryDetailNo

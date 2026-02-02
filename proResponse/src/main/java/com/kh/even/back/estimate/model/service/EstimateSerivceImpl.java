@@ -43,7 +43,6 @@ public class EstimateSerivceImpl implements EstimateService {
 	private final ExpertMapper expertMapper;
 	private final EstimateRepository repository;
 	private final ExpertEstimateRepository expertRepository;
-	private final Pagenation pagenation;
 	private final S3Service s3Service;
 	private final PagingExecutor pagingExecutor;
 	

@@ -2,6 +2,8 @@ package com.kh.even.back.admin.model.service;
 
 import com.kh.even.back.admin.model.dto.AdminMemberDTO;
 import com.kh.even.back.admin.model.dto.AdminMemberListResponse;
+import com.kh.even.back.admin.model.dto.AdminMemberSearchRequest;
+import com.kh.even.back.exception.ResourceNotFoundException;
 
 /**
  * 관리자 회원 관리 서비스 인터페이스
@@ -15,7 +17,7 @@ public interface AdminMemberService {
      * @param keyword 검색 키워드 (이메일, 이름, 닉네임)
      * @return 회원 목록 + 페이징 정보
      */
-    AdminMemberListResponse getMemberListWithPaging(int currentPage, String keyword);
+	AdminMemberListResponse getMemberListWithPaging(AdminMemberSearchRequest request);
 
     /**
      * 회원 상세 조회

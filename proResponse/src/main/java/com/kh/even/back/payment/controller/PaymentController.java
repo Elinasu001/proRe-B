@@ -4,16 +4,13 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.payment.model.dto.PaymentCancelRequest;
-import com.kh.even.back.payment.model.dto.PaymentDetailRequest;
 import com.kh.even.back.payment.model.dto.PaymentPrepareRequest;
 import com.kh.even.back.payment.model.dto.PaymentVerifyRequest;
 import com.kh.even.back.payment.model.service.PaymentService;
@@ -23,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -77,16 +74,16 @@ public class PaymentController {
     /**
      * 결제 상세 조회
      */
-    @GetMapping("/detail")
-    public ResponseEntity<Map<String, Object>> getPaymentDetail(
-            @RequestParam String impUid,
-            @AuthenticationPrincipal CustomUserDetails user) {
+    // @GetMapping("/detail")
+    // public ResponseEntity<Map<String, Object>> getPaymentDetail(
+    //         @RequestParam String impUid,
+    //         @AuthenticationPrincipal CustomUserDetails user) {
         
-        PaymentDetailRequest request = new PaymentDetailRequest();
-        request.setUserNo(user.getUserNo());
-        request.setImpUid(impUid);
+    //     PaymentDetailRequest request = new PaymentDetailRequest();
+    //     request.setUserNo(user.getUserNo());
+    //     request.setImpUid(impUid);
         
-        Map<String, Object> response = paymentService.getPaymentDetail(request);
-        return ResponseEntity.ok(response);
-    }
+    //     Map<String, Object> response = paymentService.getPaymentDetail(request);
+    //     return ResponseEntity.ok(response);
+    // }
 }

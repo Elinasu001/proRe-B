@@ -20,3 +20,4 @@ public class PaymentPrepareRequest {
     private Long estimateNo;    // 견적 번호
     private String merchantUid; // Service에서 생성 후 설정
 }
+

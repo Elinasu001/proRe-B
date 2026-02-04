@@ -108,7 +108,8 @@ public class SecurityConfigure {
 							"/api/reports",
 							"/api/rooms/**",
 							"/api/reviews/**",
-							"/api/likes/**"
+							"/api/likes/**",
+							"/api/payments/**"
 					).authenticated();
 				})
 				.sessionManagement(manager ->

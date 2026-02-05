@@ -51,7 +51,7 @@ public class ReportServiceImpl implements ReportService {
     public ReportVO saveReport(ReportDTO reportDTO, Long userNo) {
 
         // 1. 이미 신고가 되어 있는 지 확인 (신고자+대상 기준)
-        validateNotReported(userNo, reportDTO.getTargetUserNo());
+        validateNotReported(reportDTO.getEstimateNo(), userNo, reportDTO.getTargetUserNo());
 
         // 1-1. reasonNo null 체크
         if (reportDTO.getReasonNo() == null) {
@@ -79,14 +79,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
 
-    public void validateNotReported(Long userNo, Long targetUserNo) {
+    public void validateNotReported(Long estimateNo, Long userNo, Long targetUserNo) {
         //log.debug("[validateNotReported] userNo={}, targetUserNo={}", userNo, targetUserNo);
-        if (userNo == null || targetUserNo == null) {
+        if (estimateNo == null || userNo == null || targetUserNo == null) {
             //log.warn("[validateNotReported] userNo 또는 targetUserNo가 null입니다. userNo={}, targetUserNo={}", userNo, targetUserNo);
             throw new ReportException("userNo, targetUserNo는 null일 수 없습니다.");
         }
         boolean exists = reportMapper.existsReportByUserAndTarget(
-            Map.of("userNo", userNo, "targetUserNo", targetUserNo)
+            Map.of("estimateNo", estimateNo,"userNo", userNo, "targetUserNo", targetUserNo)
         );
         //log.debug("[validateNotReported] existsReportByUserAndTarget result={}", exists);
         if (exists) {

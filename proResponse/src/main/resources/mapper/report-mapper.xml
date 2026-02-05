@@ -97,7 +97,8 @@
         resultType="boolean">
 		SELECT CASE WHEN COUNT(*) &gt; 0 THEN 1 ELSE 0 END
 		FROM TB_REPORT
-		WHERE REPORTER_USER_NO = #{userNo}
+		WHERE ESTIMATE_NO = #{estimateNo}
+		AND REPORTER_USER_NO = #{userNo}
 		AND TARGET_USER_NO = #{targetUserNo}
 		AND STATUS = 'WAITING'
 	</select>

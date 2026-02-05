@@ -56,7 +56,6 @@ public class SecurityConfigure {
 					/* ================= 관리자 전용 (ROLE_ADMIN, ROLE_ROOT 모두 허용) ================= */
 					requests.requestMatchers("/api/admin/**")
 							.hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");
-
 					/* ================= 비로그인 허용 (GET) ================= */
 					requests.requestMatchers(
 							HttpMethod.GET,
@@ -66,9 +65,9 @@ public class SecurityConfigure {
 							"/api/experts/*",
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
-							"/api/reports/tags",
 							"/ws/chat/**",
-							"/api/main"
+							"/api/main",
+							"/api/experts/{expertNo}/categories"
 					).permitAll();
 
 					/* ================= 인증 관련 ================= */
@@ -94,7 +93,8 @@ public class SecurityConfigure {
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
 					requests.requestMatchers(
 							HttpMethod.PUT,
-							"/api/members/me/**"
+							"/api/members/me/**",
+							"/api/estimate/**"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -109,8 +109,16 @@ public class SecurityConfigure {
 							"/api/rooms/**",
 							"/api/reviews/**",
 							"/api/likes/**",
-							"/api/payments/**"
+							"/api/payments/**",
+							"/api/estimate",
+							"/api/estimate/**",
+							"/api/experts/**"
 					).authenticated();
+					
+					
+					requests.requestMatchers(HttpMethod.DELETE,"/api/estimate/**").authenticated();
+					
+					
 				})
 				.sessionManagement(manager ->
 						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

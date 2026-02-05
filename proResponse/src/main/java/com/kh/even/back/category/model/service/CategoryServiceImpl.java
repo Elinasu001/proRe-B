@@ -15,6 +15,7 @@ import com.kh.even.back.category.model.repository.CategoryRepository;
 import com.kh.even.back.common.validator.AssertUtil;
 import com.kh.even.back.util.PageInfo;
 import com.kh.even.back.util.Pagenation;
+import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 	private final CategoryRepository categoryRepository;
 	private final CategoryMapper categoryMapper;
-	private final Pagenation pagenation;
+	private final PagingExecutor pagingExecutor;
 
 	@Override
 	public List<CategoryEntity> getCategoryEntities() {
@@ -51,29 +52,23 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails userDetails) {
 
-		Long userNo = null;
+		  	Long userNo = null;
+		  	
+		  	
 
-		if (userDetails != null) {
-			userNo = userDetails.getUserNo();
-		}
+		    int listCount = categoryMapper.getExpertListCount(categoryDetailNo);
 
-		int listCount = categoryMapper.getExpertListCount(categoryDetailNo);
-
-		AssertUtil.notFound(listCount, "해당 카테고리의 전문가 조회를 실패했습니다.");
-
-		Map<String, Object> params = pagenation.pageRequest(pageNo, 6, listCount);
-
-		params.put("userNo", userNo);
-		params.put("categoryDetailNo", categoryDetailNo);
-
-		// log.info(" params 데이터 : {}" , params);
-
-		List<ExpertListDTO> list = categoryMapper.getExpertList(params);
-
-		PageInfo pageInfo = (PageInfo) params.get("pi");
-
-		return new PageResponse<ExpertListDTO>(list, pageInfo);
-
+		    return pagingExecutor.execute(
+		            pageNo,
+		            6,
+		            listCount,
+		            "해당 카테고리의 전문가 조회를 실패했습니다.",
+		            params -> {
+		                params.put("userNo", userNo);
+		                params.put("categoryDetailNo", categoryDetailNo);
+		            },
+		            categoryMapper::getExpertList
+		    );
 	}
 
 

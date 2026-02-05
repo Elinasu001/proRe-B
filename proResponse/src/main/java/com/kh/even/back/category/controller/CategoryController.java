@@ -53,11 +53,15 @@ public class CategoryController {
 	}
 
 	// 카테고리 해당 전문가 조회
-    @GetMapping("/experts/{categoryDetailNo}")
-	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getExpertList(@PathVariable("categoryDetailNo") Long categoryDetailNo , @RequestParam(name = "pageNo", defaultValue = "1") int pageNo , @AuthenticationPrincipal CustomUserDetails customUserDetails){
-    	
-    	return ResponseData.ok(categorySerivce.getExpertList(categoryDetailNo , pageNo , customUserDetails),"전문가 조회를 성공했습니다.");
-    	
-    }
+	@GetMapping("/experts/{categoryDetailNo}")
+	public ResponseEntity<ResponseData<PageResponse<ExpertListDTO>>> getExpertList(
+			@PathVariable("categoryDetailNo") Long categoryDetailNo,
+			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+		return ResponseData.ok(categorySerivce.getExpertList(categoryDetailNo, pageNo, customUserDetails),
+				"전문가 조회를 성공했습니다.");
+
+	}
 
 }

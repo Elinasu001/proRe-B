@@ -88,6 +88,7 @@
      WHERE r.USER_NO = #{userNo}
        AND er.STATUS IN ('SENT', 'ACCEPTED')
        AND er.DELETE_AT = 'N'
+       AND r.STATUS IN ('QUOTED','MATCHED', 'DONE')
 	</select>
 	
 	<!-- 회원이 받은 견적 요청 내용 -->
@@ -100,7 +101,8 @@
            NVL(rs.AVG_STAR_SCORE, 0) AS starScore,
            NVL(rs.REVIEW_COUNT, 0)   AS reviewCount,
            er.PRICE                  AS price,
-           r.STATUS                  AS status
+           r.STATUS                  AS status,
+           ESTIMATE_NO	             AS estimateNo
       FROM TB_ESTIMATE_REQUEST r
       JOIN TB_ESTIMATE_RESPONSE er
         ON er.REQUEST_NO = r.REQUEST_NO

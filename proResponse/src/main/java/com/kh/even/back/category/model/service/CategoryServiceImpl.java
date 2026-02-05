@@ -52,24 +52,14 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails userDetails) {
 
-		  	Long userNo = userDetails != null ? userDetails.getUserNo() : null;
-		  	
-			
+		Long userNo = userDetails != null ? userDetails.getUserNo() : null;
 
-		    int listCount = categoryMapper.getExpertListCount(categoryDetailNo);
+		int listCount = categoryMapper.getExpertListCount(categoryDetailNo);
 
-		    return pagingExecutor.execute(
-		            pageNo,
-		            6,
-		            listCount,
-		            "해당 카테고리의 전문가 조회를 실패했습니다.",
-		            params -> {
-		                params.put("userNo", userNo);
-		                params.put("categoryDetailNo", categoryDetailNo);
-		            },
-		            categoryMapper::getExpertList
-		    );
+		return pagingExecutor.execute(pageNo, 6, listCount, "해당 카테고리의 전문가 조회를 실패했습니다.", params -> {
+			params.put("userNo", userNo);
+			params.put("categoryDetailNo", categoryDetailNo);
+		}, categoryMapper::getExpertList);
 	}
-
 
 }

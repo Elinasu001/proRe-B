@@ -94,7 +94,8 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.PUT,
 							"/api/members/me/**",
-							"/api/estimate/**"
+							"/api/estimate/**",
+							"/api/reviews/**"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -113,6 +114,11 @@ public class SecurityConfigure {
 							"/api/estimate",
 							"/api/estimate/**",
 							"/api/experts/**"
+					).authenticated();
+
+					requests.requestMatchers(
+							HttpMethod.DELETE,
+							"/api/reviews/**"
 					).authenticated();
 					
 					

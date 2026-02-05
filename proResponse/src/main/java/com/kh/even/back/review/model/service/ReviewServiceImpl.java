@@ -166,14 +166,20 @@ public class ReviewServiceImpl implements ReviewService {
 
     // 리뷰 삭제
     @Override
+    @Transactional
     public ReviewVO deleteByEstimateNo(Long estimateNo, Long userNo) {
         ReviewVO reviewVO = reviewMapper.getReviewByEstimateNo(estimateNo);
         if (reviewVO == null) {
             throw new ReviewException("존재하지 않는 리뷰입니다");
         }
         // 상태 변경만 수행
-        int updated = reviewMapper.updateReviewStatus(reviewVO.getReviewNo());
-        ReviewValidator.validateDbResult(updated, "리뷰 삭제에 실패했습니다.");
+        Long reviewNo = reviewVO.getReviewNo();
+        int mapDeleted = reviewMapper.deleteReviewMapByReviewNo(reviewNo);      // 1. 태그 매핑 삭제
+        int attachDeleted = reviewMapper.deleteAttachmentsByReviewNo(reviewNo); // 2. 첨부파일 삭제
+        int deleted = reviewMapper.deleteReviewByReviewNo(reviewNo);            // 3. 리뷰 삭제
+        if(mapDeleted == 0 && attachDeleted == 0 && deleted == 0) {
+        	throw new ReviewException("리뷰 삭제에 실패했습니다.");
+        }
         return reviewVO;
     }
 

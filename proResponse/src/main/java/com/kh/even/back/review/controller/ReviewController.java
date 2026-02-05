@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -88,15 +88,22 @@ public class ReviewController {
 	 * 리뷰 삭제
 	 * 
 	 */
-    @PutMapping("/{estimateNo}")
+    @DeleteMapping("/{estimateNo}")
     public ResponseEntity<ResponseData<ReviewVO>> deleteByEstimateNo(
         @PathVariable("estimateNo") Long estimateNo,
         @AuthenticationPrincipal CustomUserDetails user
     ) {
+
+        log.info("리뷰 삭제 요청 - estimateNo: {}", estimateNo);
+        log.info("요청한 사용자 - userNo: {}", user.getUserNo());
+
         ReviewVO deleted = reviewService.deleteByEstimateNo(
             estimateNo,
             user.getUserNo()
         );
+
+        log.info("리뷰 삭제 완료 - ReviewVO: {}", deleted);
+        
         return ResponseData.created(deleted, "리뷰가 삭제되었습니다");
     }
     
@@ -106,6 +113,5 @@ public class ReviewController {
         @RequestParam(name="pageNo" , defaultValue = "1") int pageNo){
     
     	return ResponseData.ok(reviewService.getExpertReviews(expertNo,pageNo),"조회에 성공했습니다.");
-    	
     }
 }

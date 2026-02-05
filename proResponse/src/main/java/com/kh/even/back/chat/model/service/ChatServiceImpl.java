@@ -211,13 +211,17 @@ public class ChatServiceImpl implements ChatService {
         }
         
         // meta 정보 생성 (estimateNo는 파라미터로 받은 값 사용)
-        return new ChatMessageResponse(
-                searchDto.getMessageNo(),   // cursor
-                searchDto.getSize(),        // requestedSize
-                messages.size(),            // size
-                estimateNo,                 // 파라미터로 받은 estimateNo 사용
-                messages                    // messages
-        );
+        // nextCursor: messages가 비어있지 않으면 마지막 메시지의 messageNo, 아니면 null
+        Long nextCursor = (messages != null && !messages.isEmpty()) ? messages.get(messages.size() - 1).getMessageNo() : null;
+        
+        return ChatMessageResponse.builder()
+            .cursor(searchDto.getMessageNo())
+            .requestedSize(searchDto.getSize())
+            .size(messages.size())
+            .estimateNo(estimateNo)
+            .messages(messages)
+            .nextCursor(nextCursor)
+            .build();
     }
 
     

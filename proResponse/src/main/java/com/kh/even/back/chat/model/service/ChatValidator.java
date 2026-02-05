@@ -7,9 +7,11 @@ import com.kh.even.back.chat.model.dto.ChatMessageDTO;
 import com.kh.even.back.exception.ChatException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public final class ChatValidator {
 
     private final ChatMapper chatMapper;
@@ -22,7 +24,7 @@ public final class ChatValidator {
         String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
         String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
        // 예: 둘 다 "ACCEPTED" 또는 "MATCHED" 또는 "DONE"여야만 통과
-        if (!"ACCEPTED".equals(requestStatus) || !("MATCHED".equals(responseStatus) || "DONE".equals(responseStatus))) {
+        if (!"ACCEPTED".equals(responseStatus)  || "DONE".equals(responseStatus)) {
             throw new ChatException("견적 상태가 채팅방 입장 조건을 만족하지 않습니다.");
         }
     }

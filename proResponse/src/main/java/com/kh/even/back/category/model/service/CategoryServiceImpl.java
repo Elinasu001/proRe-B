@@ -52,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public PageResponse<ExpertListDTO> getExpertList(Long categoryDetailNo, int pageNo, CustomUserDetails userDetails) {
 
-		  	Long userNo = null;
+		  	Long userNo = userDetails != null ? userDetails.getUserNo() : null;
 		  	
 		  	
 

@@ -31,9 +31,9 @@ public class ReportServiceImpl implements ReportService {
 
         ReportDetailDTO reportDetailDTO = reportMapper.getByEstimateNo(estimateNo);
 
-        if(reportDetailDTO == null){
-            throw new ReportException("해당 견적에 대한 신고가 존재하지 않습니다");
-        }
+        // if(reportDetailDTO == null){
+        //     throw new ReportException("해당 견적에 대한 신고가 존재하지 않습니다");
+        // }
         return reportDetailDTO;
     }
 
@@ -50,10 +50,15 @@ public class ReportServiceImpl implements ReportService {
     @Transactional
     public ReportVO saveReport(ReportDTO reportDTO, Long userNo) {
 
-        // 3. 이미 신고가 되어 있는 지 확인
-        validateNotReported(reportDTO, userNo);
+        // 1. 이미 신고가 되어 있는 지 확인 (신고자+대상 기준)
+        validateNotReported(userNo, reportDTO.getTargetUserNo());
 
-        // 4. 신고 등록
+        // 1-1. reasonNo null 체크
+        if (reportDTO.getReasonNo() == null) {
+            throw new ReportException("신고 사유(REASON_NO)는 필수입니다.");
+        }
+
+        // 2. 신고 등록
         ReportVO reportVO = ReportVO.builder()
             .estimateNo(reportDTO.getEstimateNo())
             .content(reportDTO.getContent())
@@ -74,16 +79,19 @@ public class ReportServiceImpl implements ReportService {
     }
 
 
-    public void validateNotReported(ReportDTO reportDTO, Long userNo) {
-        boolean exists = reportMapper.existsReportByEstimateNo(
-            Map.of(
-                "estimateNo", reportDTO.getEstimateNo(),
-                "userNo", userNo
-            )
+    public void validateNotReported(Long userNo, Long targetUserNo) {
+        //log.debug("[validateNotReported] userNo={}, targetUserNo={}", userNo, targetUserNo);
+        if (userNo == null || targetUserNo == null) {
+            //log.warn("[validateNotReported] userNo 또는 targetUserNo가 null입니다. userNo={}, targetUserNo={}", userNo, targetUserNo);
+            throw new ReportException("userNo, targetUserNo는 null일 수 없습니다.");
+        }
+        boolean exists = reportMapper.existsReportByUserAndTarget(
+            Map.of("userNo", userNo, "targetUserNo", targetUserNo)
         );
-
+        //log.debug("[validateNotReported] existsReportByUserAndTarget result={}", exists);
         if (exists) {
-            throw new ReportException("이미 신고가 작성된 견적서입니다");
+            //log.warn("[validateNotReported] 이미 신고가 접수된 사용자입니다. userNo={}, targetUserNo={}", userNo, targetUserNo);
+            throw new ReportException("이미 신고가 접수된 사용자입니다.");
         }
     }
 

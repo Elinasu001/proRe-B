@@ -73,7 +73,8 @@ public class SecurityConfigure {
 					/* ================= 인증 관련 ================= */
 					requests.requestMatchers(
 							HttpMethod.POST,
-							"/api/auth/login"
+							"/api/auth/login",
+							"/api/members"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */

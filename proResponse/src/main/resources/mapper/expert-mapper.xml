@@ -85,6 +85,8 @@
 	                  esc.USER_NO = e.USER_NO
 	       )
 	   AND
+	   		ea.STATUS = 'N'
+	   AND
 	       e.USER_NO = #{expertNo}
 	</select>	
 	<!-- 전문가가 견적 응답 이미지 저장 -->

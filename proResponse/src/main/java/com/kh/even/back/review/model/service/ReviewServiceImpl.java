@@ -66,6 +66,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 1. 내가 이미 쓴 리뷰가 있는지 확인
         boolean exists = existsByEstimateNo(reviewDTO.getEstimateNo(), userNo);
+        
         if (exists) {
             throw new ReviewException("이미 리뷰가 작성된 견적서입니다");
         }

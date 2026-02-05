@@ -33,10 +33,8 @@ public class PaymentController {
     public ResponseEntity<Map<String, Object>> prepare(
             @ModelAttribute PaymentPrepareRequest request,
             @AuthenticationPrincipal CustomUserDetails user) {
-        
         // userNo 설정
         request.setUserNo(user.getUserNo());
-        
         Map<String, Object> response = paymentService.preparePayment(request);
         return ResponseEntity.ok(response);
     }

@@ -23,10 +23,14 @@ public final class ChatValidator {
     public void validateEstimateStatus(Long estimateNo) {
         String requestStatus = chatMapper.getRequestStatusByEstimateNo(estimateNo);
         String responseStatus = chatMapper.getResponseStatusByEstimateNo(estimateNo);
-       // 예: 둘 다 "ACCEPTED" 또는 "MATCHED" 또는 "DONE"여야만 통과
-        if (!"ACCEPTED".equals(responseStatus)  || "DONE".equals(responseStatus)) {
+        // 예: 둘 다 "ACCEPTED" 또는 "MATCHED" 또는 "DONE"여야만 통과
+        if ("SENT".equals(responseStatus)) {
             throw new ChatException("견적 상태가 채팅방 입장 조건을 만족하지 않습니다.");
         }
+
+        // if (!"ACCEPTED".equals(responseStatus)  || "DONE".equals(responseStatus)) {
+        //     throw new ChatException("견적 상태가 채팅방 입장 조건을 만족하지 않습니다.");
+        // }
     }
 
 

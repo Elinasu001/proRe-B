@@ -44,9 +44,10 @@ public class ChatServiceImpl implements ChatService {
 
         // 1. 견적 상태 체크
         chatValidator.validateEstimateStatus(estimateNo);
-
+        log.info("estimateNo : {}", estimateNo);
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
         boolean exists = chatMapper.existsByEstimateNo(estimateNo);
+        // log.info("exists : {}", exists);
         if (exists) {
             throw new ChatException("이미 채팅방이 존재합니다");
         }
@@ -59,6 +60,7 @@ public class ChatServiceImpl implements ChatService {
             .build();
         int roomResult = chatMapper.createRoom(roomVo);
         chatValidator.validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
+        // log.info("roomResult : {}", roomResult);
 
         // 4. 생성자 등록
         ChatRoomUserVO roomUserVo = ChatRoomUserVO.builder()

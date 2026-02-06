@@ -53,14 +53,15 @@ public class SecurityConfigure {
 							"/swagger-resources/**",
 							"/webjars/**"
 					).permitAll();
-					
+
 					/* ================= CORS Preflight ================= */
-				    requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-					
+					requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
-					    .authenticated()  // 먼저 인증 체크 (미로그인 시 401)
-					    .hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
+							.authenticated();
+				    requests.requestMatchers("/api/admin/**")// 먼저 인증 체크 (미로그인 시 401)
+							.hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
 
 					/* ================= 비로그인 허용 (GET) ================= */
 					requests.requestMatchers(
@@ -73,6 +74,7 @@ public class SecurityConfigure {
 							"/api/reviews/tags",
 							"/ws/chat/**",
 							"/api/main",
+							"/api/geo/*",
 							"/api/experts/{expertNo}/categories"
 					).permitAll();
 
@@ -80,6 +82,9 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.POST,
 							"/api/auth/login",
+							"/api/members",
+							"/api/emails/verification-requests",
+							"/api/emails/verifications",
 							"/api/members"
 					).permitAll();
 
@@ -94,13 +99,17 @@ public class SecurityConfigure {
 							"/api/experts/likes",
 							"/api/experts/*/categories",
 							"/api/estimate",
-							"/api/estimate/**"
+							"/api/estimate/**",
+							"/api/experts/me",
+							"/api/cash/me",
+							"/api/members/me"
 					).authenticated();
 
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
 					requests.requestMatchers(
 							HttpMethod.PUT,
 							"/api/members/me/**",
+							"/api/experts/me",
 							"/api/estimate/**",
 							"/api/reviews/**"
 					).authenticated();
@@ -112,7 +121,7 @@ public class SecurityConfigure {
 
 					/* ================= 로그인 필요 (POST) ================= */
 					requests.requestMatchers(
-							HttpMethod.POST,	
+							HttpMethod.POST,
 							"/api/reports",
 							"/api/rooms/**",
 							"/api/reviews/**",
@@ -120,26 +129,29 @@ public class SecurityConfigure {
 							"/api/payments/**",
 							"/api/estimate",
 							"/api/estimate/**",
-							"/api/experts/**"
+							"/api/experts/**",
+							"/api/experts/registration",
+							"/api/auth/logout"
 					).authenticated();
 
+					/* ================= 로그인 필요 (DELETE) ================= */
 					requests.requestMatchers(
 							HttpMethod.DELETE,
+							"/api/members",
+							"/api/payments/**",
+							"/api/estimate",
+							"/api/estimate/**",
+							"/api/experts/**",
 							"/api/reviews/**"
 					).authenticated();
-					
-					
-					requests.requestMatchers(HttpMethod.DELETE,"/api/estimate/**").authenticated();
-					
-					
 				})
-				.exceptionHandling(exception -> 
-		        exception.authenticationEntryPoint(
-		            (request, response, authException) -> {
-		                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-		            }
-		        )
-		    )
+				.exceptionHandling(exception ->
+						exception.authenticationEntryPoint(
+								(request, response, authException) -> {
+									response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+								}
+						)
+				)
 				.sessionManagement(manager ->
 						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)
@@ -151,7 +163,7 @@ public class SecurityConfigure {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList(instance));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
 		configuration.setAllowCredentials(true);
 

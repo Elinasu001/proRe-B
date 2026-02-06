@@ -59,6 +59,8 @@ public class CategoryController {
 			@RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
 			@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
+			log.info("customUserDetails : {}",customUserDetails.toString());
+		
 		return ResponseData.ok(categorySerivce.getExpertList(categoryDetailNo, pageNo, customUserDetails),
 				"전문가 조회를 성공했습니다.");
 

@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.kh.even.back.configuration.filter.JwtFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -52,10 +53,15 @@ public class SecurityConfigure {
 							"/swagger-resources/**",
 							"/webjars/**"
 					).permitAll();
-
-					/* ================= 관리자 전용 (ROLE_ADMIN, ROLE_ROOT 모두 허용) ================= */
+					
+					/* ================= CORS Preflight ================= */
+				    requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+					
+					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
-							.hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");
+					    .authenticated()  // 먼저 인증 체크 (미로그인 시 401)
+					    .hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
+
 					/* ================= 비로그인 허용 (GET) ================= */
 					requests.requestMatchers(
 							HttpMethod.GET,
@@ -73,7 +79,8 @@ public class SecurityConfigure {
 					/* ================= 인증 관련 ================= */
 					requests.requestMatchers(
 							HttpMethod.POST,
-							"/api/auth/login"
+							"/api/auth/login",
+							"/api/members"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */
@@ -126,6 +133,13 @@ public class SecurityConfigure {
 					
 					
 				})
+				.exceptionHandling(exception -> 
+		        exception.authenticationEntryPoint(
+		            (request, response, authException) -> {
+		                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		            }
+		        )
+		    )
 				.sessionManagement(manager ->
 						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)

@@ -60,7 +60,6 @@ public class SecurityConfigure {
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
 					    .authenticated()  // 먼저 인증 체크 (미로그인 시 401)
-					    .requestMatchers("/api/admin/**")  
 					    .hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
 
 					/* ================= 비로그인 허용 (GET) ================= */
@@ -72,15 +71,16 @@ public class SecurityConfigure {
 							"/api/experts/*",
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
-							"/api/reports/tags",
 							"/ws/chat/**",
-							"/api/main"
+							"/api/main",
+							"/api/experts/{expertNo}/categories"
 					).permitAll();
 
 					/* ================= 인증 관련 ================= */
 					requests.requestMatchers(
 							HttpMethod.POST,
-							"/api/auth/login"
+							"/api/auth/login",
+							"/api/members"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */
@@ -100,7 +100,8 @@ public class SecurityConfigure {
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
 					requests.requestMatchers(
 							HttpMethod.PUT,
-							"/api/members/me/**"
+							"/api/members/me/**",
+							"/api/estimate/**"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -113,8 +114,16 @@ public class SecurityConfigure {
 							HttpMethod.POST,
 							"/api/reports",
 							"/api/reviews/**",
-							"/api/likes/**"
+							"/api/likes/**",
+							"/api/estimate",
+							"/api/estimate/**",
+							"/api/experts/**"
 					).authenticated();
+					
+					
+					requests.requestMatchers(HttpMethod.DELETE,"api/estimate/**").authenticated();
+					
+					
 				})
 				.exceptionHandling(exception -> 
 		        exception.authenticationEntryPoint(

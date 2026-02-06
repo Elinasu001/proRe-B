@@ -13,6 +13,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class ExpertRequestUserDTO {
 
+	private Long estimateNo;
 	private Long requestNo;
 	private Long userNo;
 	private String nickname;

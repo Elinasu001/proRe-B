@@ -35,8 +35,8 @@
         USER_NO, EMAIL, USER_PWD, USER_NAME, NICKNAME,
         PROFILE_IMG, PHONE, BIRTHDAY, GENDER, POSTCODE,
         ADDRESS, ADDRESS_DETAIL,
-        NULL AS LATITUDE,   <!--  NULL 컬럼 추가 -->
-        NULL AS LONGITUDE,  <!--  NULL 컬럼 추가 -->
+        NULL AS LATITUDE,
+        NULL AS LONGITUDE,
         CREATE_DATE, UPDATE_DATE, UPDATE_PWD_DATE, DELETE_DATE,
         USER_ROLE, PENALTY_STATUS, STATUS
    FROM (
@@ -49,6 +49,7 @@
                 USER_ROLE, PENALTY_STATUS, STATUS
             FROM TB_MEMBER
             <where>
+                <!-- 검색 조건 -->
                 <if test="keyword != null and keyword != ''">
                     <choose>
                         <when test="isNumeric">
@@ -58,6 +59,16 @@
                             AND NICKNAME LIKE '%' || #{keyword} || '%'
                         </otherwise>
                     </choose>
+                </if>
+                <!-- 필터 조건 추가 -->
+                <if test="status != null and status != ''">
+                    AND STATUS = #{status}
+                </if>
+                <if test="penaltyStatus != null and penaltyStatus != ''">
+                    AND PENALTY_STATUS = #{penaltyStatus}
+                </if>
+                <if test="userRole != null and userRole != ''">
+                    AND USER_ROLE = #{userRole}
                 </if>
             </where>
             ORDER BY CREATE_DATE DESC
@@ -71,6 +82,7 @@
     SELECT COUNT(*)
     FROM TB_MEMBER
     <where>
+        <!-- 검색 조건 -->
         <if test="keyword != null and keyword != ''">
             <choose>
                 <when test="isNumeric">
@@ -80,6 +92,16 @@
                     AND NICKNAME LIKE '%' || #{keyword} || '%'
                 </otherwise>
             </choose>
+        </if>
+        <!-- 필터 조건 추가 -->
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        <if test="penaltyStatus != null and penaltyStatus != ''">
+            AND PENALTY_STATUS = #{penaltyStatus}
+        </if>
+        <if test="userRole != null and userRole != ''">
+            AND USER_ROLE = #{userRole}
         </if>
     </where>
 </select>

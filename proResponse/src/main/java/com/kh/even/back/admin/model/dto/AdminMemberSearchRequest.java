@@ -16,4 +16,10 @@ public class AdminMemberSearchRequest {
     
     @Size(max = 50, message = "검색어는 50자 이하여야 합니다")
     private String keyword;
+    
+
+    private String status;          // Y, N
+    private String penaltyStatus;   // Y, N
+    private String userRole;        // ROLE_USER, ROLE_EXPERT, ROLE_ADMIN
+    private String searchKeyword;   // 이메일/닉네임 검색
 }

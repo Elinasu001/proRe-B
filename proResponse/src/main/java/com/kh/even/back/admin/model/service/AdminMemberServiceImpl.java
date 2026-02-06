@@ -8,10 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.even.back.admin.model.dto.AdminMemberDTO;
 import com.kh.even.back.admin.model.dto.AdminMemberListResponse;
+import com.kh.even.back.admin.model.dto.AdminMemberSearchRequest;
 import com.kh.even.back.admin.model.mapper.AdminMemberMapper;
+import com.kh.even.back.exception.ResourceNotFoundException;
 import com.kh.even.back.member.model.vo.MemberVO;
 import com.kh.even.back.util.PageInfo;
-import com.kh.even.back.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,17 +36,24 @@ public class AdminMemberServiceImpl implements AdminMemberService {
      */
     @Override
     @Transactional(readOnly = true)
-    public AdminMemberListResponse getMemberListWithPaging(int currentPage, String keyword) {
-        log.info("회원 목록 조회 - currentPage: {}, keyword: {}", currentPage, keyword);
+    public AdminMemberListResponse getMemberListWithPaging(AdminMemberSearchRequest request) {
+        log.info("회원 목록 조회 - {}", request);
         
         // 1. 검색 키워드 처리
+        String keyword = request.getSearchKeyword() != null ? request.getSearchKeyword() : request.getKeyword();
         boolean isNumeric = isNumericKeyword(keyword);
         
         // 2. 페이징 정보 생성
-        PageInfo pageInfo = createPageInfo(currentPage, keyword, isNumeric);
+        PageInfo pageInfo = createPageInfo(request.getCurrentPage(), keyword, isNumeric,
+        		request.getStatus(),
+        		request.getPenaltyStatus(),
+        		request.getUserRole());
         
         // 3. 회원 목록 조회 및 변환
-        List<AdminMemberDTO> memberList = fetchAndConvertMemberList(pageInfo, keyword, isNumeric);
+        List<AdminMemberDTO> memberList = fetchAndConvertMemberList(pageInfo, keyword, isNumeric,
+        		request.getStatus(),
+        		request.getPenaltyStatus(),
+        		request.getUserRole());
         
         // 4. 응답 생성
         return AdminMemberListResponse.builder()
@@ -145,8 +153,8 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     /**
      * 페이징 정보 생성
      */
-    private PageInfo createPageInfo(int currentPage, String keyword, boolean isNumeric) {
-        int totalCount = adminMemberMapper.getMemberCount(keyword, isNumeric);
+    private PageInfo createPageInfo(int currentPage, String keyword, boolean isNumeric, String status, String penaltyStatus, String userRole) {
+        int totalCount = adminMemberMapper.getMemberCount(keyword, isNumeric, status, penaltyStatus, userRole);
         log.debug("전체 회원 수: {}", totalCount);
         
         PageInfo pageInfo = new PageInfo();
@@ -170,11 +178,14 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     /**
      * 회원 목록 조회 및 DTO 변환
      */
-    private List<AdminMemberDTO> fetchAndConvertMemberList(PageInfo pageInfo, String keyword, boolean isNumeric) {
+    private List<AdminMemberDTO> fetchAndConvertMemberList(PageInfo pageInfo, String keyword, boolean isNumeric,
+    		String status,
+    		String penaltyStatus,
+    		String userRole) {
         int startRow = (pageInfo.getCurrentPage() - 1) * BOARD_LIMIT + 1;
         int endRow = pageInfo.getCurrentPage() * BOARD_LIMIT;
         
-        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword, isNumeric);
+        List<MemberVO> memberVOList = adminMemberMapper.getMemberList(startRow, endRow, keyword, isNumeric, status, penaltyStatus, userRole);
         log.debug("조회된 회원 수: {}", memberVOList.size());
         
         return memberVOList.stream()

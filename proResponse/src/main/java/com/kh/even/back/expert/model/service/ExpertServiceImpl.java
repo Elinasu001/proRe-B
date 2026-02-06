@@ -58,7 +58,6 @@ public class ExpertServiceImpl implements ExpertService {
 	private final ExpertRepository repository;
 	private final ExpertEstimateRepository expertEstimateRepository;
 	private final EstimateRepository estimateRepository;
-	private final Pagenation pagenation;
 	private final S3Service s3Service;
 	private final PagingExecutor pagingExecutor;
 
@@ -137,6 +136,7 @@ public class ExpertServiceImpl implements ExpertService {
 	public PageResponse<ExpertRequestUserDTO> getMatchedUser(int pageNo, CustomUserDetails user) {
 
 	    Long userNo = user.getUserNo();
+	    
 	    int listCount = mapper.countMatchedByUserNo(userNo);
 
 	    return pagingExecutor.execute(

@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.kh.even.back.configuration.filter.JwtFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -53,9 +54,14 @@ public class SecurityConfigure {
 							"/webjars/**"
 					).permitAll();
 
+					/* ================= CORS Preflight ================= */
+					requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
-							.hasAuthority("ROLE_ADMIN");
+							.authenticated();
+				    requests.requestMatchers("/api/admin/**")// 먼저 인증 체크 (미로그인 시 401)
+							.hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
 
 					/* ================= 비로그인 허용 (GET) ================= */
 					requests.requestMatchers(
@@ -68,7 +74,8 @@ public class SecurityConfigure {
 							"/api/reviews/tags",
 							"/ws/chat/**",
 							"/api/main",
-							"/api/geo/*"
+							"/api/geo/*",
+							"/api/experts/{expertNo}/categories"
 					).permitAll();
 
 					/* ================= 인증 관련 ================= */
@@ -77,7 +84,8 @@ public class SecurityConfigure {
 							"/api/auth/login",
 							"/api/members",
 							"/api/emails/verification-requests",
-							"/api/emails/verifications"
+							"/api/emails/verifications",
+							"/api/members"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */
@@ -101,7 +109,9 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.PUT,
 							"/api/members/me/**",
-							"/api/experts/me"
+							"/api/experts/me",
+							"/api/estimate/**",
+							"/api/reviews/**"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -113,18 +123,31 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.POST,
 							"/api/reports",
+							"/api/rooms/**",
 							"/api/reviews/**",
 							"/api/likes/**",
 							"/api/experts/registration",
 							"/api/auth/logout"
-							
 					).authenticated();
-					
+
+					/* ================= 로그인 필요 (DELETE) ================= */
 					requests.requestMatchers(
 							HttpMethod.DELETE,
-							"/api/members"
+							"/api/members",
+							"/api/payments/**",
+							"/api/estimate",
+							"/api/estimate/**",
+							"/api/experts/**",
+							"/api/reviews/**"
 					).authenticated();
 				})
+				.exceptionHandling(exception ->
+						exception.authenticationEntryPoint(
+								(request, response, authException) -> {
+									response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+								}
+						)
+				)
 				.sessionManagement(manager ->
 						manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)

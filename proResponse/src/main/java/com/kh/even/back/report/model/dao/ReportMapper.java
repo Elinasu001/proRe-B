@@ -33,7 +33,10 @@ public interface ReportMapper {
      * @param estimateNo 견적 번호
      * @return 존재 여부(boolean)
      */
-    boolean existsReportByEstimateNo(Map<String, Object> params);
+    //boolean existsReportByEstimateNo(Map<String, Object> params);
+
+    // 신고자(userNo)와 대상(targetUserNo) 기준 중복 체크
+    boolean existsReportByUserAndTarget(Map<String, Object> params);
     
     // === 신고 등록 ===
 

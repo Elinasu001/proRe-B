@@ -1,22 +1,31 @@
 package com.kh.even.back.payment.model.service;
 
-import com.kh.even.back.payment.model.dto.PaymentDetailDTO;
-import com.kh.even.back.payment.model.dto.PreparePaymentRequest;
+import java.util.Map;
+
+import com.kh.even.back.payment.model.dto.PaymentCancelRequest;
+import com.kh.even.back.payment.model.dto.PaymentDetailRequest;
+import com.kh.even.back.payment.model.dto.PaymentPrepareRequest;
+import com.kh.even.back.payment.model.dto.PaymentVerifyRequest;
 
 public interface PaymentService {
-
+    
     /**
-     * 채팅방 기준 결제 정보 조회
+     * 결제 사전 등록
      */
-    PaymentDetailDTO getPayment(Long estimateNo, Long userNo);
-
+    Map<String, Object> preparePayment(PaymentPrepareRequest request);
+    
     /**
-     * 결제 준비
+     * 결제 검증
      */
-    PaymentDetailDTO preparePayment(PreparePaymentRequest request, Long userNo);
-
+    Map<String, Object> verifyPayment(PaymentVerifyRequest request);
+    
     /**
-     * 결제 완료 검증 및 처리
+     * 결제 취소
      */
-    void verifyAndCompletePayment(String impUid, String merchantUid);
+    Map<String, Object> cancelPayment(PaymentCancelRequest request);
+    
+    /**
+     * 결제 상세 조회
+     */
+    Map<String, Object> getPaymentDetail(PaymentDetailRequest request);
 }

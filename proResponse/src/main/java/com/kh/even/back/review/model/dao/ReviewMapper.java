@@ -79,8 +79,16 @@ public interface ReviewMapper {
      * 리뷰 상태 변경
      * @param reviewNo
      */
-    int updateReviewStatus(Long reviewNo);
+    //int updateReviewStatusByReviewNo(Long reviewNo);
 
+
+    /**
+     * 리뷰 삭제
+     * @param reviewNo
+     */
+    int deleteReviewMapByReviewNo(Long reviewNo);
+    int deleteReviewByReviewNo(Long reviewNo);
+    int deleteAttachmentsByReviewNo(Long reviewNo);
     /**
      * 
      * @param expertNo

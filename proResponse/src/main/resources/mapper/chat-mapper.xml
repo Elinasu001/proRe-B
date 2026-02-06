@@ -45,7 +45,7 @@
               WHEN COUNT(*) &gt; 0 THEN 1 <!--존재하면 1(true)-->
               ELSE 0 <!--존재 안하면 0(false)-->
           END
-          FROM TB_REVIEW
+          FROM TB_CHAT_ROOM
        WHERE ESTIMATE_NO = #{value}
     </select>
 

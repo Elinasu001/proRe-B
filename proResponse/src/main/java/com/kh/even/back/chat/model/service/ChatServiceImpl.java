@@ -44,9 +44,10 @@ public class ChatServiceImpl implements ChatService {
 
         // 1. 견적 상태 체크
         chatValidator.validateEstimateStatus(estimateNo);
-
+        log.info("estimateNo : {}", estimateNo);
         // 2. 이미 채팅방이 있으면 반환, 없으면 생성
         boolean exists = chatMapper.existsByEstimateNo(estimateNo);
+        // log.info("exists : {}", exists);
         if (exists) {
             throw new ChatException("이미 채팅방이 존재합니다");
         }
@@ -59,6 +60,7 @@ public class ChatServiceImpl implements ChatService {
             .build();
         int roomResult = chatMapper.createRoom(roomVo);
         chatValidator.validateDbResult(roomResult, "채팅방 생성에 실패했습니다.");
+        // log.info("roomResult : {}", roomResult);
 
         // 4. 생성자 등록
         ChatRoomUserVO roomUserVo = ChatRoomUserVO.builder()
@@ -209,13 +211,17 @@ public class ChatServiceImpl implements ChatService {
         }
         
         // meta 정보 생성 (estimateNo는 파라미터로 받은 값 사용)
-        return new ChatMessageResponse(
-                searchDto.getMessageNo(),   // cursor
-                searchDto.getSize(),        // requestedSize
-                messages.size(),            // size
-                estimateNo,                 // 파라미터로 받은 estimateNo 사용
-                messages                    // messages
-        );
+        // nextCursor: messages가 비어있지 않으면 마지막 메시지의 messageNo, 아니면 null
+        Long nextCursor = (messages != null && !messages.isEmpty()) ? messages.get(messages.size() - 1).getMessageNo() : null;
+        
+        return ChatMessageResponse.builder()
+            .cursor(searchDto.getMessageNo())
+            .requestedSize(searchDto.getSize())
+            .size(messages.size())
+            .estimateNo(estimateNo)
+            .messages(messages)
+            .nextCursor(nextCursor)
+            .build();
     }
 
     

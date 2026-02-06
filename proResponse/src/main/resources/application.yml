@@ -19,4 +19,10 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   type-aliases-package: com.kh.even.back.*.model.vo, com.kh.even.back.*.model.dto
   mapper-locations: classpath:mapper/**/*.xml
-      
+
+
+logging:
+  level:
+    root: info
+    org.mybatis: debug
+    org.apache.ibatis: debug     

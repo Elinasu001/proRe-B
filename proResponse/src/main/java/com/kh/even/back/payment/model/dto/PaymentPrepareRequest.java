@@ -13,11 +13,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class PaymentPrepareRequest {
-    private Long userNo;
-    private Integer amount;
-    private String itemName;
-    private Long roomNo;        // 채팅방 번호
-    private Long estimateNo;    // 견적 번호
-    private String merchantUid; // Service에서 생성 후 설정
+    private Long paymentNo;
+    private Integer amount;         // 결제 금액
+    private String itemName;        // 상품명
+    private String merchantUid;     // 주문번호 (프론트 생성)
+    private Long estimateNo;     // 견적 번호
 }
 

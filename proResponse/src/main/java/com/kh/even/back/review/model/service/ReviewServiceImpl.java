@@ -148,7 +148,7 @@ public class ReviewServiceImpl implements ReviewService {
 			throw new ReviewException("존재하지 않는 리뷰입니다");
 		}
 		// 상태 변경만 수행
-		int updated = reviewMapper.updateReviewStatus(reviewVO.getReviewNo());
+		int updated = reviewMapper.deleteReviewByReviewNo(reviewVO.getReviewNo());
 		ReviewValidator.validateDbResult(updated, "리뷰 삭제에 실패했습니다.");
 		return reviewVO;
 	}

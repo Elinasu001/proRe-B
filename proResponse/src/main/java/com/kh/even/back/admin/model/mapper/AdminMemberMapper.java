@@ -17,7 +17,10 @@ public interface AdminMemberMapper {
         @Param("startRow") int startRow,
         @Param("endRow") int endRow,
         @Param("keyword") String keyword,
-        @Param("isNumeric") boolean isNumeric
+        @Param("isNumeric") boolean isNumeric,
+        @Param("status") String status,
+        @Param("penaltyStatus") String penaltyStatus,
+        @Param("userRole") String userRole
     );
 
     /**
@@ -25,7 +28,10 @@ public interface AdminMemberMapper {
      */
     int getMemberCount(
         @Param("keyword") String keyword,
-        @Param("isNumeric") boolean isNumeric
+        @Param("isNumeric") boolean isNumeric,
+        @Param("status") String status,
+        @Param("penaltyStatus") String penaltyStatus,
+        @Param("userRole") String userRole
     );
 
     /**

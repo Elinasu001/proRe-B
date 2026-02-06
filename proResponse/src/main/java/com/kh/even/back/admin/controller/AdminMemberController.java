@@ -44,10 +44,8 @@ public class AdminMemberController {
     ) {
         log.info("회원 목록 조회 - {}", request);
 
-        AdminMemberListResponse response = adminMemberService.getMemberListWithPaging(
-            request.getCurrentPage(),
-            request.getKeyword()
-        );
+        // Service에 모든 파라미터 전달
+        AdminMemberListResponse response = adminMemberService.getMemberListWithPaging(request);
 
         return ResponseData.ok(response);
     }
@@ -90,13 +88,13 @@ public class AdminMemberController {
     @PutMapping("/{userNo}/penalty")  // 변경
     public ResponseEntity<ResponseData<String>> updatePenaltyStatus(
         @PathVariable("userNo") Long userNo,
-        @RequestParam(name = "penaltyYn")
+        @RequestParam(name = "penaltyStatus")
         @NotNull(message = "징계 상태는 필수입니다.")
-        Character penaltyYn
+        Character penaltyStatus
     ) {
-        log.info("징계 상태 변경 - userNo: {}, penaltyYn: {}", userNo, penaltyYn);
+        log.info("징계 상태 변경 - userNo: {}, penaltyYn: {}", userNo, penaltyStatus);
 
-        adminMemberService.updatePenaltyStatus(userNo, penaltyYn);
+        adminMemberService.updatePenaltyStatus(userNo, penaltyStatus);
         return ResponseData.ok("징계 상태가 변경되었습니다.");
     }
 

@@ -113,8 +113,8 @@ public class PaymentServiceImpl implements PaymentService {
                 paymentMapper.updatePaymentStatus(request);
 
                 // 결제 완료 시 견적 상태 업데이트
-                updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo());
-                updateEstimateStatus("REQUEST", savedPayment.getEstimateNo());
+                updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo(), "DONE");
+                updateEstimateStatus("REQUEST", savedPayment.getEstimateNo(), "EXPIRED");
 
                 result.put("success", true);
                 result.put("merchantUid", request.getMerchantUid());
@@ -137,11 +137,14 @@ public class PaymentServiceImpl implements PaymentService {
     /**
      * 견적 상태 업데이트 (테이블 타입에 따라 분기)
      */
-    public int updateEstimateStatus(String type, Long estimateNo) {
+    public int updateEstimateStatus(String type, Long estimateNo, String status) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("estimateNo", estimateNo);
+        param.put("status", status); // 상태값도 함께 전달
         if ("RESPONSE".equalsIgnoreCase(type)) {
-            return paymentMapper.updateEstimateResponseStatus(estimateNo);
+            return paymentMapper.updateEstimateResponseStatus(param);
         } else if ("REQUEST".equalsIgnoreCase(type)) {
-            return paymentMapper.updateEstimateRequestStatus(estimateNo);
+            return paymentMapper.updateEstimateRequestStatus(param);
         }
         throw new IllegalArgumentException("Unknown type: " + type);
     }

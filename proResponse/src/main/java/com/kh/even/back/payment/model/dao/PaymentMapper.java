@@ -1,5 +1,7 @@
 package com.kh.even.back.payment.model.dao;
 
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param; 
 
@@ -39,10 +41,6 @@ public interface PaymentMapper {
     /**
      * 결제 완료 시 TB_ESTIMATE_RESPONSE 상태 업데이트
      */
-    int updateEstimateResponseStatus(@Param("estimateNo") Long estimateNo);
-
-    /**
-     * 결제 완료 시 TB_ESTIMATE_REQUEST 상태 업데이트
-     */
-    int updateEstimateRequestStatus(@Param("estimateNo") Long estimateNo);
+    int updateEstimateResponseStatus(Map<String, Object> param);
+    int updateEstimateRequestStatus(Map<String, Object> param);
 }

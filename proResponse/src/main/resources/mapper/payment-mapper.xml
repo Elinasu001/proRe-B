@@ -129,7 +129,7 @@
         UPDATE 
                TB_ESTIMATE_RESPONSE
            SET 
-               STATUS = 'EXPIRED'
+               STATUS = #{status}
          WHERE 
                ESTIMATE_NO = #{estimateNo}
     </update>
@@ -138,14 +138,13 @@
     <update id="updateEstimateRequestStatus">
       UPDATE 
              TB_ESTIMATE_REQUEST
-        SET 
-             STATUS = 'DONE'
-      WHERE 
+         SET 
+             STATUS = #{status}
+       WHERE 
              REQUEST_NO = (
-                SELECT REQUEST_NO
-                FROM TB_ESTIMATE_RESPONSE
-                WHERE ESTIMATE_NO = #{estimateNo}
-            )
+      SELECT 
+             REQUEST_NO FROM TB_ESTIMATE_RESPONSE WHERE ESTIMATE_NO = #{estimateNo}
+      )
     </update>
 
 </mapper>

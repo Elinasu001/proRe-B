@@ -45,11 +45,11 @@ public class PortOneApiClient {
                 Map.class
             );
 
-            log.info("[포트원 V2] 결제 조회 성공 - paymentId: {}", paymentId);
+            //log.info("[포트원 V2] 결제 조회 성공 - paymentId: {}", paymentId);
             return response.getBody();
             
         } catch (Exception e) {
-            log.error("[포트원 V2] 결제 조회 실패 - paymentId: {}", paymentId, e);
+           //log.error("[포트원 V2] 결제 조회 실패 - paymentId: {}", paymentId, e);
             throw new RuntimeException("결제 정보 조회 실패", e);
         }
     }
@@ -75,11 +75,11 @@ public class PortOneApiClient {
                 Map.class
             );
 
-            log.info("[포트원 V2] 결제 취소 성공 - paymentId: {}", paymentId);
+           // log.info("[포트원 V2] 결제 취소 성공 - paymentId: {}", paymentId);
             return response.getBody();
             
         } catch (Exception e) {
-            log.error("[포트원 V2] 결제 취소 실패 - paymentId: {}", paymentId, e);
+            //log.error("[포트원 V2] 결제 취소 실패 - paymentId: {}", paymentId, e);
             throw new RuntimeException("결제 취소 실패", e);
         }
     }

@@ -78,7 +78,7 @@
 	</select>
 
 	<!-- 신고 중복 체크 -->
-	<select id="existsReportByEstimateNo"
+	<!-- <select id="existsReportByEstimateNo"
 			parameterType="map"
 			resultType="boolean">
 		SELECT
@@ -89,6 +89,18 @@
 		FROM TB_REPORT
 		WHERE ESTIMATE_NO = #{estimateNo}
 		AND REPORTER_USER_NO  = #{userNo}
+	</select> -->
+
+
+	<select id="existsReportByUserAndTarget"
+        parameterType="map"
+        resultType="boolean">
+		SELECT CASE WHEN COUNT(*) &gt; 0 THEN 1 ELSE 0 END
+		FROM TB_REPORT
+		WHERE ESTIMATE_NO = #{estimateNo}
+		AND REPORTER_USER_NO = #{userNo}
+		AND TARGET_USER_NO = #{targetUserNo}
+		AND STATUS = 'WAITING'
 	</select>
 
 	<!-- 신고 등록 -->

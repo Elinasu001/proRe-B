@@ -101,7 +101,8 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.PUT,
 							"/api/members/me/**",
-							"/api/estimate/**"
+							"/api/estimate/**",
+							"/api/reviews/**"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -111,17 +112,24 @@ public class SecurityConfigure {
 
 					/* ================= 로그인 필요 (POST) ================= */
 					requests.requestMatchers(
-							HttpMethod.POST,
+							HttpMethod.POST,	
 							"/api/reports",
+							"/api/rooms/**",
 							"/api/reviews/**",
 							"/api/likes/**",
+							"/api/payments/**",
 							"/api/estimate",
 							"/api/estimate/**",
 							"/api/experts/**"
 					).authenticated();
+
+					requests.requestMatchers(
+							HttpMethod.DELETE,
+							"/api/reviews/**"
+					).authenticated();
 					
 					
-					requests.requestMatchers(HttpMethod.DELETE,"api/estimate/**").authenticated();
+					requests.requestMatchers(HttpMethod.DELETE,"/api/estimate/**").authenticated();
 					
 					
 				})

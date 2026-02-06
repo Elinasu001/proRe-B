@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 // import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,11 +40,13 @@ public class ReportController {
     public ResponseEntity<ResponseData<ReportDetailDTO>> getReport(
             @PathVariable("estimateNo") Long estimateNo,
             @AuthenticationPrincipal CustomUserDetails user
-            ) {
+    ) {
+        //log.info("신고 조회 요청 - estimateNo: {}, userNo: {}", estimateNo, user.getUserNo());
         ReportDetailDTO report = reportService.getReport(
             estimateNo,
             user.getUserNo()
         );
+        //log.info("신고 조회 결과: {}", report);
         return ResponseData.ok(report, "신고 조회에 성공했습니다");
     }
 
@@ -64,17 +67,15 @@ public class ReportController {
 	 */
     @PostMapping
     public ResponseEntity<ResponseData<ReportVO>> saveReport(
-            @Valid ReportDTO reportDTO,
+            @Valid @ModelAttribute ReportDTO reportDTO,
             @AuthenticationPrincipal CustomUserDetails user
         ) {
         
-        //log.info("신고 등록 요청 - estimateNo: {}, userNo: {}, content: {}", reportDTO.getEstimateNo(), user.getUserNo(), reportDTO.getContent());
-        
+        //log.info("신고 등록 요청 - estimateNo: {}, userNo: {}, targetUserNo: {}, content: {}", reportDTO.getEstimateNo(), user.getUserNo(), reportDTO.getTargetUserNo(), reportDTO.getContent());
         // 권한 검증 (해당 견적의 의뢰인인지 확인)
         ReportVO saved = reportService.saveReport(reportDTO,
             user.getUserNo()
         );
         return ResponseData.created(saved, "신고가 성공적으로 등록되었습니다");
     }
-  
 }

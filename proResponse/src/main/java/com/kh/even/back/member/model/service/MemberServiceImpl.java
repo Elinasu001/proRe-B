@@ -245,7 +245,6 @@ public class MemberServiceImpl implements MemberService {
 				);
 
 		String fileUrl = null;
-		log.info("dto phone={}", request.getPhone());
 		
 		// 연락처가 있을 경우 중복 검사를 한다.
 		if(request.getPhone() != null) {

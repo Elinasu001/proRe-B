@@ -75,6 +75,8 @@
 	  JOIN
 	       TB_EXPERTING_ATTACHMENT ea
 	    ON ea.USER_NO = e.USER_NO
+	   AND
+	   	   ea.STATUS = 'N'
 	 WHERE
 	       EXISTS (
 	           SELECT
@@ -84,8 +86,6 @@
 	            WHERE
 	                  esc.USER_NO = e.USER_NO
 	       )
-	   AND
-	   		ea.STATUS = 'N'
 	   AND
 	       e.USER_NO = #{expertNo}
 	</select>	

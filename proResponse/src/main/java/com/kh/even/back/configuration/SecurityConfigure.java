@@ -126,6 +126,10 @@ public class SecurityConfigure {
 							"/api/rooms/**",
 							"/api/reviews/**",
 							"/api/likes/**",
+							"/api/payments/**",
+							"/api/estimate",
+							"/api/estimate/**",
+							"/api/experts/**",
 							"/api/experts/registration",
 							"/api/auth/logout"
 					).authenticated();

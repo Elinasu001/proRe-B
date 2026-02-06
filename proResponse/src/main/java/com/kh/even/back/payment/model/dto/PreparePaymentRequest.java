@@ -1,6 +1,7 @@
 package com.kh.even.back.payment.model.dto;
 
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,12 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class PreparePaymentRequest {
+
+    private Long paymentNo;
+
+    @NotBlank(message = "주문번호는 필수입니다")
+    private String merchantUid;
+
     @NotNull(message = "견적 번호는 필수입니다")
     private Long estimateNo;
 

@@ -6,7 +6,11 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
+import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.exception.PaymentException;
+import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
+import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.payment.model.dao.PaymentMapper;
 import com.kh.even.back.payment.model.dto.PaymentCancelRequest;
 import com.kh.even.back.payment.model.dto.PaymentPrepareRequest;
@@ -21,20 +25,23 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+ 
 
     private final PortOneApiClient portOneClient;
     private final PaymentMapper paymentMapper;
+    // private final EstimateRepository estimateRepository;
+    // private final ExpertEstimateRepository expertEstimateRepository;
 
     /**
-     * 결제 사전 등록
+     * 결제 사전 등록 (V2)
      */
     @Override
     @Transactional
     public Map<String, Object> preparePayment(PaymentPrepareRequest request) {
-        Map<String, Object> result = new HashMap<>();
+
+        Map<String, Object> result = new HashMap<>();  
         
         try {
-
             // READY 중복 결제 방어
             PaymentVO ready = paymentMapper.selectReadyPayment(request.getEstimateNo());
 
@@ -42,19 +49,17 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new PaymentException("이미 진행중인 결제가 있습니다.");
             }
 
-            // 포트원에 준비
-            portOneClient.prepare(request.getMerchantUid(), request.getAmount());
-
-            // DB 저장
+            // V2에서는 사전등록 API 없음, DB에만 저장
             paymentMapper.insertPreparePayment(request);
             
             result.put("success", true);
             result.put("merchantUid", request.getMerchantUid());
             
-            log.info("결제 준비 완료 - merchantUid: {}, estimateNo: {}", 
-                    request.getMerchantUid(), request.getEstimateNo());
+            // log.info("[V2 결제 준비 완료] merchantUid: {}, estimateNo: {}", 
+            //         request.getMerchantUid(), request.getEstimateNo());
             
         } catch (Exception e) {
+            //log.error("[V2 결제 준비 실패]", e);
             throw new PaymentException("결제 준비 실패", e);
         }
         
@@ -62,32 +67,29 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 결제 검증
+     * 결제 검증 (V2)
      */
     @Override
     @Transactional
     public Map<String, Object> verifyPayment(PaymentVerifyRequest request) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();  
         
         try {
-            // 포트원에서 결제 정보 조회
-            Map<String, Object> paymentInfo = portOneClient.getPaymentInfo(request.getImpUid());
+            // 포트원 V2에서 결제 정보 조회 (merchantUid 사용)
+            Map<String, Object> paymentInfo = portOneClient.getPaymentInfo(request.getMerchantUid());
             
+            // V2 응답 구조 파싱
             String status = (String) paymentInfo.get("status");
-            Integer amount = (Integer) paymentInfo.get("amount");
-            String merchantUid = (String) paymentInfo.get("merchant_uid");
+            Map<String, Object> amountObj = (Map<String, Object>) paymentInfo.get("amount");
+            Integer totalAmount = (Integer) amountObj.get("total");
+            String txId = (String) paymentInfo.get("id");  // V2 txId
 
-            // 주문번호 검증
-            if (!merchantUid.equals(request.getMerchantUid())) {
-                log.error("주문번호 불일치 - 요청: {}, 포트원: {}", 
-                        request.getMerchantUid(), merchantUid);
-                result.put("success", false);
-                result.put("message", "주문번호가 일치하지 않습니다.");
-                return result;
-            }
+            // log.info("[V2 결제 정보 조회] status: {}, amount: {}, txId: {}", 
+            //         status, totalAmount, txId);
 
-            // DB에서 사전 등록 정보 조회
-            PaymentVO savedPayment = paymentMapper.selectPaymentByMerchantUid(request);
+            // DB에서 사전 등록 정보 조회 (merchantUid 기준)
+            PaymentVO savedPayment = paymentMapper.selectPaymentByMerchantUid(request.getMerchantUid());
+            
             if (savedPayment == null) {
                 result.put("success", false);
                 result.put("message", "등록되지 않은 결제입니다.");
@@ -95,33 +97,37 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             // 금액 검증
-            if (!savedPayment.getAmount().equals(amount)) {
-                log.error("금액 불일치 - DB: {}, 포트원: {}", savedPayment.getAmount(), amount);
+            if (!savedPayment.getAmount().equals(totalAmount)) {
+                // log.error("[V2 금액 불일치] DB: {}, 포트원: {}", 
+                //         savedPayment.getAmount(), totalAmount);
                 result.put("success", false);
                 result.put("message", "결제 금액이 일치하지 않습니다.");
                 return result;
             }
 
             // 결제 완료 처리
-            if ("paid".equals(status)) {
-                request.setAmount(amount);
+            if ("PAID".equals(status)) {
+                request.setImpUid(txId);  // V2 txId를 impUid로 저장
+                request.setAmount(totalAmount);
                 request.setStatus("PAID");
                 paymentMapper.updatePaymentStatus(request);
 
+                // 결제 완료 시 견적 상태 업데이트
+                updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo());
+                updateEstimateStatus("REQUEST", savedPayment.getEstimateNo());
+
                 result.put("success", true);
-                result.put("impUid", request.getImpUid());
-                result.put("merchantUid", merchantUid);
-                result.put("amount", amount);
+                result.put("merchantUid", request.getMerchantUid());
+                result.put("impUid", txId);
+                result.put("amount", totalAmount);
                 result.put("estimateNo", savedPayment.getEstimateNo());
-                
-                log.info("결제 완료 - impUid: {}, amount: {}, estimateNo: {}", 
-                        request.getImpUid(), amount, savedPayment.getEstimateNo());
             } else {
                 result.put("success", false);
-                result.put("message", "결제가 완료되지 않았습니다.");
+                result.put("message", "결제가 완료되지 않았습니다. 상태: " + status);
             }
             
         } catch (Exception e) {
+            //log.error("[V2 결제 검증 실패]", e);
             throw new PaymentException("결제 검증 실패", e);
         }
         
@@ -129,16 +135,28 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 결제 취소
+     * 견적 상태 업데이트 (테이블 타입에 따라 분기)
+     */
+    public int updateEstimateStatus(String type, Long estimateNo) {
+        if ("RESPONSE".equalsIgnoreCase(type)) {
+            return paymentMapper.updateEstimateResponseStatus(estimateNo);
+        } else if ("REQUEST".equalsIgnoreCase(type)) {
+            return paymentMapper.updateEstimateRequestStatus(estimateNo);
+        }
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
+
+    /**
+     * 결제 취소 (V2)
      */
     @Override
     @Transactional
     public Map<String, Object> cancelPayment(PaymentCancelRequest request) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();  
         
         try {
-            // DB에서 결제 정보 조회
-            PaymentVO payment = paymentMapper.selectPaymentByImpUid(request);
+            // DB에서 결제 정보 조회 (merchantUid 기준)
+            PaymentVO payment = paymentMapper.selectPaymentByMerchantUid(request.getMerchantUid());
             
             if (payment == null) {
                 result.put("success", false);
@@ -152,19 +170,21 @@ public class PaymentServiceImpl implements PaymentService {
                 return result;
             }
 
-            // 포트원 취소 요청
-            portOneClient.cancel(request.getImpUid(), request.getReason());
+            // 포트원 V2 취소 요청 (merchantUid 사용)
+            portOneClient.cancelPayment(request.getMerchantUid(), request.getReason());
             
-            // DB 상태 업데이트 (PAID > FAILED)
-            request.setStatus("FAILED");
+            // DB 상태 업데이트 (PAID → CANCELLED)
+            request.setStatus("CANCELLED");
             paymentMapper.updateCancelStatus(request);
             
             result.put("success", true);
             result.put("message", "결제가 취소되었습니다.");
             
-            log.info("결제 취소 완료 - impUid: {}", request.getImpUid());
+            //log.info("[V2 결제 취소 완료] merchantUid: {}, paymentNo: {}", 
+                    request.getMerchantUid(), payment.getPaymentNo());
             
         } catch (Exception e) {
+            //log.error("[V2 결제 취소 실패]", e);
             throw new PaymentException("결제 취소 실패", e);
         }
         

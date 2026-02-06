@@ -13,7 +13,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class PaymentCancelRequest {
-    private String impUid;          // 포트원 결제 고유번호
+    private String merchantUid;      // 포트원 결제 고유번호
     private String reason;          // 취소 사유
     private String status;          // 결제 상태 (FAILED)
 }

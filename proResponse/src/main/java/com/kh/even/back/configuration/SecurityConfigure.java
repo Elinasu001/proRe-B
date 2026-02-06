@@ -59,7 +59,8 @@ public class SecurityConfigure {
 					
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
-					    .authenticated()  // 먼저 인증 체크 (미로그인 시 401)
+					    .authenticated();  // 먼저 인증 체크 (미로그인 시 401)
+					requests.requestMatchers("/api/admin/**")
 					    .hasAnyAuthority("ROLE_ADMIN", "ROLE_ROOT");  // 그 다음 권한 체크 (403)
 
 					/* ================= 비로그인 허용 (GET) ================= */

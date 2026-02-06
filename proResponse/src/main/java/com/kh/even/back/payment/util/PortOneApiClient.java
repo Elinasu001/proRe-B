@@ -20,100 +20,77 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PortOneApiClient {
 
-    @Value("${imp.api.key}")
-    private String apiKey;
-
-    @Value("${imp.api.secret}")
+    @Value("${portone.v2.api-secret}")
     private String apiSecret;
 
+    @Value("${portone.api.url}")
+    private String apiUrl;
+
     private final RestTemplate restTemplate;
-    private static final String API_URL = "https://api.iamport.kr";
-    
-    
 
     /**
-     * 포트원 토큰 발급
+     * V2: 결제 정보 조회
+     * @param paymentId merchantUid (V2에서는 paymentId)
+     * @return 결제 정보
      */
-    public String getToken() {
-        Map<String, String> body = new HashMap<>();
-        body.put("imp_key", apiKey);
-        body.put("imp_secret", apiSecret);
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-            API_URL + "/users/getToken", body, Map.class);
+    public Map<String, Object> getPaymentInfo(String paymentId) {
+        HttpHeaders headers = createHeaders();
+        HttpEntity<?> entity = new HttpEntity<>(headers);
         
-        Map<String, Object> data = (Map<String, Object>) response.getBody().get("response");
-        return (String) data.get("access_token");
-    }
-
-    /**
-     * 결제 사전 등록
-     */
-    public void prepare(String merchantUid, Integer amount) {
-
-        String token = getToken();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("merchant_uid", merchantUid);
-        body.put("amount", amount);
-
-        HttpEntity<Map<String, Object>> entity =
-                new HttpEntity<>(body, headers);
-
         try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                apiUrl + "/payments/" + paymentId,
+                HttpMethod.GET, 
+                entity, 
+                Map.class
+            );
 
-            ResponseEntity<Map> response =
-                    restTemplate.postForEntity(
-                            API_URL + "/payments/prepare",
-                            entity,
-                            Map.class
-                    );
-
-            log.info("포트원 prepare 응답 = {}", response.getBody());
-
+            log.info("[포트원 V2] 결제 조회 성공 - paymentId: {}", paymentId);
+            return response.getBody();
+            
         } catch (Exception e) {
-
-            log.error("포트원 prepare 실패 merchantUid={}, amount={}",
-                    merchantUid, amount, e);
-
-            throw new RuntimeException("결제 준비 실패", e);
+            log.error("[포트원 V2] 결제 조회 실패 - paymentId: {}", paymentId, e);
+            throw new RuntimeException("결제 정보 조회 실패", e);
         }
     }
 
     /**
-     * 결제 정보 조회
+     * V2: 결제 취소
+     * @param paymentId merchantUid (V2에서는 paymentId)
+     * @param reason 취소 사유
+     * @return 취소 결과
      */
-    public Map<String, Object> getPaymentInfo(String impUid) {
-        String token = getToken();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+    public Map<String, Object> cancelPayment(String paymentId, String reason) {
+        HttpHeaders headers = createHeaders();
 
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-        ResponseEntity<Map> response = restTemplate.exchange(
-            API_URL + "/payments/" + impUid,
-            HttpMethod.GET, entity, Map.class);
+        Map<String, Object> body = new HashMap<>();
+        body.put("reason", reason);
 
-        return (Map<String, Object>) response.getBody().get("response");
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                apiUrl + "/payments/" + paymentId + "/cancel",
+                entity,
+                Map.class
+            );
+
+            log.info("[포트원 V2] 결제 취소 성공 - paymentId: {}", paymentId);
+            return response.getBody();
+            
+        } catch (Exception e) {
+            log.error("[포트원 V2] 결제 취소 실패 - paymentId: {}", paymentId, e);
+            throw new RuntimeException("결제 취소 실패", e);
+        }
     }
 
     /**
-     * 결제 취소
+     * V2 공통 헤더 생성
      */
-    public void cancel(String impUid, String reason) {
-        String token = getToken();
+    private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, String> body = new HashMap<>();
-        body.put("imp_uid", impUid);
-        if (reason != null) body.put("reason", reason);
-
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-        restTemplate.postForEntity(API_URL + "/payments/cancel", entity, Map.class);
+        headers.set("Authorization", "PortOne " + apiSecret);
+        return headers;
     }
 }

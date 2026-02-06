@@ -104,7 +104,7 @@
                ROWNUM = 1
     </select>
 
-    <!-- 결제 상태 업데이트 (V2: READY → PAID) -->
+    <!-- 결제 상태 업데이트 (V2: READY > PAID) -->
     <update id="updatePaymentStatus" parameterType="PaymentVerifyRequest">
         UPDATE TB_PAYMENT
            SET IMP_UID = #{impUid}
@@ -115,7 +115,7 @@
                MERCHANT_UID = #{merchantUid}
     </update>
 
-    <!-- 결제 취소 상태 업데이트 (V2: PAID → CANCELLED) -->
+    <!-- 결제 취소 상태 업데이트 (V2: PAID > CANCELLED) -->
     <update id="updateCancelStatus" parameterType="PaymentCancelRequest">
         UPDATE TB_PAYMENT
            SET STATUS = #{status}
@@ -125,7 +125,7 @@
     </update>
 
     <!-- 결제 완료 시 TB_ESTIMATE_RESPONSE 상태 업데이트 -->
-    <update id="updateEstimateResponseStatus">
+    <update id="updateEstimateResponseStatus" parameterType="map">
         UPDATE 
                TB_ESTIMATE_RESPONSE
            SET 
@@ -135,16 +135,20 @@
     </update>
 
     <!-- 결제 완료 시 TB_ESTIMATE_REQUEST 상태 업데이트 -->
-    <update id="updateEstimateRequestStatus">
+    <update id="updateEstimateRequestStatus" parameterType="map">
       UPDATE 
              TB_ESTIMATE_REQUEST
          SET 
              STATUS = #{status}
        WHERE 
              REQUEST_NO = (
-      SELECT 
-             REQUEST_NO FROM TB_ESTIMATE_RESPONSE WHERE ESTIMATE_NO = #{estimateNo}
-      )
+                            SELECT 
+                                   REQUEST_NO 
+                              FROM 
+                                   TB_ESTIMATE_RESPONSE 
+                             WHERE 
+                                   ESTIMATE_NO = #{estimateNo}
+                           )
     </update>
 
 </mapper>

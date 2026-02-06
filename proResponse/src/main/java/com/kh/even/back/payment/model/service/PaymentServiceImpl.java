@@ -73,7 +73,6 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public Map<String, Object> verifyPayment(PaymentVerifyRequest request) {
         Map<String, Object> result = new HashMap<>();  
-        
         try {
             // 포트원 V2에서 결제 정보 조회 (merchantUid 사용)
             Map<String, Object> paymentInfo = portOneClient.getPaymentInfo(request.getMerchantUid());
@@ -87,19 +86,24 @@ public class PaymentServiceImpl implements PaymentService {
             // log.info("[V2 결제 정보 조회] status: {}, amount: {}, txId: {}", 
             //         status, totalAmount, txId);
 
+
             // DB에서 사전 등록 정보 조회 (merchantUid 기준)
             PaymentVO savedPayment = paymentMapper.selectPaymentByMerchantUid(request.getMerchantUid());
-            
             if (savedPayment == null) {
                 result.put("success", false);
                 result.put("message", "등록되지 않은 결제입니다.");
                 return result;
             }
 
+            // 이미 결제 완료/취소/만료된 건이면 중복 처리 방지
+            if ("PAID".equals(savedPayment.getStatus()) || "CANCELLED".equals(savedPayment.getStatus()) || "EXPIRED".equals(savedPayment.getStatus())) {
+                result.put("success", false);
+                result.put("message", "이미 처리된 결제입니다. 상태: " + savedPayment.getStatus());
+                return result;
+            }
+
             // 금액 검증
             if (!savedPayment.getAmount().equals(totalAmount)) {
-                // log.error("[V2 금액 불일치] DB: {}, 포트원: {}", 
-                //         savedPayment.getAmount(), totalAmount);
                 result.put("success", false);
                 result.put("message", "결제 금액이 일치하지 않습니다.");
                 return result;
@@ -110,11 +114,15 @@ public class PaymentServiceImpl implements PaymentService {
                 request.setImpUid(txId);  // V2 txId를 impUid로 저장
                 request.setAmount(totalAmount);
                 request.setStatus("PAID");
-                paymentMapper.updatePaymentStatus(request);
+                log.info("[결제상태업데이트] merchantUid: {}, status: {}", request.getMerchantUid(), request.getStatus());
+                int updateCount = paymentMapper.updatePaymentStatus(request);
+                log.info("[결제상태업데이트] updatePaymentStatus 반환값: {}", updateCount);
 
                 // 결제 완료 시 견적 상태 업데이트
-                updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo(), "DONE");
-                updateEstimateStatus("REQUEST", savedPayment.getEstimateNo(), "EXPIRED");
+                int respUpdate = updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo(), "EXPIRED");
+                log.info("[견적상태업데이트] RESPONSE, estimateNo: {}, status: DONE, updateCount: {}", savedPayment.getEstimateNo(), respUpdate);
+                int reqUpdate = updateEstimateStatus("REQUEST", savedPayment.getEstimateNo(), "DONE");
+                log.info("[견적상태업데이트] REQUEST, estimateNo: {}, status: EXPIRED, updateCount: {}", savedPayment.getEstimateNo(), reqUpdate);
 
                 result.put("success", true);
                 result.put("merchantUid", request.getMerchantUid());

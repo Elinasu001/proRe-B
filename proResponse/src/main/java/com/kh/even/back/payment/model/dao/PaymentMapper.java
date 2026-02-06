@@ -29,12 +29,12 @@ public interface PaymentMapper {
     PaymentVO selectPaymentByMerchantUid(@Param("merchantUid") String merchantUid);
     
     /**
-     * 결제 상태 업데이트 (READY → PAID) (V2)
+     * 결제 상태 업데이트 (READY > PAID) (V2)
      */
     int updatePaymentStatus(PaymentVerifyRequest request);
     
     /**
-     * 결제 취소 상태 업데이트 (PAID → CANCELLED) (V2)
+     * 결제 취소 상태 업데이트 (PAID > CANCELLED) (V2)
      */
     int updateCancelStatus(PaymentCancelRequest request);
 

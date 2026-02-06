@@ -41,6 +41,7 @@ public class PaymentController {
     public ResponseEntity<Map<String, Object>> verify(
             @RequestBody PaymentVerifyRequest request) {
         Map<String, Object> response = paymentService.verifyPayment(request);
+        log.info("검증 : {} ", response);
         return ResponseEntity.ok(response);
     }
 

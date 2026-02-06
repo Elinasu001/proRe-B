@@ -245,7 +245,7 @@ public class ExpertServiceImpl implements ExpertService {
 	public List<LargeCategoryDTO> getExpertCategory(CustomUserDetails user) {
 		
 		// 이미 전문가인 경우에는 전문가 등록에 접근하지 못한다.
-		isExpert(user);
+		// isExpert(user);
 		
 		List<LargeCategoryDTO> categories = mapper.getExpertCategory();
 		if(categories == null || categories.isEmpty()) {

@@ -19,8 +19,10 @@ public interface MemberService {
 	
 	void changeEmail(String newEmail, CustomUserDetails user);
 	
-	void updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user);
+	MyProfileDTO updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user);
 	
 	MyProfileDTO getMyProfile(CustomUserDetails user);
+	
+	void checkDuplicatedEmail(String email);
 	
 }

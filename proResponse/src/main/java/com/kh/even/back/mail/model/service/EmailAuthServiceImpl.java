@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.kh.even.back.exception.EmailAuthCooltimeException;
+import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
+import com.kh.even.back.member.model.service.MemberService;
 import com.kh.even.back.redis.RedisService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	
 	private final RedisService redisService;
 	private final MailSendService mailSendService;
+	private final MemberService memberService;
 	
 	private static final String CODE_KEY_PREFIX = "email:code:"; 	 	 // 인증코드 저장
 	private static final String TRY_KEY_PREFIX = "email:try:";   	 	 // 시도횟수 저장
@@ -40,6 +43,8 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	 */
 	@Override
 	public void sendCode(String email) {
+		// 이메일 중복여부 검사
+		memberService.checkDuplicatedEmail(email);
 		
 		// 재전송 쿨타임 체크
 		String cooldownKey = COOLDOWN_PREFIX + email;
@@ -112,7 +117,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 		
 		// 인증코드 성공 시 코드 삭제 + 시도횟수 삭제
 		if(!match) {
-			return EmailVerificationResult.fail("이메일 인증에 실패했습니다.");
+			throw new EmailAuthFailException("이메일 인증에 실패했습니다.");
 		}
 		redisService.deleteValues(codeKey);
 		redisService.deleteValues(tryKey);

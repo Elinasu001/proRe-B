@@ -67,13 +67,17 @@ public class SecurityConfigure {
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
 							"/ws/chat/**",
-							"/api/main"
+							"/api/main",
+							"/api/geo/*"
 					).permitAll();
 
 					/* ================= 인증 관련 ================= */
 					requests.requestMatchers(
 							HttpMethod.POST,
-							"/api/auth/login"
+							"/api/auth/login",
+							"/api/members",
+							"/api/emails/verification-requests",
+							"/api/emails/verifications"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */
@@ -87,13 +91,17 @@ public class SecurityConfigure {
 							"/api/experts/likes",
 							"/api/experts/*/categories",
 							"/api/estimate",
-							"/api/estimate/**"
+							"/api/estimate/**",
+							"/api/experts/me",
+							"/api/cash/me",
+							"/api/members/me"
 					).authenticated();
 
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
 					requests.requestMatchers(
 							HttpMethod.PUT,
-							"/api/members/me/**"
+							"/api/members/me/**",
+							"/api/experts/me"
 					).authenticated();
 
 					requests.requestMatchers(
@@ -106,7 +114,15 @@ public class SecurityConfigure {
 							HttpMethod.POST,
 							"/api/reports",
 							"/api/reviews/**",
-							"/api/likes/**"
+							"/api/likes/**",
+							"/api/experts/registration",
+							"/api/auth/logout"
+							
+					).authenticated();
+					
+					requests.requestMatchers(
+							HttpMethod.DELETE,
+							"/api/members"
 					).authenticated();
 				})
 				.sessionManagement(manager ->
@@ -120,7 +136,7 @@ public class SecurityConfigure {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(Arrays.asList(instance));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-type"));
 		configuration.setAllowCredentials(true);
 

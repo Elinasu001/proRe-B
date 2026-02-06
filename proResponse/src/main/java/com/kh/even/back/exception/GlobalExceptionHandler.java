@@ -172,7 +172,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(EmailAuthFailException.class)
 	public ResponseEntity<ResponseData<Object>> EmailAuthFailException(EmailAuthFailException e) {
 		log.error("이메일 인증 오류 발생 : {}", e.getMessage());
-		return ResponseData.failure("이메일 인증 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
+		return ResponseData.failure("이메일 인증에 실패했습니다.", HttpStatus.BAD_REQUEST);
 	}
 	
 	@ExceptionHandler(EmailAuthCooltimeException.class)

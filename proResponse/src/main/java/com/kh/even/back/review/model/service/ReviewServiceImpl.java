@@ -189,18 +189,14 @@ public class ReviewServiceImpl implements ReviewService {
 		
 		List<ExpertReviewVO> vo = new ArrayList<>();
 		
-		list.forEach(
-				dto -> {
-					vo.add(ExpertReviewVO.builder().nickname(dto.getNickname())
-							                       .tagNames(dto.getTagNames().split(","))
-							                       .categoryName(dto.getCategoryName())
-							                       .starScore(dto.getStarScore())
-							                       .content(dto.getContent())
-							                       .createDate(dto.getCreateDate())
-							                       .filePaths(dto.getFilePaths())
-							                       .build());
-				}
-				);
+		list.forEach(dto -> {
+	         String tagNames = dto.getTagNames();
+
+	         vo.add(ExpertReviewVO.builder().nickname(dto.getNickname())
+	               .tagNames(tagNames == null || tagNames.isBlank() ? new String[0] : tagNames.split(","))
+	               .categoryName(dto.getCategoryName()).starScore(dto.getStarScore()).content(dto.getContent())
+	               .createDate(dto.getCreateDate()).filePaths(dto.getFilePaths()).build());
+	      });
 		
 		
 		// log.info(" ExpertReviewDTO list : {} " , list );

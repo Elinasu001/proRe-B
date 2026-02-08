@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 	
-	private final MemberMapper memberMapper;  // ✅ 필수!
+	private final MemberMapper memberMapper;
 	
 	// AuthenticationManager가 실질적으로 사용자의 정보를 조회할 때 메소드를 호출하는 클래스
 	

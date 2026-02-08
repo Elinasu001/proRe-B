@@ -54,9 +54,6 @@ public class MemberServiceImpl implements MemberService {
 	    if(!redisService.hasKey(verifiedKey)) {
 	        throw new CustomAuthenticationException("이메일 인증이 필요합니다.");
 	    }
-	    
-		// 이메일 중복 검사 (프론트 + 백엔드)
-		checkDuplicatedEmail(member.getEmail());
 		
 		// 프로필 이미지가 존재하면 S3Service.store를 호출한다.
 		if(file != null && !file.isEmpty()) {
@@ -131,7 +128,7 @@ public class MemberServiceImpl implements MemberService {
 		String encodedPassword = user.getPassword();
 		
 		if(!passwordEncoder.matches(password, encodedPassword)) {
-			throw new CustomAuthenticationException("일치하지 않는 비밀번호");
+			throw new CustomAuthenticationException("비밀번호가 일치하지 않습니다.");
 		}
 		
 	}
@@ -141,6 +138,7 @@ public class MemberServiceImpl implements MemberService {
 	 */
 	@Transactional
 	public void withdrawMember(WithdrawMemberDTO request, CustomUserDetails user) {
+		validatePassword(request.getPassword(), user);
 		WithdrawMemberVO withdrawMember = saveWithdrawRequest(request, user);
 		updateMemberStatus(withdrawMember);
 	}
@@ -191,7 +189,8 @@ public class MemberServiceImpl implements MemberService {
 	 * 이메일 중복 검사
 	 * @param email
 	 */
-	private void checkDuplicatedEmail(String email) {
+	@Override
+	public void checkDuplicatedEmail(String email) {
 				
 				int count = memberMapper.countByEmail(email);
 					
@@ -236,7 +235,15 @@ public class MemberServiceImpl implements MemberService {
 	 * 내정보 수정
 	 */
 	@Transactional
-	public void updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user) {
+	public MyProfileDTO updateMe(UpdateMeDTO request, MultipartFile file, CustomUserDetails user) {
+		log.info("DTO postcode=[{}], address=[{}], detail=[{}], lat=[{}], lng=[{}]",
+				  request.getPostcode(),
+				  request.getAddress(),
+				  request.getAddressDetail(),
+				  request.getLatitude(),
+				  request.getLongitude()
+				);
+
 		String fileUrl = null;
 		
 		// 연락처가 있을 경우 중복 검사를 한다.
@@ -278,6 +285,13 @@ public class MemberServiceImpl implements MemberService {
 				throw new UpdateMemberException("회원의 위치정보가 존재하지 않습니다.");
 			}
 		}
+		
+		MyProfileVO profileVO = memberMapper.getMyProfile(user.getUserNo());
+		if(profileVO == null) {
+			throw new NotFoundException("회원 조회에 실패했습니다.");
+		}
+		log.info("vo  phone={}", profileVO.getPhone());
+		return buildMyProfileDTO(profileVO);
 		
 	}
 	
@@ -329,6 +343,16 @@ public class MemberServiceImpl implements MemberService {
 			throw new NotFoundException("회원 조회에 실패했습니다.");
 		}
 		
+		return buildMyProfileDTO(profileVO);
+	}
+	
+	/**
+	 * 조회해온 회원정보 VO를 DTO로 변환
+	 * @param profileVO
+	 * @return 회원정보가 담긴 DTO
+	 */
+	private MyProfileDTO buildMyProfileDTO(MyProfileVO profileVO) {
+		
 		MyProfileDTO profileDTO = new MyProfileDTO();
 		profileDTO.setEmail(profileVO.getEmail());
 		profileDTO.setUserName(profileVO.getUserName());
@@ -343,5 +367,6 @@ public class MemberServiceImpl implements MemberService {
 		profileDTO.setUserRole(profileVO.getRole());
 		
 		return profileDTO;
+		
 	}
 }

@@ -77,12 +77,12 @@ public class MemberController {
 	}
 	
 	@PatchMapping("/me")
-	public ResponseEntity<ResponseData<Void>> UpdateMe(@Valid @ModelAttribute UpdateMeDTO request, @RequestParam(name = "profileImg", required = false) MultipartFile file,
+	public ResponseEntity<ResponseData<MyProfileDTO>> UpdateMe(@Valid @ModelAttribute UpdateMeDTO request, @RequestParam(name = "profileImg", required = false) MultipartFile file,
 			 										   @AuthenticationPrincipal CustomUserDetails user) {
 		
-		memberService.updateMe(request, file, user);
+		MyProfileDTO updateResponse = memberService.updateMe(request, file, user);
 		
-		return ResponseData.ok(null, "정보변경에 성공했습니다.");
+		return ResponseData.ok(updateResponse, "정보변경에 성공했습니다.");
 	}
 	
 	@GetMapping("/me")

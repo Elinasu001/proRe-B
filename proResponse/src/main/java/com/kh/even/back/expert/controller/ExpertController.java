@@ -161,7 +161,7 @@ public class ExpertController {
 	@PutMapping("/me")
 	public ResponseEntity<ResponseData<RegisterResponseDTO>> updateExpert(@Valid @ModelAttribute ExpertRegisterDTO request,
 																		  @RequestParam(value = "deleteFileNos", required = false) List<Long> deleteFileNos,
-																		  @RequestParam(value = "newFiles", required = false) List<MultipartFile> newFiles,
+																		  @RequestParam(value = "attachment", required = false) List<MultipartFile> newFiles,
 																		  @AuthenticationPrincipal CustomUserDetails user) {
 		// log.info("전문가 수정 진위여부 : request = {}, files = {}, user = {}", request, files, user);
 		

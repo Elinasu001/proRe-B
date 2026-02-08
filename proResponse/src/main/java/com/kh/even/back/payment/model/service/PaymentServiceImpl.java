@@ -6,11 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.even.back.estimate.model.Entity.EstimateRequestEntity;
-import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.exception.PaymentException;
-import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
-import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
 import com.kh.even.back.payment.model.dao.PaymentMapper;
 import com.kh.even.back.payment.model.dto.PaymentCancelRequest;
 import com.kh.even.back.payment.model.dto.PaymentPrepareRequest;
@@ -191,8 +187,8 @@ public class PaymentServiceImpl implements PaymentService {
             result.put("success", true);
             result.put("message", "결제가 취소되었습니다.");
             
-            //log.info("[V2 결제 취소 완료] merchantUid: {}, paymentNo: {}", 
-                    request.getMerchantUid(), payment.getPaymentNo());
+            //log.info("[V2 결제 취소 완료] merchantUid: {}, paymentNo: {}",
+                    //request.getMerchantUid(), payment.getPaymentNo());
             
         } catch (Exception e) {
             //log.error("[V2 결제 취소 실패]", e);

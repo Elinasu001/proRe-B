@@ -111,9 +111,10 @@ public class WebSocketChatHandler extends TextWebSocketHandler {
        * 세션에서 estimateNo 추출 (URI 경로 기반)
        */
       private String getEstimateNo(WebSocketSession session) {
-         String path = session.getUri().getPath();
-         String[] part = path.split("/");
-         String estimateNo = part[3];
-         return estimateNo;
+          String path = session.getUri().getPath();
+          String[] part = path.split("/");
+          // 마지막 부분이 방 번호
+          String estimateNo = part[part.length - 1];
+          return estimateNo;
       }
 }

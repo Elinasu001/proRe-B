@@ -41,12 +41,12 @@ public class ReportController {
             @PathVariable("estimateNo") Long estimateNo,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        log.info("신고 조회 요청 - estimateNo: {}, userNo: {}", estimateNo, user.getUserNo());
+        //log.info("신고 조회 요청 - estimateNo: {}, userNo: {}", estimateNo, user.getUserNo());
         ReportDetailDTO report = reportService.getReport(
             estimateNo,
             user.getUserNo()
         );
-        log.info("신고 조회 결과: {}", report);
+        //log.info("신고 조회 결과: {}", report);
         return ResponseData.ok(report, "신고 조회에 성공했습니다");
     }
 

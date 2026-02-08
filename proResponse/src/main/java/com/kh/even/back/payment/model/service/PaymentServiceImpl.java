@@ -3,21 +3,16 @@ package com.kh.even.back.payment.model.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.even.back.exception.PaymentException;
 import com.kh.even.back.payment.model.dao.PaymentMapper;
 import com.kh.even.back.payment.model.dto.PaymentCancelRequest;
-import com.kh.even.back.payment.model.dto.PaymentDetailRequest;
 import com.kh.even.back.payment.model.dto.PaymentPrepareRequest;
 import com.kh.even.back.payment.model.dto.PaymentVerifyRequest;
 import com.kh.even.back.payment.model.vo.PaymentVO;
+import com.kh.even.back.payment.util.PortOneApiClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,292 +21,178 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+ 
 
-    @Value("${imp.api.key}")
-    private String apiKey;
-
-    @Value("${imp.api.secret}")
-    private String apiSecret;
-
-    private final RestTemplate restTemplate;
+    private final PortOneApiClient portOneClient;
     private final PaymentMapper paymentMapper;
-    
-    private static final String API_URL = "https://api.iamport.kr";
+    // private final EstimateRepository estimateRepository;
+    // private final ExpertEstimateRepository expertEstimateRepository;
 
     /**
-     * 포트원 API 토큰 발급
-     */
-    private String getPortoneToken() {
-        try {
-            Map<String, String> body = new HashMap<>();
-            body.put("imp_key", apiKey);
-            body.put("imp_secret", apiSecret);
-
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                API_URL + "/users/getToken", body, Map.class);
-            
-            Map<String, Object> data = (Map<String, Object>) response.getBody().get("response");
-            return (String) data.get("access_token");
-        } catch (Exception e) {
-            log.error("포트원 토큰 발급 실패", e);
-            throw new RuntimeException("토큰 발급 실패");
-        }
-    }
-
-    /**
-     * 결제 사전 등록
+     * 결제 사전 등록 (V2)
      */
     @Override
+    @Transactional
     public Map<String, Object> preparePayment(PaymentPrepareRequest request) {
-        Map<String, Object> result = new HashMap<>();
+
+        Map<String, Object> result = new HashMap<>();  
         
         try {
-            // 입력값 검증
-            if (request.getAmount() == null || request.getAmount() <= 0) {
-                result.put("success", false);
-                result.put("message", "결제 금액이 올바르지 않습니다.");
-                return result;
+            // READY 중복 결제 방어
+            PaymentVO ready = paymentMapper.selectReadyPayment(request.getEstimateNo());
+
+            if (ready != null) {
+                throw new PaymentException("이미 진행중인 결제가 있습니다.");
             }
 
-            if (request.getRoomNo() == null || request.getEstimateNo() == null) {
-                result.put("success", false);
-                result.put("message", "채팅방 번호 또는 견적 번호가 없습니다.");
-                return result;
-            }
-
-            // merchant_uid 생성
-            String merchantUid = "ORDER_" + request.getUserNo() + "_" + System.currentTimeMillis();
-            request.setMerchantUid(merchantUid);
-            
-            String token = getPortoneToken();
-
-            // 포트원 API 호출
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            Map<String, Object> body = new HashMap<>();
-            body.put("merchant_uid", merchantUid);
-            body.put("amount", request.getAmount());
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            restTemplate.postForEntity(API_URL + "/payments/prepare", entity, Map.class);
-
-            // DB에 결제 준비 정보 저장 (READY 상태)
+            // V2에서는 사전등록 API 없음, DB에만 저장
             paymentMapper.insertPreparePayment(request);
-
-            log.info("결제 사전 등록 성공 - userNo: {}, merchantUid: {}, roomNo: {}, estimateNo: {}", 
-                    request.getUserNo(), merchantUid, request.getRoomNo(), request.getEstimateNo());
-
+            
             result.put("success", true);
-            result.put("merchantUid", merchantUid);
+            result.put("merchantUid", request.getMerchantUid());
+            
+            // log.info("[V2 결제 준비 완료] merchantUid: {}, estimateNo: {}", 
+            //         request.getMerchantUid(), request.getEstimateNo());
+            
         } catch (Exception e) {
-            log.error("결제 준비 실패 - userNo: {}", request.getUserNo(), e);
-            result.put("success", false);
-            result.put("message", "결제 준비 중 오류가 발생했습니다.");
+            //log.error("[V2 결제 준비 실패]", e);
+            throw new PaymentException("결제 준비 실패", e);
         }
         
         return result;
     }
 
     /**
-     * 결제 검증
+     * 결제 검증 (V2)
      */
     @Override
+    @Transactional
     public Map<String, Object> verifyPayment(PaymentVerifyRequest request) {
-        Map<String, Object> result = new HashMap<>();
-        
+        Map<String, Object> result = new HashMap<>();  
         try {
-            // 입력값 검증
-            if (request.getImpUid() == null || request.getImpUid().isEmpty()) {
-                result.put("success", false);
-                result.put("message", "결제 고유번호가 없습니다.");
-                return result;
-            }
-
-            if (request.getMerchantUid() == null || request.getMerchantUid().isEmpty()) {
-                result.put("success", false);
-                result.put("message", "주문번호가 없습니다.");
-                return result;
-            }
-
-            String token = getPortoneToken();
+            // 포트원 V2에서 결제 정보 조회 (merchantUid 사용)
+            Map<String, Object> paymentInfo = portOneClient.getPaymentInfo(request.getMerchantUid());
             
-            // 포트원에서 결제 정보 조회
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
+            // V2 응답 구조 파싱
+            String status = (String) paymentInfo.get("status");
+            Map<String, Object> amountObj = (Map<String, Object>) paymentInfo.get("amount");
+            Integer totalAmount = (Integer) amountObj.get("total");
+            String txId = (String) paymentInfo.get("id");  // V2 txId
 
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                API_URL + "/payments/" + request.getImpUid(),
-                HttpMethod.GET, entity, Map.class);
+            // log.info("[V2 결제 정보 조회] status: {}, amount: {}, txId: {}", 
+            //         status, totalAmount, txId);
 
-            Map<String, Object> data = (Map<String, Object>) response.getBody().get("response");
-            String status = (String) data.get("status");
-            Integer amount = (Integer) data.get("amount");
-            String merchantUid = (String) data.get("merchant_uid");
 
-            // merchant_uid 일치 검증
-            if (!merchantUid.equals(request.getMerchantUid())) {
-                log.error("주문번호 불일치 - 요청: {}, 응답: {}", 
-                        request.getMerchantUid(), merchantUid);
-                result.put("success", false);
-                result.put("message", "주문번호가 일치하지 않습니다.");
-                return result;
-            }
-
-            // DB에서 사전 등록된 결제 정보 조회
-            PaymentVO savedPayment = paymentMapper.selectPaymentByMerchantUid(request);
-            
+            // DB에서 사전 등록 정보 조회 (merchantUid 기준)
+            PaymentVO savedPayment = paymentMapper.selectPaymentByMerchantUid(request.getMerchantUid());
             if (savedPayment == null) {
                 result.put("success", false);
                 result.put("message", "등록되지 않은 결제입니다.");
                 return result;
             }
 
+            // 이미 결제 완료/취소/만료된 건이면 중복 처리 방지
+            if ("PAID".equals(savedPayment.getStatus()) || "CANCELLED".equals(savedPayment.getStatus()) || "EXPIRED".equals(savedPayment.getStatus())) {
+                result.put("success", false);
+                result.put("message", "이미 처리된 결제입니다. 상태: " + savedPayment.getStatus());
+                return result;
+            }
+
             // 금액 검증
-            if (!savedPayment.getAmount().equals(amount)) {
-                log.error("결제 금액 불일치 - DB: {}, 포트원: {}", 
-                        savedPayment.getAmount(), amount);
+            if (!savedPayment.getAmount().equals(totalAmount)) {
                 result.put("success", false);
                 result.put("message", "결제 금액이 일치하지 않습니다.");
                 return result;
             }
 
-            // 결제 상태 확인
-            if ("paid".equals(status)) {
-                // DTO에 값 설정
-                request.setAmount(amount);
+            // 결제 완료 처리
+            if ("PAID".equals(status)) {
+                request.setImpUid(txId);  // V2 txId를 impUid로 저장
+                request.setAmount(totalAmount);
                 request.setStatus("PAID");
-                
-                // DB 업데이트 (READY → PAID)
-                paymentMapper.updatePaymentStatus(request);
+                log.info("[결제상태업데이트] merchantUid: {}, status: {}", request.getMerchantUid(), request.getStatus());
+                int updateCount = paymentMapper.updatePaymentStatus(request);
+                log.info("[결제상태업데이트] updatePaymentStatus 반환값: {}", updateCount);
 
-                log.info("결제 완료 - userNo: {}, impUid: {}, amount: {}, roomNo: {}, estimateNo: {}", 
-                        request.getUserNo(), request.getImpUid(), amount, 
-                        savedPayment.getRoomNo(), savedPayment.getEstimateNo());
-                
+                // 결제 완료 시 견적 상태 업데이트
+                int respUpdate = updateEstimateStatus("RESPONSE", savedPayment.getEstimateNo(), "EXPIRED");
+                log.info("[견적상태업데이트] RESPONSE, estimateNo: {}, status: DONE, updateCount: {}", savedPayment.getEstimateNo(), respUpdate);
+                int reqUpdate = updateEstimateStatus("REQUEST", savedPayment.getEstimateNo(), "DONE");
+                log.info("[견적상태업데이트] REQUEST, estimateNo: {}, status: EXPIRED, updateCount: {}", savedPayment.getEstimateNo(), reqUpdate);
+
                 result.put("success", true);
-                result.put("impUid", request.getImpUid());
-                result.put("merchantUid", merchantUid);
-                result.put("amount", amount);
-                result.put("roomNo", savedPayment.getRoomNo());
+                result.put("merchantUid", request.getMerchantUid());
+                result.put("impUid", txId);
+                result.put("amount", totalAmount);
                 result.put("estimateNo", savedPayment.getEstimateNo());
-                result.put("message", "결제가 완료되었습니다.");
             } else {
-                log.warn("결제 미완료 - status: {}", status);
                 result.put("success", false);
-                result.put("message", "결제가 완료되지 않았습니다.");
+                result.put("message", "결제가 완료되지 않았습니다. 상태: " + status);
             }
+            
         } catch (Exception e) {
-            log.error("결제 검증 실패 - userNo: {}", request.getUserNo(), e);
-            result.put("success", false);
-            result.put("message", "결제 검증 중 오류가 발생했습니다.");
+            //log.error("[V2 결제 검증 실패]", e);
+            throw new PaymentException("결제 검증 실패", e);
         }
         
         return result;
     }
 
     /**
-     * 결제 취소
+     * 견적 상태 업데이트 (테이블 타입에 따라 분기)
+     */
+    public int updateEstimateStatus(String type, Long estimateNo, String status) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("estimateNo", estimateNo);
+        param.put("status", status); // 상태값도 함께 전달
+        if ("RESPONSE".equalsIgnoreCase(type)) {
+            return paymentMapper.updateEstimateResponseStatus(param);
+        } else if ("REQUEST".equalsIgnoreCase(type)) {
+            return paymentMapper.updateEstimateRequestStatus(param);
+        }
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
+
+    /**
+     * 결제 취소 (V2)
      */
     @Override
+    @Transactional
     public Map<String, Object> cancelPayment(PaymentCancelRequest request) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();  
         
         try {
-            // 입력값 검증
-            if (request.getImpUid() == null || request.getImpUid().isEmpty()) {
-                result.put("success", false);
-                result.put("message", "결제 고유번호가 없습니다.");
-                return result;
-            }
-
-            // DB에서 결제 정보 조회
-            PaymentVO payment = paymentMapper.selectPaymentByImpUid(request);
+            // DB에서 결제 정보 조회 (merchantUid 기준)
+            PaymentVO payment = paymentMapper.selectPaymentByMerchantUid(request.getMerchantUid());
             
             if (payment == null) {
                 result.put("success", false);
                 result.put("message", "결제 정보를 찾을 수 없습니다.");
                 return result;
             }
-
-            // 결제 상태 확인 (PAID만 취소 가능)
+            
             if (!"PAID".equals(payment.getStatus())) {
                 result.put("success", false);
                 result.put("message", "취소할 수 없는 결제 상태입니다.");
                 return result;
             }
 
-            String token = getPortoneToken();
+            // 포트원 V2 취소 요청 (merchantUid 사용)
+            portOneClient.cancelPayment(request.getMerchantUid(), request.getReason());
             
-            // 포트원 API 호출
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            Map<String, String> body = new HashMap<>();
-            body.put("imp_uid", request.getImpUid());
-            if (request.getReason() != null && !request.getReason().isEmpty()) {
-                body.put("reason", request.getReason());
-            }
-
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-            restTemplate.postForEntity(API_URL + "/payments/cancel", entity, Map.class);
-
-            // DB 업데이트 (PAID → FAILED)
-            request.setStatus("FAILED");
+            // DB 상태 업데이트 (PAID → CANCELLED)
+            request.setStatus("CANCELLED");
             paymentMapper.updateCancelStatus(request);
-
-            log.info("결제 취소 - userNo: {}, impUid: {}, roomNo: {}, estimateNo: {}", 
-                    request.getUserNo(), request.getImpUid(), 
-                    payment.getRoomNo(), payment.getEstimateNo());
             
             result.put("success", true);
             result.put("message", "결제가 취소되었습니다.");
-        } catch (Exception e) {
-            log.error("결제 취소 실패 - userNo: {}", request.getUserNo(), e);
-            result.put("success", false);
-            result.put("message", "결제 취소 중 오류가 발생했습니다.");
-        }
-        
-        return result;
-    }
-
-    /**
-     * 결제 상세 조회
-     */
-    @Override
-    public Map<String, Object> getPaymentDetail(PaymentDetailRequest request) {
-        Map<String, Object> result = new HashMap<>();
-        
-        try {
-            // 입력값 검증
-            if (request.getImpUid() == null || request.getImpUid().isEmpty()) {
-                result.put("success", false);
-                result.put("message", "결제 고유번호가 없습니다.");
-                return result;
-            }
-
-            // DB에서 결제 정보 조회
-            PaymentVO payment = paymentMapper.selectPaymentDetail(request);
             
-            if (payment == null) {
-                result.put("success", false);
-                result.put("message", "결제 정보를 찾을 수 없습니다.");
-                return result;
-            }
-
-            log.info("결제 상세 조회 - userNo: {}, impUid: {}", 
-                    request.getUserNo(), request.getImpUid());
-            
-            result.put("success", true);
-            result.put("payment", payment);
+            //log.info("[V2 결제 취소 완료] merchantUid: {}, paymentNo: {}",
+                    //request.getMerchantUid(), payment.getPaymentNo());
             
         } catch (Exception e) {
-            log.error("결제 상세 조회 실패 - userNo: {}", request.getUserNo(), e);
-            result.put("success", false);
-            result.put("message", "결제 정보 조회 중 오류가 발생했습니다.");
+            //log.error("[V2 결제 취소 실패]", e);
+            throw new PaymentException("결제 취소 실패", e);
         }
         
         return result;

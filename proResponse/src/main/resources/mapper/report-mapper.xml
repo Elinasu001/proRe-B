@@ -34,19 +34,20 @@
 	<!-- 신고 상세 조회(상세)-->
 	<select id="getByEstimateNo" parameterType="Long" resultMap="reportDetailResultMap">
 		SELECT
-			   r.REPORT_NO
-			 , r.CONTENT
-			 , r.CREATE_DATE
-			 , r.UPDATE_DATE
-			 , r.STATUS
-			 , r.REASON_NO
-			 , r.ESTIMATE_NO
-			 , r.REPORTER_USER_NO
-			 , r.TARGET_USER_NO
+			   REPORT_NO
+			 , CONTENT
+			 , CREATE_DATE
+			 , UPDATE_DATE
+			 , STATUS
+			 , REASON_NO
+			 , ESTIMATE_NO
+			 , REPORTER_USER_NO
+			 , TARGET_USER_NO
 		  FROM 
-		       TB_REPORT r
+		       TB_REPORT
 		 WHERE 
-		       r.ESTIMATE_NO = #{estimateNo}
+		       ESTIMATE_NO = #{estimateNo}
+		   AND REPORTER_USER_NO = #{userNo}
 	</select>
 
 	<!-- 태그 목록 조회(상세) -->

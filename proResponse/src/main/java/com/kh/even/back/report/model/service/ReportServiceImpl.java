@@ -28,13 +28,14 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public ReportDetailDTO getReport(Long estimateNo , Long userNo) {
+    // estimateNo, userNo를 하나의 params(Map)로 묶어서 전달
 
-        ReportDetailDTO reportDetailDTO = reportMapper.getByEstimateNo(estimateNo);
-
-        // if(reportDetailDTO == null){
-        //     throw new ReportException("해당 견적에 대한 신고가 존재하지 않습니다");
-        // }
-        return reportDetailDTO;
+    Map<String, Object> params = Map.of("estimateNo", estimateNo, "userNo", userNo);
+    ReportDetailDTO reportDetailDTO = reportMapper.getByEstimateNo(params);
+    // if(reportDetailDTO == null){
+    //     throw new ReportException("해당 견적에 대한 신고가 존재하지 않습니다");
+    // }
+    return reportDetailDTO;
     }
 
     // 태그 목록 전체 조회 (등록 시 필요)

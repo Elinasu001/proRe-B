@@ -72,7 +72,7 @@ public class SecurityConfigure {
 							"/api/experts/*",
 							"/api/reviews/expert/*",
 							"/api/reviews/tags",
-							"/ws/chat/**",
+							"/api/ws/chat/**",
 							"/api/main",
 							"/api/geo/*",
 							"/api/experts/{expertNo}/categories"

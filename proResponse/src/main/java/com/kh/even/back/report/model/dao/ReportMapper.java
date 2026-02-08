@@ -20,7 +20,7 @@ public interface ReportMapper {
      * @param estimateNo 견적 번호
      * @return 신고 상세 DTO(ReportDetailDTO)
      */
-    ReportDetailDTO getByEstimateNo(Long estimateNo);
+    ReportDetailDTO getByEstimateNo(Map<String, Object> params);
 
     /**
      * 전체 태그 목록 조회

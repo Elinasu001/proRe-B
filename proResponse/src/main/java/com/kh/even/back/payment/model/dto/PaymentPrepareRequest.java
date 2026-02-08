@@ -7,17 +7,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+// PaymentPrepareRequest.java
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 public class PaymentPrepareRequest {
-    private Long userNo;
+    private Long paymentNo;
+    private String merchantUid;     // V2에서는 paymentId 역할
     private Integer amount;
     private String itemName;
-    private Long roomNo;        // 채팅방 번호
-    private Long estimateNo;    // 견적 번호
-    private String merchantUid; // Service에서 생성 후 설정
+    private Long estimateNo;
+    //private Long roomNo;            // 추가 (ERD에 있음)
 }
-

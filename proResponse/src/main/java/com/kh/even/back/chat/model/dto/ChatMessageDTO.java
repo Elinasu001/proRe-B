@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +24,7 @@ public class ChatMessageDTO {
 
     private Long messageNo;				// 메시지 번호 (PK)
     private String content;				// 메시지 내용
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime sentDate;		// 보낸 시간
     private String status;				// 확인 여부
     private Long userNo;				// 회원 번호 (FK)
@@ -38,4 +41,9 @@ public class ChatMessageDTO {
 
     private ChatRoomActionsDTO actions;          // 채팅방 액션 목록(신고, 리뷰, 결제 상태)
     private String userRole;                     // 전문가/일반회원 구분
+
+    private Integer amount;				// 결제 금액
+    private String merchantUid;       // 주문 번호
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime paidDate;            // 결제 완료 시간
 }

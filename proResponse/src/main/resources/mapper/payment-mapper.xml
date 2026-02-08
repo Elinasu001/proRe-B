@@ -1,184 +1,154 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kh.even.back.payment.model.mapper.PaymentMapper">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-    <!-- ResultMap 정의 -->
+<mapper namespace="com.kh.even.back.payment.model.dao.PaymentMapper">
+
+    <!-- ResultMap -->
     <resultMap id="paymentResultMap" type="PaymentVO">
         <id property="paymentNo" column="PAYMENT_NO"/>
-        <result property="amount" column="AMOUNT"/>
-        <result property="status" column="STATUS"/>
+        <!-- <result property="roomNo" column="ROOM_NO"/> -->
+        <result property="estimateNo" column="ESTIMATE_NO"/>
         <result property="merchantUid" column="MERCHANT_UID"/>
         <result property="impUid" column="IMP_UID"/>
+        <result property="amount" column="AMOUNT"/>
+        <result property="status" column="STATUS"/>
         <result property="createDate" column="CREATE_DATE"/>
-        <result property="roomNo" column="ROOM_NO"/>
-        <result property="estimateNo" column="ESTIMATE_NO"/>
     </resultMap>
 
-    <!-- 결제 준비 정보 저장 (READY) -->
-    <insert id="insertPreparePayment" parameterType="PaymentPrepareRequest">
+    <!-- 견적 번호로 READY 상태 결제 조회 (V2) -->
+    <select id="selectReadyPayment"
+        parameterType="long"
+        resultMap="paymentResultMap">
+       SELECT
+              PAYMENT_NO
+            , ESTIMATE_NO
+            , MERCHANT_UID
+            , IMP_UID
+            , AMOUNT
+            , STATUS
+            , CREATE_DATE
+        FROM
+              TB_PAYMENT
+        WHERE
+              ESTIMATE_NO = #{estimateNo}
+          AND
+              STATUS = 'READY'
+          AND
+              CREATE_DATE &gt; SYSDATE - (1/1440) <!-- 1분 전-->
+          AND
+              ROWNUM = 1
+    </select>
+
+    <!-- 결제 사전 등록 (V2) -->
+    <insert id="insertPreparePayment" parameterType="com.kh.even.back.payment.model.dto.PreparePaymentRequest">
         <selectKey keyProperty="paymentNo" resultType="long" order="BEFORE">
-            SELECT SEQ_PAYMENT.NEXTVAL FROM DUAL
+            SELECT SEQ_PAYMENT_NO.NEXTVAL FROM DUAL
         </selectKey>
-        INSERT 
-          INTO 
-               TB_PAYMENT 
-               (
-                 PAYMENT_NO
-               , AMOUNT
-               , STATUS
-               , MERCHANT_UID
-               , CREATE_DATE
-               , ROOM_NO
-               , ESTIMATE_NO
-               ) 
-               VALUES 
-               (
-                 #{paymentNo}
-               , #{amount}
-               , 'READY'
-               , #{merchantUid}
-               , SYSDATE
-               , #{roomNo}
-               , #{estimateNo}
-               )
+
+       INSERT
+         INTO
+              TB_PAYMENT
+              (
+              PAYMENT_NO
+            , ROOM_NO
+            , ESTIMATE_NO
+            , MERCHANT_UID
+            , AMOUNT
+            , STATUS
+            , CREATE_DATE
+              )
+       SELECT
+              #{paymentNo}
+            , CR.ROOM_NO
+            , CR.ESTIMATE_NO
+            , #{merchantUid}
+            , #{amount}
+            , 'READY'
+            , SYSDATE
+        FROM
+            (
+            SELECT
+                   ROOM_NO
+                 , ESTIMATE_NO
+              FROM
+                   TB_CHAT_ROOM
+             WHERE
+                   ESTIMATE_NO = #{estimateNo}
+               AND
+                   STATUS = 'Y'
+             ORDER BY CREATED_DATE DESC
+            ) CR
+        WHERE
+            ROWNUM = 1
     </insert>
 
-    <!-- merchant_uid로 결제 정보 조회 -->
-    <select id="selectPaymentByMerchantUid" parameterType="PaymentVerifyRequest" resultMap="paymentResultMap">
+    <!-- merchantUid로 결제 정보 조회 (V2) -->
+    <select id="selectPaymentByMerchantUid" 
+            parameterType="string" 
+            resultMap="paymentResultMap">
         SELECT 
-               P.PAYMENT_NO
-             , P.AMOUNT
-             , P.STATUS
-             , P.MERCHANT_UID
-             , P.IMP_UID
-             , P.CREATE_DATE
-             , P.ROOM_NO
-             , CR.ESTIMATE_NO
+               PAYMENT_NO
+             , ROOM_NO
+             , ESTIMATE_NO
+             , MERCHANT_UID
+             , IMP_UID
+             , AMOUNT
+             , STATUS
+             , CREATE_DATE
           FROM 
-               TB_PAYMENT P
-          JOIN 
-               TB_CHAT_ROOM CR 
-            ON 
-               P.ROOM_NO = CR.ROOM_NO
-         WHERE 
-               P.MERCHANT_UID = #{merchantUid}
-           AND 
-               CR.STATUS = 'Y'
-    </select>
-
-    <!-- imp_uid로 결제 정보 조회 -->
-    <select id="selectPaymentByImpUid" parameterType="PaymentCancelRequest" resultMap="paymentResultMap">
-        SELECT 
-               P.PAYMENT_NO
-             , P.AMOUNT
-             , P.STATUS
-             , P.MERCHANT_UID
-             , P.IMP_UID
-             , P.CREATE_DATE
-             , P.ROOM_NO
-             , CR.ESTIMATE_NO
-          FROM 
-               TB_PAYMENT P
-          JOIN 
-               TB_CHAT_ROOM CR 
-            ON 
-               P.ROOM_NO = CR.ROOM_NO
-         WHERE 
-               P.IMP_UID = #{impUid}
-           AND 
-               CR.STATUS = 'Y'
-    </select>
-
-    <!-- 결제 완료 상태 업데이트 (READY → PAID) -->
-    <update id="updatePaymentStatus" parameterType="PaymentVerifyRequest">
-        UPDATE 
                TB_PAYMENT
-           SET 
-               IMP_UID = #{impUid}
+         WHERE 
+               MERCHANT_UID = #{merchantUid}
+           AND 
+               ROWNUM = 1
+    </select>
+
+    <!-- 결제 상태 업데이트 (V2: READY > PAID) -->
+    <update id="updatePaymentStatus" parameterType="PaymentVerifyRequest">
+        UPDATE TB_PAYMENT
+           SET IMP_UID = #{impUid}
              , STATUS = #{status}
+             , AMOUNT = #{amount}
+             , CREATE_DATE = SYSDATE
          WHERE 
                MERCHANT_UID = #{merchantUid}
     </update>
 
-    <!-- 결제 취소 상태 업데이트 (PAID → FAILED) -->
+    <!-- 결제 취소 상태 업데이트 (V2: PAID > CANCELLED) -->
     <update id="updateCancelStatus" parameterType="PaymentCancelRequest">
+        UPDATE TB_PAYMENT
+           SET STATUS = #{status}
+             , CREATE_DATE = SYSDATE
+         WHERE 
+               MERCHANT_UID = #{merchantUid}
+    </update>
+
+    <!-- 결제 완료 시 TB_ESTIMATE_RESPONSE 상태 업데이트 -->
+    <update id="updateEstimateResponseStatus" parameterType="map">
         UPDATE 
-               TB_PAYMENT
+               TB_ESTIMATE_RESPONSE
            SET 
                STATUS = #{status}
          WHERE 
-               IMP_UID = #{impUid}
+               ESTIMATE_NO = #{estimateNo}
     </update>
 
-    <!-- 결제 상세 조회 -->
-    <select id="selectPaymentDetail" parameterType="PaymentDetailRequest" resultMap="paymentResultMap">
-        SELECT 
-               P.PAYMENT_NO
-             , P.AMOUNT
-             , P.STATUS
-             , P.MERCHANT_UID
-             , P.IMP_UID
-             , P.CREATE_DATE
-             , P.ROOM_NO
-             , CR.ESTIMATE_NO
-          FROM 
-               TB_PAYMENT P
-          JOIN 
-               TB_CHAT_ROOM CR 
-            ON 
-               P.ROOM_NO = CR.ROOM_NO
-         WHERE 
-               P.IMP_UID = #{impUid}
-           AND 
-               CR.STATUS = 'Y'
-    </select>
-
-    <!-- estimateNo로 결제 정보 조회 -->
-    <select id="getByEstimateNo" parameterType="Long" resultMap="paymentResultMap">
-        SELECT 
-               P.PAYMENT_NO
-             , P.ROOM_NO
-             , P.AMOUNT
-             , P.STATUS
-             , P.MERCHANT_UID
-             , P.IMP_UID
-             , P.CREATE_DATE
-             , CR.ESTIMATE_NO
-          FROM 
-               TB_PAYMENT P
-          JOIN 
-               TB_CHAT_ROOM CR 
-            ON 
-               P.ROOM_NO = CR.ROOM_NO
-         WHERE 
-               CR.ESTIMATE_NO = #{estimateNo}
-           AND 
-               CR.STATUS = 'Y'
-    </select>
-
-    <!-- roomNo로 결제 정보 조회 -->
-    <select id="getByRoomNo" parameterType="Long" resultMap="paymentResultMap">
-        SELECT 
-               P.PAYMENT_NO
-             , P.ROOM_NO
-             , P.AMOUNT
-             , P.STATUS
-             , P.MERCHANT_UID
-             , P.IMP_UID
-             , P.CREATE_DATE
-             , CR.ESTIMATE_NO
-          FROM 
-               TB_PAYMENT P
-          JOIN 
-               TB_CHAT_ROOM CR 
-            ON 
-               P.ROOM_NO = CR.ROOM_NO
-         WHERE 
-               P.ROOM_NO = #{roomNo}
-           AND 
-               CR.STATUS = 'Y'
-    </select>
+    <!-- 결제 완료 시 TB_ESTIMATE_REQUEST 상태 업데이트 -->
+    <update id="updateEstimateRequestStatus" parameterType="map">
+      UPDATE 
+             TB_ESTIMATE_REQUEST
+         SET 
+             STATUS = #{status}
+       WHERE 
+             REQUEST_NO = (
+                            SELECT 
+                                   REQUEST_NO 
+                              FROM 
+                                   TB_ESTIMATE_RESPONSE 
+                             WHERE 
+                                   ESTIMATE_NO = #{estimateNo}
+                           )
+    </update>
 
 </mapper>

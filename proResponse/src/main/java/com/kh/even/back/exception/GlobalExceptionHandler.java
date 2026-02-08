@@ -68,7 +68,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(PaymentException.class)
 	public ResponseEntity<ResponseData<Object>> handlePaymentException(PaymentException e) {
-		log.warn("결제 오류: {}", e.getMessage());
+		//log.warn("결제 오류: {}", e.getMessage());
+		log.warn("결제 오류: {}", e);
 		return ResponseData.failure(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 

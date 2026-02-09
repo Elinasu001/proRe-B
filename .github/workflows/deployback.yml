@@ -25,9 +25,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build to Boot Project
+        working-directory: ./backend
         run: ./gradlew BootJar -x test
 
       - name: Verify Build jar
+        working-directory: ./backend
         run: |
           if [ ! -f build/libs/*.jar ]; then
             echo "빌드 실패"

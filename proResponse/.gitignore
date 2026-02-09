@@ -8,8 +8,9 @@
 # Log file
 *.log
 
-# Package Files
+# Package Files - BUT keep Gradle wrapper!
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -51,7 +52,7 @@ tmp/
 
 # Backup files
 *.bak
-*swp
+*.swp
 
 
 # =================
@@ -85,6 +86,12 @@ target/
 
 # Gradle build output
 build/
+.gradle/
+
+# Gradle wrapper - MUST be included!
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # YML files (if needed)
 # Ignore only private configs

@@ -84,8 +84,7 @@ public class SecurityConfigure {
 							"/api/auth/login",
 							"/api/members",
 							"/api/emails/verification-requests",
-							"/api/emails/verifications",
-							"/api/members"
+							"/api/emails/verifications"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */

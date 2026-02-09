@@ -1,0 +1,134 @@
+name: Build and Deploy Spring Boot App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "gradle"
+
+      - name: Grant execute permission for gradlew
+        working-directory: ./proResponse
+        run: chmod +x gradlew
+
+      - name: Build Spring Boot Project
+        working-directory: ./proResponse
+        run: ./gradlew bootJar -x test --no-daemon
+
+      - name: Verify Build Jar
+        working-directory: ./proResponse
+        run: |
+          JAR_FILE=$(ls build/libs/*.jar 2>/dev/null | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "빌드 실패: JAR 파일을 찾을 수 없습니다"
+            exit 1
+          fi
+          echo "빌드 성공: $(basename $JAR_FILE)"
+          ls -lh build/libs/
+
+      - name: Change to Maintenance Mode
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/ubuntu/deploy
+            sudo cp /home/ubuntu/deploy/front/dist/index.html /home/ubuntu/deploy/maintenence/index_tmp.html
+            sudo cp /home/ubuntu/deploy/maintenence/index.html /home/ubuntu/deploy/front/dist/index.html
+            docker compose restart web
+            echo "유지보수 모드 활성화 완료"
+            sleep 5
+
+      - name: Prepare Target Directory and Backup
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/deploy/back/backup
+            find /home/ubuntu/deploy/back/backup -name "backup-*.jar" -mtime +3 -delete
+            
+            if ls /home/ubuntu/deploy/back/*.jar 1> /dev/null 2>&1; then
+              TIMESTAMP=$(date +%Y%m%d%H%M%S)
+              mv /home/ubuntu/deploy/back/*.jar /home/ubuntu/deploy/back/backup/backup-${TIMESTAMP}.jar
+              echo "기존 JAR 백업 완료: backup-${TIMESTAMP}.jar"
+            else
+              echo "백업할 기존 JAR 파일이 없습니다"
+            fi
+
+      - name: Deploy JAR to EC2
+        if: github.event_name == 'push'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "proResponse/build/libs/*.jar"
+          target: "/home/ubuntu/deploy/back/"
+          strip_components: 3
+
+      - name: Restart Spring Boot Container
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/ubuntu/deploy
+            
+            if ! ls /home/ubuntu/deploy/back/*.jar 1> /dev/null 2>&1; then
+              echo "오류: JAR 파일이 배포되지 않았습니다"
+              exit 1
+            fi
+            
+            echo "배포된 JAR 파일:"
+            ls -lh /home/ubuntu/deploy/back/*.jar
+            
+            echo "API 컨테이너 재시작 중..."
+            docker compose restart api
+            
+            echo "애플리케이션 시작 대기 중..."
+            sleep 15
+            
+            MAX_RETRIES=12
+            RETRY_COUNT=0
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+                echo "API 서버 정상 작동 확인"
+                break
+              fi
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "헬스체크 대기 중... ($RETRY_COUNT/$MAX_RETRIES)"
+              sleep 5
+            done
+            
+            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+              echo "헬스체크 타임아웃 (정상 모드 복원은 계속 진행)"
+            fi
+            
+            echo "정상 모드 복원 중..."
+            sudo cp /home/ubuntu/deploy/maintenence/index_tmp.html /home/ubuntu/deploy/front/dist/index.html
+            sudo rm /home/ubuntu/deploy/maintenence/index_tmp.html
+            docker compose restart web
+            
+            echo "배포 완료! 정상 모드 복원됨"

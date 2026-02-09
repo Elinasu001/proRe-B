@@ -21,9 +21,11 @@ jobs:
           cache: "gradle"
 
       - name: Grant execute permission for gradle
-        run: chmod +x ./gradlew
+        working-directory: ./proResponse
+        run: chmod +x gradlew
 
       - name: Build to Boot Project
+        working-directory: ./proResponse
         run: ./gradlew BootJar -x test
 
       - name: Verify Build jar

@@ -29,6 +29,7 @@ jobs:
         run: ./gradlew BootJar -x test
 
       - name: Verify Build jar
+        working-directory: ./proResponse
         run: |
           if [ ! -f build/libs/*.jar ]; then
             echo "빌드 실패"
@@ -62,7 +63,7 @@ jobs:
             mkdir -p /home/ubuntu/deploy/back/backup
             find /home/ubuntu/deploy/back/backup -name "backup-*.jar" -mtime +3 -delete
             if [ -f /home/ubuntu/deploy/back/*.jar ]; then
-              mv /home/ubuntu/deploy/back/*.jar /home/ubuntu/deploy/back/backup/backup-$(date+%Y%m%d%H%H%S).jar
+              mv /home/ubuntu/deploy/back/*.jar /home/ubuntu/deploy/back/backup/backup-$(date +%Y%m%d%H%M%S).jar
             fi
       - name: Deploy Boot App To EC2
         if: github.event_name == 'push'

@@ -27,67 +27,67 @@
 	
 	<!-- 전문가 디테일 조회 sql -->
 	<select id="getExpertDetails" parameterType="map" resultMap="expertDetailMap">
-	SELECT
-	       e.USER_NO                 AS EXPERT_NO
-	     , m.PROFILE_IMG             AS PROFILE_IMG
-	     , m.NICKNAME                AS NICKNAME
-	     , e.CAREER                  AS CAREER
-	     , e.START_TIME              AS START_TIME
-	     , e.END_TIME                AS END_TIME
-	     , NVL(es.AVG_STAR_SCORE, 0) AS STAR_SCORE
-	     , NVL(es.REVIEW_COUNT, 0)   AS REVIEW_COUNT
-	     , m.ADDRESS                 AS ADDRESS
-	     , e.CONTENT                 AS CONTENT
-	     , ea.FILE_PATH              AS FILE_PATH
-	     , CASE
-	           WHEN #{userNo} IS NULL THEN 0
-	           WHEN EXISTS (
-	               SELECT
-	                      1
-	                 FROM
-	                      TB_LIKE ul
-	                WHERE
-	                      ul.EXPERT_NO = e.USER_NO
-	                  AND ul.USER_NO   = #{userNo}
-	           ) THEN 1
-	           ELSE 0
-	       END                       AS USER_LIKED
-	     , (
-         SELECT COUNT(*)
-           FROM TB_ESTIMATE_RESPONSE rp
-           JOIN TB_ESTIMATE_REQUEST rq
-             ON rp.REQUEST_NO = rq.REQUEST_NO
-          WHERE rq.EXPERT_NO = e.USER_NO
-            AND rp.STATUS = 'EXPIRED'
-       ) AS completedJobs  
-	  FROM
-	       TB_EXPERT e
-	  JOIN
-	       TB_MEMBER m
-	    ON m.USER_NO = e.USER_NO
-	   AND
-	       m.STATUS = 'Y'  
-	  LEFT
-	  JOIN
-	       V_EXPERT_STATS es
-	    ON es.EXPERT_NO = e.USER_NO
-	  LEFT
-	  JOIN
-	       TB_EXPERTING_ATTACHMENT ea
-	    ON ea.USER_NO = e.USER_NO
-	   AND
-	   	   ea.STATUS = 'N'
-	 WHERE
-	       EXISTS (
-	           SELECT
-	                  1
-	             FROM
-	                  TB_EXPERT_SAVE_CATEGORY esc
-	            WHERE
-	                  esc.USER_NO = e.USER_NO
-	       )
-	   AND
-	       e.USER_NO = #{expertNo}
+		SELECT
+			e.USER_NO                 AS EXPERT_NO
+			, m.PROFILE_IMG             AS PROFILE_IMG
+			, m.NICKNAME                AS NICKNAME
+			, e.CAREER                  AS CAREER
+			, e.START_TIME              AS START_TIME
+			, e.END_TIME                AS END_TIME
+			, NVL(es.AVG_STAR_SCORE, 0) AS STAR_SCORE
+			, NVL(es.REVIEW_COUNT, 0)   AS REVIEW_COUNT
+			, m.ADDRESS                 AS ADDRESS
+			, e.CONTENT                 AS CONTENT
+			, ea.FILE_PATH              AS FILE_PATH
+			, CASE
+				WHEN #{userNo} IS NULL THEN 0
+				WHEN EXISTS (
+					SELECT
+							1
+						FROM
+							TB_LIKE ul
+					WHERE
+							ul.EXPERT_NO = e.USER_NO
+						AND ul.USER_NO   = #{userNo}
+				) THEN 1
+				ELSE 0
+			END                       AS USER_LIKED
+			, (
+			SELECT COUNT(*)
+			FROM TB_ESTIMATE_RESPONSE rp
+			JOIN TB_ESTIMATE_REQUEST rq
+				ON rp.REQUEST_NO = rq.REQUEST_NO
+			WHERE rq.EXPERT_NO = e.USER_NO
+				AND rp.STATUS = 'EXPIRED'
+		) AS completedJobs  
+		FROM
+			TB_EXPERT e
+		JOIN
+			TB_MEMBER m
+		ON m.USER_NO = e.USER_NO
+		AND
+			m.STATUS = 'Y'  
+		LEFT
+		JOIN
+			V_EXPERT_STATS es
+		ON es.EXPERT_NO = e.USER_NO
+		LEFT
+		JOIN
+			TB_EXPERTING_ATTACHMENT ea
+		ON ea.USER_NO = e.USER_NO
+		AND
+				ea.STATUS = 'N'
+		WHERE
+			EXISTS (
+				SELECT
+						1
+					FROM
+						TB_EXPERT_SAVE_CATEGORY esc
+				WHERE
+						esc.USER_NO = e.USER_NO
+			)
+		AND
+			e.USER_NO = #{expertNo}
 	</select>	
 	<!-- 전문가가 견적 응답 이미지 저장 -->
 	<insert id="saveExpertEstimateAttachment">

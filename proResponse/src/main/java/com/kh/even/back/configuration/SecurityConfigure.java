@@ -51,7 +51,8 @@ public class SecurityConfigure {
 							"/swagger-ui/**",
 							"/v3/api-docs/**",
 							"/swagger-resources/**",
-							"/webjars/**"
+							"/webjars/**",
+							"/favicon.ico"
 					).permitAll();
 
 					/* ================= CORS Preflight ================= */

@@ -119,4 +119,11 @@ public interface MemberMapper {
 	 * @return 업데이트된 행의 개수를 반환해줍니다.
 	 */
 	int switchToUser(Long userNo);
+	
+	/**
+	 * 임시비밀번호로 회원정보를 업데이트 합니다. 
+	 * @param resetPassword 임시비밀번호
+	 * @param userNo 회원정보
+	 */
+	int resetPassword(@Param("email") String email, @Param("resetPassword") String resetPassword);
 }

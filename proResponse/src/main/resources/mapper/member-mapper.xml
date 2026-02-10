@@ -251,4 +251,13 @@
 	   WHERE
 	         USER_NO = #{userNo}     
 	</update>
+	
+	<update id="resetPassword">
+		UPDATE
+		       TB_MEMBER
+		   SET
+		       USER_PWD = #{resetPassword}
+		 WHERE
+		       EMAIL = #{email}
+	</update>
 </mapper>

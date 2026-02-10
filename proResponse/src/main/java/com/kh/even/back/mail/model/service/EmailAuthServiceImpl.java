@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.kh.even.back.common.util.PasswordGenerator;
 import com.kh.even.back.exception.EmailAuthCooltimeException;
 import com.kh.even.back.exception.EmailAuthFailException;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
@@ -27,7 +28,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	private static final String TRY_KEY_PREFIX = "email:try:";   	 	 // 시도횟수 저장
 	private static final String COOLDOWN_PREFIX = "email:cooldown:"; 	 // 재전송 쿨타임
 	private static final String VERIFIED_KEY_PREFIX = "email:verified:"; // 이메일 인증완료 상태 저장
-
+	private static final String COOLDOWN_TEMP_PREFIX   = "email:cooldown:tempPwd:"; // 임시비밀번호 재전송 쿨타임
 	
 	@Value("${app.email-auth.ttl-seconds:180}") // 3분
 	private long ttlSeconds; 
@@ -45,40 +46,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	public void sendCode(String email) {
 		// 이메일 중복여부 검사
 		memberService.checkDuplicatedEmail(email);
-		
-		// 재전송 쿨타임 체크
-		String cooldownKey = COOLDOWN_PREFIX + email;
-		if(redisService.hasKey(cooldownKey)) {
-			throw new EmailAuthCooltimeException("30초 후에 다시 시도해주세요.");
-		}
-		
-		// 인증코드 생성(6자리)
-		String code = generate6Digits();
-		
-		// Redis에 인증코드 저장 + TTL 설정
-		// - key : email:code:{email}
-		// - value : 6자리 코드
-		String codeKey = CODE_KEY_PREFIX + email;
-		redisService.setValues(codeKey, code, Duration.ofSeconds(ttlSeconds));
-		
-		// 새 코드 발급 시 시도횟수  초기화
-		String tryKey = TRY_KEY_PREFIX + email;
-		redisService.deleteValues(tryKey);
-		
-		// 쿨타임 키 세팅 -- cooldownKey가 존재하는 동안에는 재전송 불가능
-		redisService.setValues(cooldownKey, "1", Duration.ofSeconds(resendCooldownSeconds));
-		
-		// 메일 발송
-		String title = "이메일 인증번호";
-		try {
-			mailSendService.sendVerificationEmail(email, title, code, ttlSeconds);
-		} catch(RuntimeException e) {
-			// 메일 발송 실패하면 Redis에 코드가 남지 않도록 삭제해주고 예외처리
-			redisService.deleteValues(codeKey);
-			redisService.deleteValues(tryKey);
-			throw e;
-		}
-		
+		codeSender(email);
 	}
 	
 	/**
@@ -135,6 +103,83 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	private String generate6Digits() {
 	    int n = java.util.concurrent.ThreadLocalRandom.current().nextInt(0, 1_000_000);
 	    return String.format("%06d", n);
+	}
+	
+	@Override
+	public void sendTempPassword(String email) {
+		
+		// 재전송 쿨타임 체크
+		String cooldownKey = COOLDOWN_TEMP_PREFIX + email;
+		if(redisService.hasKey(cooldownKey)) {
+			throw new EmailAuthCooltimeException("30초 후에 다시 시도해주세요.");
+		}
+		
+		// 임시 비밀번호 생성
+		String tempPwd = PasswordGenerator.generate(12);
+		// log.info("임시 비밀번호 : {}", tempPwd);
+		
+		// 임시 비밀번호 이메일로 발송
+		String title = "ProResponse 임시 비밀번호";
+		try {
+			mailSendService.sendTempPassword(email, title, tempPwd);
+		} catch(RuntimeException e) {
+			throw new EmailAuthFailException("임시 비밀번호 발송에 실패했습니다.");
+		}
+		
+		memberService.resetPassword(email, tempPwd);
+				
+		// 쿨타임 키 세팅 -- cooldownKey가 존재하는 동안에는 재전송 불가능
+		redisService.setValues(cooldownKey, "1", Duration.ofSeconds(resendCooldownSeconds));
+		
+	}
+	
+	/**
+	 * 비밀번호 초기화를 위한 인증코드 발송
+	 */
+	@Override
+	public void sendCodeForResetPwd(String email) {
+		codeSender(email);
+	}
+	
+	/**
+	 * 인증코드 생성 및 메일발송을 담당하는 메서드
+	 * @param email
+	 */
+	private void codeSender(String email) {
+		
+		// 재전송 쿨타임 체크
+				String cooldownKey = COOLDOWN_PREFIX + email;
+				if(redisService.hasKey(cooldownKey)) {
+					throw new EmailAuthCooltimeException("30초 후에 다시 시도해주세요.");
+				}
+				
+				// 인증코드 생성(6자리)
+				String code = generate6Digits();
+				
+				// Redis에 인증코드 저장 + TTL 설정
+				// - key : email:code:{email}
+				// - value : 6자리 코드
+				String codeKey = CODE_KEY_PREFIX + email;
+				redisService.setValues(codeKey, code, Duration.ofSeconds(ttlSeconds));
+				
+				// 새 코드 발급 시 시도횟수  초기화
+				String tryKey = TRY_KEY_PREFIX + email;
+				redisService.deleteValues(tryKey);
+				
+				// 쿨타임 키 세팅 -- cooldownKey가 존재하는 동안에는 재전송 불가능
+				redisService.setValues(cooldownKey, "1", Duration.ofSeconds(resendCooldownSeconds));
+				
+				// 메일 발송
+				String title = "이메일 인증번호";
+				try {
+					mailSendService.sendVerificationEmail(email, title, code, ttlSeconds);
+				} catch(RuntimeException e) {
+					// 메일 발송 실패하면 Redis에 코드가 남지 않도록 삭제해주고 예외처리
+					redisService.deleteValues(codeKey);
+					redisService.deleteValues(tryKey);
+					throw e;
+				}
+		
 	}
 	
 }

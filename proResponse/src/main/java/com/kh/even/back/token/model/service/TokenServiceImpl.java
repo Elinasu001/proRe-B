@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.even.back.exception.CustomAuthenticationException;
 import com.kh.even.back.exception.UsernameNotFoundException;
 import com.kh.even.back.member.model.dto.MemberLogoutDTO;
+import com.kh.even.back.member.model.mapper.MemberMapper;
 import com.kh.even.back.token.dto.TokensDTO;
 import com.kh.even.back.token.model.dao.TokenMapper;
 import com.kh.even.back.token.model.util.JwtUtil;
@@ -25,6 +26,7 @@ public class TokenServiceImpl implements TokenService {
 	
 	private final JwtUtil tokenUtil;
 	private final TokenMapper tokenMapper;
+	private final MemberMapper memberMapper;
 	
 	/**
 	 * 토큰 생성 및 저장
@@ -109,8 +111,20 @@ public class TokenServiceImpl implements TokenService {
 		Claims claims = tokenUtil.parseJwt(refreshToken);
 		String username = claims.getSubject();
 		
+		// 4. 회원의 ROLE 조회
+		Long userNo = token.getUserNo();
+        String role = memberMapper.selectUserRoleByUserNo(userNo);
+        if (role == null || role.isBlank()) {
+            throw new CustomAuthenticationException("사용자 권한 정보가 없습니다.");
+        }
+		
 		// 4. 새 토큰 생성 및 반환
-		return createTokens(username, "ROLE_USER");
+		TokensDTO newTokens = createTokens(username, role);
+		
+		// 5. 토큰 저장
+		saveToken(newTokens.getRefreshToken(), userNo);
+		
+		return newTokens;
 	}
 	
 	@Override

@@ -28,6 +28,7 @@ import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
+import com.kh.even.back.expert.model.dto.SwitchRoleResponseDTO;
 import com.kh.even.back.expert.model.service.ExpertService;
 import com.kh.even.back.util.model.dto.PageResponse;
 
@@ -145,7 +146,6 @@ public class ExpertController {
 		// log.info("전문가 등록 진위여부 : expert = {}, file = {}, user = {}", expert, file, user);
 		
 		RegisterResponseDTO ResponseDTO = expertService.registerExpert(expert, files, user);
-	
 		
 		return ResponseData.created(ResponseDTO, "전문가 등록이 완료되었습니다.");
 	}
@@ -168,5 +168,29 @@ public class ExpertController {
 		RegisterResponseDTO ResponseDTO = expertService.updateExpert(request, deleteFileNos, newFiles, user);
 		
 		return ResponseData.ok(ResponseDTO, "전문가 정보수정이 완료되었습니다.");
+	}
+	
+	@GetMapping("/checkExist")
+	public ResponseEntity<ResponseData<Boolean>> existExpert(@AuthenticationPrincipal CustomUserDetails user) {
+		
+		boolean exists = expertService.existExpert(user);
+		
+		return ResponseData.ok(exists);
+	}
+	
+	@PutMapping("/switch/expert")
+	public ResponseEntity<ResponseData<SwitchRoleResponseDTO>> switchToExpert(@AuthenticationPrincipal CustomUserDetails user) {
+		
+		SwitchRoleResponseDTO responseDTO = expertService.switchToExpert(user);
+		
+		return ResponseData.ok(responseDTO, "전문가 전환이 완료됐습니다.");
+	}
+	
+	@PutMapping("/switch/user")
+	public ResponseEntity<ResponseData<SwitchRoleResponseDTO>> switchToUser(@AuthenticationPrincipal CustomUserDetails user) {
+		
+		SwitchRoleResponseDTO responseDTO = expertService.switchToUser(user);
+		
+		return ResponseData.ok(responseDTO, "일반회원 전환이 완료됐습니다.");
 	}
 }

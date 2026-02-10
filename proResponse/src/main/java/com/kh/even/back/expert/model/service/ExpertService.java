@@ -15,6 +15,7 @@ import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
+import com.kh.even.back.expert.model.dto.SwitchRoleResponseDTO;
 import com.kh.even.back.util.model.dto.PageResponse;
 
 public interface ExpertService {
@@ -108,4 +109,25 @@ public interface ExpertService {
 	 * @return 전문가 등록에 성공할 경우 내려줄 응답용 DTO
 	 */
 	RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<Long> deleteFileNos, List<MultipartFile> newFiles, CustomUserDetails user);
+	
+	/**
+	 * 전문가 이력이 존재하는지 확인합니다.
+	 * @param user
+	 * @return USER_ROLE
+	 */
+	boolean existExpert(CustomUserDetails user);
+	
+	/**
+	 * 일반회원에서 전문가로 전환합니다. (전문가 이력이 있는 경우)
+	 * @param user
+	 * @return 전문가 전환 후 토큰과 권한을 재응답
+	 */
+	SwitchRoleResponseDTO switchToExpert(CustomUserDetails user);
+	
+	/**
+	 * 전문가에서 일반회원으로 전환합니다.
+	 * @param user
+	 * @return 전문가 전환 후 토큰과 권한을 재응답
+	 */
+	SwitchRoleResponseDTO switchToUser(CustomUserDetails user);
 }

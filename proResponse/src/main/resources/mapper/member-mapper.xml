@@ -227,5 +227,28 @@
 		   AND 
 		       M.STATUS = 'Y'   
 	</select>
-
+	
+	<select id="selectUserRoleByUserNo" parameterType="long" resultType="string">
+	  SELECT USER_ROLE
+	  FROM TB_MEMBER
+	  WHERE USER_NO = #{userNo}
+	</select>
+	
+	<update id="switchToExpert" parameterType="long">
+	  UPDATE
+	         TB_MEMBER
+	     SET
+	         USER_ROLE = 'ROLE_EXPERT'
+	   WHERE
+	         USER_NO = #{userNo}     
+	</update>
+	
+	<update id="switchToUser" parameterType="long">
+	  UPDATE
+	         TB_MEMBER
+	     SET
+	         USER_ROLE = 'ROLE_USER'
+	   WHERE
+	         USER_NO = #{userNo}     
+	</update>
 </mapper>

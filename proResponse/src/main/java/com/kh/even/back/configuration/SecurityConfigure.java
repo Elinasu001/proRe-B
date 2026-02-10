@@ -102,7 +102,8 @@ public class SecurityConfigure {
 							"/api/estimate/**",
 							"/api/experts/me",
 							"/api/cash/me",
-							"/api/members/me"
+							"/api/members/me",
+							"/api/experts/checkExist"
 					).authenticated();
 
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
@@ -111,7 +112,8 @@ public class SecurityConfigure {
 							"/api/members/me/**",
 							"/api/experts/me",
 							"/api/estimate/**",
-							"/api/reviews/**"
+							"/api/reviews/**",
+							"/api/experts/switch/**"
 					).authenticated();
 
 					requests.requestMatchers(

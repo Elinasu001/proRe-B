@@ -76,4 +76,6 @@ public interface ExpertMapper {
 	
 	void deleteExpertAttachments(@Param("userNo")Long userNo, @Param("deleteFileNos")List<Long> deleteFileNos);
 	
+	int existExpert(Long userNo);
+	
 }

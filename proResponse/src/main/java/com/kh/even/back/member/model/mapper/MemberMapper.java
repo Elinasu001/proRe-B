@@ -98,4 +98,32 @@ public interface MemberMapper {
 	 * @return VO에 데이터를 담아서 반환해줍니다.
 	 */
 	MyProfileVO getMyProfile(Long userNo);
+	
+	/**
+	 * 회원의 권한을 조회합니다
+	 * @param userNo
+	 * @return ROLE_USER OR ROLE_EXPERT
+	 */
+	String selectUserRoleByUserNo(Long userNo);
+	
+	/**
+	 * 회원의 권한을 전문가로 전환합니다. (전문가 이력이 있는 경우)
+	 * @param userNo
+	 * @return 업데이트된 행의 개수를 반환해줍니다.
+	 */
+	int switchToExpert(Long userNo);
+	
+	/**
+	 * 회원의 권한을 유저로 전환합니다.
+	 * @param userNo
+	 * @return 업데이트된 행의 개수를 반환해줍니다.
+	 */
+	int switchToUser(Long userNo);
+	
+	/**
+	 * 임시비밀번호로 회원정보를 업데이트 합니다. 
+	 * @param resetPassword 임시비밀번호
+	 * @param userNo 회원정보
+	 */
+	int resetPassword(@Param("email") String email, @Param("resetPassword") String resetPassword);
 }

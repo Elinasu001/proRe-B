@@ -1,5 +1,7 @@
 package com.kh.even.back.expert.model.dto;
 
+import com.kh.even.back.token.dto.TokensDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -32,6 +32,7 @@ import com.kh.even.back.expert.model.dto.ExpertRegisterDTO;
 import com.kh.even.back.expert.model.dto.ExpertSearchDTO;
 import com.kh.even.back.expert.model.dto.LargeCategoryDTO;
 import com.kh.even.back.expert.model.dto.RegisterResponseDTO;
+import com.kh.even.back.expert.model.dto.SwitchRoleResponseDTO;
 import com.kh.even.back.expert.model.entity.ExpertEstimateEntity;
 import com.kh.even.back.expert.model.mapper.ExpertMapper;
 import com.kh.even.back.expert.model.repository.ExpertEstimateRepository;
@@ -40,7 +41,9 @@ import com.kh.even.back.expert.model.status.EstimateResponseStatus;
 import com.kh.even.back.expert.model.vo.ExpertRegisterVO;
 import com.kh.even.back.file.service.FileUploadService;
 import com.kh.even.back.file.service.S3Service;
-import com.kh.even.back.util.Pagenation;
+import com.kh.even.back.member.model.mapper.MemberMapper;
+import com.kh.even.back.token.dto.TokensDTO;
+import com.kh.even.back.token.model.service.TokenService;
 import com.kh.even.back.util.PagingExecutor;
 import com.kh.even.back.util.model.dto.PageResponse;
 
@@ -60,6 +63,8 @@ public class ExpertServiceImpl implements ExpertService {
 	private final EstimateRepository estimateRepository;
 	private final S3Service s3Service;
 	private final PagingExecutor pagingExecutor;
+	private final TokenService tokenService;
+	private final MemberMapper memberMapper;
 
 	public ExpertDetailDTO getExpertDetails(Long expertNo, CustomUserDetails user) {
 
@@ -289,8 +294,21 @@ public class ExpertServiceImpl implements ExpertService {
 	       fileUploadService.uploadFiles(validFiles, "expertRegistration", refNo, mapper::insertExpertAttachment);
 	    }
 		
-		// 응답용 DTO 요청 후 반환
-		return getNewExpert(refNo);
+		// 응답용 DTO 조회 요청
+		RegisterResponseDTO responseDTO = getNewExpert(refNo);
+		
+		// ROLE_EXPERT로 업데이트된 정보로 토큰 다시 내려주기
+		String role = memberMapper.selectUserRoleByUserNo(refNo);
+		TokensDTO tokens = tokenService.createTokens(user.getUsername(), role);
+
+		// 2) refreshToken DB 저장
+		tokenService.saveToken(tokens.getRefreshToken(), refNo);
+
+		// 3) 응답 DTO에 담기
+		responseDTO.setTokens(tokens);
+		responseDTO.setUserRole(role);
+		
+		return responseDTO;
 		
 	}
 	
@@ -469,6 +487,71 @@ public class ExpertServiceImpl implements ExpertService {
 	        throw new IllegalArgumentException("상세 이미지는 최대 4개까지 등록할 수 있습니다.");
 	    }
 	}
+	
+	/**
+	 * 전문가 이력이 존재하는지 확인합니다.
+	 */
+	public boolean existExpert(CustomUserDetails user) {
+		int result = mapper.existExpert(user.getUserNo());
+		
+		boolean exists = result > 0;
+		
+		return exists;
+	}
+	
+	/**
+	 * 일반회원이 전문가로 전환합니다. (전문가 이력이 있는 경우)
+	 */
+	@Transactional
+	public SwitchRoleResponseDTO switchToExpert(CustomUserDetails user) {
+		Long userNo = user.getUserNo();
+		
+		boolean exists = existExpert(user);
+		if(exists == false) {
+			throw new ExpertNotFoundException("전문가 이력이 없어서 전환할 수 없습니다.");
+		}
+		
+		int result = memberMapper.switchToExpert(userNo);
+		if(result == 0) {
+			throw new ExpertRegisterException("전문가 전환에 실패했습니다.");
+		}
+		
+		String role = memberMapper.selectUserRoleByUserNo(userNo);
+		
+	    TokensDTO tokens = tokenService.createTokens(user.getUsername(), role);
+	    tokenService.saveToken(tokens.getRefreshToken(), userNo);
 
+	    return SwitchRoleResponseDTO.builder()
+							        .tokens(tokens)
+							        .userRole(role)
+							        .build();
+	}
+	
+	/**
+	 * 전문가가 일반회원으로 전환합니다.
+	 * @param user
+	 * @return
+	 */
+	@Transactional
+	public SwitchRoleResponseDTO switchToUser(CustomUserDetails user) {
+		Long userNo = user.getUserNo();
+		
+		validateExpert(user);
+		
+		int result = memberMapper.switchToUser(userNo);
+		if(result == 0) {
+			throw new ExpertRegisterException("일반회원 전환에 실패했습니다.");
+		}
+		
+		String role = memberMapper.selectUserRoleByUserNo(userNo);
+		
+	    TokensDTO tokens = tokenService.createTokens(user.getUsername(), role);
+	    tokenService.saveToken(tokens.getRefreshToken(), userNo);
+
+	    return SwitchRoleResponseDTO.builder()
+							        .tokens(tokens)
+							        .userRole(role)
+							        .build();
+	}
 	
 }

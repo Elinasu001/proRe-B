@@ -85,7 +85,9 @@ public class SecurityConfigure {
 							"/api/auth/login",
 							"/api/members",
 							"/api/emails/verification-requests",
-							"/api/emails/verifications"
+							"/api/emails/verifications",
+							"/api/emails/temporary-password",
+							"/api/emails/sendcode/password"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */
@@ -102,7 +104,8 @@ public class SecurityConfigure {
 							"/api/estimate/**",
 							"/api/experts/me",
 							"/api/cash/me",
-							"/api/members/me"
+							"/api/members/me",
+							"/api/experts/checkExist"
 					).authenticated();
 
 					/* ================= 로그인 필요 (PUT / PATCH) ================= */
@@ -111,7 +114,8 @@ public class SecurityConfigure {
 							"/api/members/me/**",
 							"/api/experts/me",
 							"/api/estimate/**",
-							"/api/reviews/**"
+							"/api/reviews/**",
+							"/api/experts/switch/**"
 					).authenticated();
 
 					requests.requestMatchers(

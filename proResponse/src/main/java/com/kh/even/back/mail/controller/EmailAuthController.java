@@ -1,12 +1,14 @@
 package com.kh.even.back.mail.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.mail.model.dto.EmailSendRequestDTO;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
@@ -54,5 +56,25 @@ public class EmailAuthController {
 		return ResponseData.ok(result, message);
 	}
 	
+	@PostMapping("/sendcode/password")
+	public ResponseEntity<ResponseData<Void>> sendCodeForResetPwd(@Valid @RequestBody EmailSendRequestDTO request) {
+		
+		emailAuthService.sendCodeForResetPwd(request.getEmail());
+		
+		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
+	} 
+	
+	/**
+	 * 임시비밀번호를 발송합니다.
+	 * @param request 이메일
+	 * @return 공통 응답 메시지
+	 */
+	@PostMapping("/temporary-password")
+	public ResponseEntity<ResponseData<Void>> sendTempPassword(@Valid @RequestBody EmailSendRequestDTO request) {
+		
+		emailAuthService.sendTempPassword(request.getEmail());
+		
+		return ResponseData.ok(null, "임시비밀번호가 발송됐습니다."); 
+	}
 	
 }

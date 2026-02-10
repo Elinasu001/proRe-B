@@ -643,5 +643,13 @@
 	  </foreach>
 	</update>
 	
+	<select id="existExpert" parameterType="Long" resultType="int">
+		SELECT
+		       COUNT(*)
+		  FROM
+		       TB_EXPERT
+		 WHERE
+		       USER_NO = #{userNo}           
+	</select>
 	                     
 </mapper>

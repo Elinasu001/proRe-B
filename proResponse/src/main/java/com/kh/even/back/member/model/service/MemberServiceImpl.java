@@ -369,4 +369,17 @@ public class MemberServiceImpl implements MemberService {
 		return profileDTO;
 		
 	}
+	
+	/**
+	 * 임시비밀번호로 회원정보를 업데이트 해줍니다.
+	 */
+	public void resetPassword(String email, String tempPwd) {
+		
+		String resetPassword = passwordEncoder.encode(tempPwd);
+		int result = memberMapper.resetPassword(email, resetPassword);
+		if(result == 0) {
+			throw new UpdateMemberException("비밀번호 초기화에 실패했습니다.");
+		}
+		
+	}
 }

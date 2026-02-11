@@ -1,14 +1,12 @@
 package com.kh.even.back.mail.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.mail.model.dto.EmailSendRequestDTO;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;

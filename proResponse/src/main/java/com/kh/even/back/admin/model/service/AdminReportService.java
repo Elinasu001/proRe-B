@@ -51,4 +51,9 @@ public interface AdminReportService {
      * @param answer 답변 내용
      */
     void updateAnswer(Long reportNo, String answer);
+    /**
+     * 신고 관련 채팅 내역 조회
+     */
+    AdminReportChatContext getReportChatContext(Long reportNo);
+    
 }

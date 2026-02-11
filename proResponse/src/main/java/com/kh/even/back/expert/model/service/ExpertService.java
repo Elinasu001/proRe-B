@@ -111,13 +111,6 @@ public interface ExpertService {
 	RegisterResponseDTO updateExpert(ExpertRegisterDTO request, List<Long> deleteFileNos, List<MultipartFile> newFiles, CustomUserDetails user);
 	
 	/**
-	 * 전문가 이력이 존재하는지 확인합니다.
-	 * @param user
-	 * @return USER_ROLE
-	 */
-	boolean existExpert(CustomUserDetails user);
-	
-	/**
 	 * 일반회원에서 전문가로 전환합니다. (전문가 이력이 있는 경우)
 	 * @param user
 	 * @return 전문가 전환 후 토큰과 권한을 재응답

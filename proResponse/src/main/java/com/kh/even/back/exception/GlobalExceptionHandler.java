@@ -212,4 +212,10 @@ public class GlobalExceptionHandler {
 		return ResponseData.failure(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
+	@ExceptionHandler(ExistExpertException.class)
+	public ResponseEntity<ResponseData<Object>> handleExistExpertException (ExistExpertException e) {
+		log.error("전문가 이력 미존재 : {}", e.getMessage());
+		return ResponseData.failure(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+	
 }

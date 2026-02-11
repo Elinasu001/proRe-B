@@ -21,6 +21,7 @@ import com.kh.even.back.estimate.model.repository.EstimateRepository;
 import com.kh.even.back.estimate.model.status.EstimateRequestStatus;
 import com.kh.even.back.exception.CustomAuthorizationException;
 import com.kh.even.back.exception.EntityNotFoundException;
+import com.kh.even.back.exception.ExistExpertException;
 import com.kh.even.back.exception.ExpertNotFoundException;
 import com.kh.even.back.exception.ExpertRegisterException;
 import com.kh.even.back.exception.NotFoundException;
@@ -491,12 +492,12 @@ public class ExpertServiceImpl implements ExpertService {
 	/**
 	 * 전문가 이력이 존재하는지 확인합니다.
 	 */
-	public boolean existExpert(CustomUserDetails user) {
+	private void existExpert(CustomUserDetails user) {
 		int result = mapper.existExpert(user.getUserNo());
+		if(result == 0) {
+			throw new ExistExpertException("전문가 이력이 없습니다.");
+		}
 		
-		boolean exists = result > 0;
-		
-		return exists;
 	}
 	
 	/**
@@ -506,10 +507,7 @@ public class ExpertServiceImpl implements ExpertService {
 	public SwitchRoleResponseDTO switchToExpert(CustomUserDetails user) {
 		Long userNo = user.getUserNo();
 		
-		boolean exists = existExpert(user);
-		if(exists == false) {
-			throw new ExpertNotFoundException("전문가 이력이 없어서 전환할 수 없습니다.");
-		}
+		existExpert(user);
 		
 		int result = memberMapper.switchToExpert(userNo);
 		if(result == 0) {

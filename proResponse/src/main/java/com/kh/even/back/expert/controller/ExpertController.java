@@ -170,14 +170,6 @@ public class ExpertController {
 		return ResponseData.ok(ResponseDTO, "전문가 정보수정이 완료되었습니다.");
 	}
 	
-	@GetMapping("/switch/checkExist")
-	public ResponseEntity<ResponseData<Boolean>> existExpert(@AuthenticationPrincipal CustomUserDetails user) {
-		
-		boolean exists = expertService.existExpert(user);
-		
-		return ResponseData.ok(exists);
-	}
-	
 	@PutMapping("/switch/expert")
 	public ResponseEntity<ResponseData<SwitchRoleResponseDTO>> switchToExpert(@AuthenticationPrincipal CustomUserDetails user) {
 		

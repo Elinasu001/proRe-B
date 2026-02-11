@@ -1,6 +1,5 @@
 package com.kh.even.back.mail.model.service;
 
-import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
 
 public interface EmailAuthService {

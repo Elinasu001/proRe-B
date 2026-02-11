@@ -92,4 +92,17 @@ public class JwtFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 
 	}
+	
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+	    String uri = request.getRequestURI();
+	    String method = request.getMethod();
+
+	    return "POST".equals(method) && (
+	        uri.equals("/api/emails/verification-requests") ||
+	        uri.equals("/api/emails/verifications") ||
+	        uri.equals("/api/emails/temporary-password") ||
+	        uri.equals("/api/emails/sendcode/password")
+	    );
+	}
 }

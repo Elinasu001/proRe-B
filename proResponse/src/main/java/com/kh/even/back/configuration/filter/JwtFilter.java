@@ -82,6 +82,11 @@ public class JwtFilter extends OncePerRequestFilter {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			response.getWriter().write("유효하지 않은 토큰");
 			return;
+		} catch(Exception e) {
+			log.info("그 외 이슈 확인");
+			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("문제 발생");
 		}
 
 		filterChain.doFilter(request, response);

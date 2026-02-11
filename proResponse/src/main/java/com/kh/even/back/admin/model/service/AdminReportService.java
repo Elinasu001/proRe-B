@@ -2,6 +2,7 @@ package com.kh.even.back.admin.model.service;
 
 import com.kh.even.back.admin.model.dto.AdminReportDTO;
 import com.kh.even.back.admin.model.dto.AdminReportListResponse;
+import com.kh.even.back.admin.model.dto.AdminReportChatContext;  // 추가
 
 /**
  * 관리자 신고 관리 서비스 인터페이스

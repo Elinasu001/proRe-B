@@ -198,11 +198,11 @@ public class AdminReportServiceImpl implements AdminReportService {
         AdminReportDTO dto = AdminReportDTO.fromEntity(report);
 
         // 닉네임 조회
-        //String reporterNickname = memberMapper.findNicknameByUserNo(report.getReporterUserNo());
-        //String targetNickname = memberMapper.findNicknameByUserNo(report.getTargetUserNo());
+        String reporterNickname = memberMapper.findNicknameByUserNo(report.getReporterUserNo());
+        String targetNickname = memberMapper.findNicknameByUserNo(report.getTargetUserNo());
 
-        //dto.setReporterNickname(reporterNickname);
-        //dto.setTargetNickname(targetNickname);
+        dto.setReporterNickname(reporterNickname);
+        dto.setTargetNickname(targetNickname);
 
         return dto;
     }

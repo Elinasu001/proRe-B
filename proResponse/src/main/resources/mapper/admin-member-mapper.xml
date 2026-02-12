@@ -123,7 +123,7 @@
 <!-- 회원 번호로 닉네임 조회 -->
 <select id="findNicknameByUserNo" resultType="String">
     SELECT NICKNAME
-    FROM MEMBER
+    FROM TB_MEMBER
     WHERE USER_NO = #{userNo}
 </select>
 

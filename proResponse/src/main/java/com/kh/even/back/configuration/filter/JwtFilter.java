@@ -53,9 +53,10 @@ public class JwtFilter extends OncePerRequestFilter {
 		try {
 			Claims claims = jwtUtil.parseJwt(token);
 			String username = claims.getSubject();
-
+			log.info("[JWT] subject(sub) = {}", claims.getSubject());
+			log.info("[JWT] claim role = {}", claims.get("role"));
 			CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
-
+			log.info("[JWT] authorities = {}", user.getAuthorities());
 			if(user.getPenaltyStatus().equals("Y")) {
 				throw new CustomAuthenticationException("정지된 계정입니다.");
 			}

@@ -56,7 +56,7 @@ public class SecurityConfigure {
 					).permitAll();
 
 					/* ================= CORS Preflight ================= */
-					//requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+					requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
 
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")
@@ -86,8 +86,8 @@ public class SecurityConfigure {
 							"/api/members",
 							"/api/emails/verification-requests",
 							"/api/emails/verifications",
-							"/api/emails/temporary-password",
-							"/api/emails/sendcode/password"
+							"/api/members/sendcode/password",
+							"/api/members/temporary-password"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */

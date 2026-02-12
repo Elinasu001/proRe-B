@@ -2,8 +2,10 @@ package com.kh.even.back.admin.model.dto;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -11,6 +13,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@NoArgsConstructor  // 추가!
+@AllArgsConstructor // 추가!
 @Builder
 public class AdminReportChatContext {
     private Long reportNo;      // 신고 번호

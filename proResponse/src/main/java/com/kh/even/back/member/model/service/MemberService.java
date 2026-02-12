@@ -26,4 +26,5 @@ public interface MemberService {
 	void checkDuplicatedEmail(String email);
 	
 	void resetPassword(String email, String tempPwd);
+
 }

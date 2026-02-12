@@ -31,11 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AdminReportServiceImpl implements AdminReportService {
 
-    private final AdminReportRepository reportRepository;
-    private final AdminMemberMapper memberMapper;
-    private final AdminReportValidator validator;
-    private final AdminReportMapper adminReportMapper;  // 추가
-
+	private final AdminReportRepository reportRepository;
+	private final AdminMemberMapper memberMapper;
+	private final AdminReportValidator validator;
+	private final AdminReportMapper adminReportMapper;
+	private final AdminMemberService adminMemberService;
 
     // 페이지당 신고 수
     private static final int PAGE_SIZE = 10;
@@ -126,7 +126,18 @@ public class AdminReportServiceImpl implements AdminReportService {
 
         // 상태 변경
         report.updateStatus(status, answer);
-
+        
+        // 신고 승인 시 대상자에게 페널티 부여
+        if ("RESOLVED".equals(status)) {
+            try {
+                adminMemberService.updatePenaltyStatus(report.getTargetUserNo(), 'Y');
+                log.info("신고 대상자 페널티 부여 완료 - targetUserNo: {}", report.getTargetUserNo());
+            } catch (Exception e) {
+                log.warn("페널티 부여 실패 - targetUserNo: {}", report.getTargetUserNo(), e);
+                // 신고 처리는 완료, 페널티 실패는 로그만
+            }
+        }
+        
         log.info("신고 상태 변경 완료 - reportNo: {}", reportNo);
     }
 

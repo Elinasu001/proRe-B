@@ -116,7 +116,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 		
 		// 임시 비밀번호 생성
 		String tempPwd = PasswordGenerator.generate(12);
-		log.info("임시 비밀번호 : {}", tempPwd);
+		
 		
 		// 임시 비밀번호 이메일로 발송
 		String title = "ProResponse 임시 비밀번호";
@@ -155,7 +155,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 				
 				// 인증코드 생성(6자리)
 				String code = generate6Digits();
-				log.info("{}", code);
+				
 				// Redis에 인증코드 저장 + TTL 설정
 				// - key : email:code:{email}
 				// - value : 6자리 코드

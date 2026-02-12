@@ -39,24 +39,20 @@ public class JwtFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 
 		String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-		log.info("[JWT] URI = {}", uri);
-		log.info("[JWT] Authorization header = {}", authorization);
+
 		if (authorization == null || uri.equals("/api/auth/login")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		String token = authorization.split(" ")[1];
-		log.info("[JWT] Token extracted = {}", token.substring(0, 20));
-		log.info("토큰 값 : {}", token);
 
 		try {
 			Claims claims = jwtUtil.parseJwt(token);
 			String username = claims.getSubject();
-			log.info("[JWT] subject(sub) = {}", claims.getSubject());
-			log.info("[JWT] claim role = {}", claims.get("role"));
+
 			CustomUserDetails user = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
-			log.info("[JWT] authorities = {}", user.getAuthorities());
+
 			if(user.getPenaltyStatus().equals("Y")) {
 				throw new CustomAuthenticationException("정지된 계정입니다.");
 			}

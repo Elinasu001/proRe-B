@@ -83,11 +83,9 @@ public class SecurityConfigure {
 					requests.requestMatchers(
 							HttpMethod.POST,
 							"/api/auth/login",
-							"/api/members",
+							"/api/members/**",
 							"/api/emails/verification-requests",
-							"/api/emails/verifications",
-							"/api/members/sendcode/password",
-							"/api/members/temporary-password"
+							"/api/emails/verifications"
 					).permitAll();
 
 					/* ================= 로그인 필요 (GET) ================= */

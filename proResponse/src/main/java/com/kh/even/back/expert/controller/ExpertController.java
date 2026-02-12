@@ -172,7 +172,7 @@ public class ExpertController {
 	
 	@PutMapping("/switch/expert")
 	public ResponseEntity<ResponseData<SwitchRoleResponseDTO>> switchToExpert(@AuthenticationPrincipal CustomUserDetails user) {
-		
+		log.info("스위치 익스퍼트 : {}", user);
 		SwitchRoleResponseDTO responseDTO = expertService.switchToExpert(user);
 		
 		return ResponseData.ok(responseDTO, "전문가 전환이 완료됐습니다.");
@@ -180,7 +180,7 @@ public class ExpertController {
 	
 	@PutMapping("/switch/user")
 	public ResponseEntity<ResponseData<SwitchRoleResponseDTO>> switchToUser(@AuthenticationPrincipal CustomUserDetails user) {
-		
+		log.info("스위치 유저 : {}", user);
 		SwitchRoleResponseDTO responseDTO = expertService.switchToUser(user);
 		
 		return ResponseData.ok(responseDTO, "일반회원 전환이 완료됐습니다.");

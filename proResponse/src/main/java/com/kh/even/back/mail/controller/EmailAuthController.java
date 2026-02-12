@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import lombok.extern.slf4j.Slf4j;
 import com.kh.even.back.common.ResponseData;
 import com.kh.even.back.mail.model.dto.EmailSendRequestDTO;
 import com.kh.even.back.mail.model.dto.EmailVerificationResult;
@@ -15,7 +15,7 @@ import com.kh.even.back.mail.model.service.EmailAuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
+@Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -56,7 +56,7 @@ public class EmailAuthController {
 	
 	@PostMapping("/sendcode/password")
 	public ResponseEntity<ResponseData<Void>> sendCodeForResetPwd(@Valid @RequestBody EmailSendRequestDTO request) {
-		
+		log.info("비밀번호 초기화 인증코드 : {}", request);
 		emailAuthService.sendCodeForResetPwd(request.getEmail());
 		
 		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
@@ -69,7 +69,7 @@ public class EmailAuthController {
 	 */
 	@PostMapping("/temporary-password")
 	public ResponseEntity<ResponseData<Void>> sendTempPassword(@Valid @RequestBody EmailSendRequestDTO request) {
-		
+		log.info("임시 비밀번호 발송 : {}", request);
 		emailAuthService.sendTempPassword(request.getEmail());
 		
 		return ResponseData.ok(null, "임시비밀번호가 발송됐습니다."); 

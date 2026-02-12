@@ -4,12 +4,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.even.back.admin.model.dto.AdminReportChatContext;
 import com.kh.even.back.admin.model.dto.AdminReportDTO;
 import com.kh.even.back.admin.model.dto.AdminReportListResponse;
 import com.kh.even.back.admin.model.dto.AdminReportSearchRequest;
@@ -107,7 +108,9 @@ public class AdminReportController {
         adminReportService.updateReportStatus(reportNo, status, answer);
         return ResponseData.ok("신고 처리가 완료되었습니다.");
     }
-
+    
+   
+    
     /**
      * 신고 답변만 수정
      * Put /api/admin/reports/{reportNo}/answer?answer=수정된답변
@@ -126,4 +129,20 @@ public class AdminReportController {
         adminReportService.updateAnswer(reportNo, answer);
         return ResponseData.ok("답변이 수정되었습니다.");
     }
+    /**
+     * 신고 관련 채팅 내역 조회
+     * GET /api/admin/reports/{reportNo}/chat
+     */
+    @GetMapping("/{reportNo}/chat")
+    public ResponseEntity<ResponseData<AdminReportChatContext>> getReportChatContext(
+        @PathVariable("reportNo") 
+        @Min(value = 1, message = "신고 번호는 1 이상이어야 합니다.") 
+        Long reportNo
+    ) {
+        log.info("신고 관련 채팅 조회 - reportNo: {}", reportNo);
+
+        AdminReportChatContext context = adminReportService.getReportChatContext(reportNo);
+        return ResponseData.ok(context);
+    }
+    
 }

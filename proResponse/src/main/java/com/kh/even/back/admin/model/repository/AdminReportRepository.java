@@ -59,4 +59,5 @@ public interface AdminReportRepository extends JpaRepository<Report, Long> {
      */
     @Query("SELECT r FROM Report r LEFT JOIN FETCH r.reportTag WHERE r.reportNo = :reportNo")
     Optional<Report> findByIdWithTag(@Param("reportNo") Long reportNo);
+   
 }

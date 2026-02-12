@@ -10,10 +10,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.even.back.admin.model.dto.AdminReportChatContext;
 import com.kh.even.back.admin.model.dto.AdminReportDTO;
 import com.kh.even.back.admin.model.dto.AdminReportListResponse;
 import com.kh.even.back.admin.model.entity.Report;
 import com.kh.even.back.admin.model.mapper.AdminMemberMapper;
+import com.kh.even.back.admin.model.mapper.AdminReportMapper;
 import com.kh.even.back.admin.model.repository.AdminReportRepository;
 import com.kh.even.back.exception.ResourceNotFoundException;
 import com.kh.even.back.util.PageInfo;
@@ -29,10 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AdminReportServiceImpl implements AdminReportService {
 
-    private final AdminReportRepository reportRepository;
-    private final AdminMemberMapper memberMapper;
-    private final AdminReportValidator validator;
-    private final AdminMemberService adminMemberService;
+	private final AdminReportRepository reportRepository;
+	private final AdminMemberMapper memberMapper;
+	private final AdminReportValidator validator;
+	private final AdminReportMapper adminReportMapper;
+	private final AdminMemberService adminMemberService;
 
     // 페이지당 신고 수
     private static final int PAGE_SIZE = 10;
@@ -202,5 +205,15 @@ public class AdminReportServiceImpl implements AdminReportService {
         //dto.setTargetNickname(targetNickname);
 
         return dto;
+    }
+    @Override
+    public AdminReportChatContext getReportChatContext(Long reportNo) {
+        AdminReportChatContext context = adminReportMapper.selectReportChatContext(reportNo);
+        
+        if (context == null) {
+            throw new ResourceNotFoundException("신고 번호 " + reportNo + "에 해당하는 채팅 내역을 찾을 수 없습니다.");
+        }
+        
+        return context;
     }
 }

@@ -2,6 +2,7 @@ package com.kh.even.back.admin.model.service;
 
 import com.kh.even.back.admin.model.dto.AdminReportDTO;
 import com.kh.even.back.admin.model.dto.AdminReportListResponse;
+import com.kh.even.back.admin.model.dto.AdminReportChatContext;  // 추가
 
 /**
  * 관리자 신고 관리 서비스 인터페이스
@@ -51,4 +52,9 @@ public interface AdminReportService {
      * @param answer 답변 내용
      */
     void updateAnswer(Long reportNo, String answer);
+    /**
+     * 신고 관련 채팅 내역 조회
+     */
+    AdminReportChatContext getReportChatContext(Long reportNo);
+    
 }

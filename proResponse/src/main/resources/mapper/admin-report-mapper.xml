@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.even.back.admin.model.mapper.AdminReportMapper">
+
+    <!-- 신고 관련 채팅 내역 조회 ResultMap -->
+    <resultMap id="reportChatContextMap" type="com.kh.even.back.admin.model.dto.AdminReportChatContext">
+        <result property="reportNo" column="REPORT_NO"/>
+        <result property="estimateNo" column="ESTIMATE_NO"/>
+        <result property="roomNo" column="ROOM_NO"/>
+        <collection property="messages" ofType="com.kh.even.back.admin.model.dto.AdminReportChatContext$ChatMessageInfo">
+            <result property="messageNo" column="MESSAGE_NO"/>
+            <result property="userNo" column="USER_NO"/>
+            <result property="nickname" column="NICKNAME"/>
+            <result property="content" column="CONTENT"/>
+            <result property="sentDate" column="SENT_DATE"/>
+            <result property="type" column="TYPE"/>
+        </collection>
+    </resultMap>
+
+    <!-- 신고 관련 채팅 내역 조회 -->
+    <select id="selectReportChatContext" resultMap="reportChatContextMap">
+        SELECT 
+            r.REPORT_NO,
+            r.ESTIMATE_NO,
+            cr.ROOM_NO,
+            m.MESSAGE_NO,
+            m.USER_NO,
+            mem.NICKNAME,
+            m.CONTENT,
+            TO_CHAR(m.SENT_DATE, 'YYYY-MM-DD HH24:MI:SS') as SENT_DATE,
+            m.TYPE
+        FROM TB_REPORT r
+        JOIN TB_CHAT_ROOM cr ON r.ESTIMATE_NO = cr.ESTIMATE_NO
+        LEFT JOIN TB_CHAT_ROOM_MESSAGE m ON cr.ROOM_NO = m.ROOM_NO
+        LEFT JOIN TB_MEMBER mem ON m.USER_NO = mem.USER_NO
+        WHERE r.REPORT_NO = #{reportNo}
+        ORDER BY m.SENT_DATE
+    </select>
+
+</mapper>

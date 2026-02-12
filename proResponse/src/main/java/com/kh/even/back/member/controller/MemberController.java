@@ -17,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.even.back.auth.model.vo.CustomUserDetails;
 import com.kh.even.back.common.ResponseData;
-import com.kh.even.back.mail.model.dto.EmailSendRequestDTO;
-import com.kh.even.back.mail.model.service.EmailAuthService;
 import com.kh.even.back.member.model.dto.ChangePasswordDTO;
 import com.kh.even.back.member.model.dto.MemberSignUpDTO;
 import com.kh.even.back.member.model.dto.MyProfileDTO;
@@ -40,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberController {
 	
 	private final MemberService memberService;
-	private final EmailAuthService emailAuthService;
 	
 	@PostMapping
 	public ResponseEntity<ResponseData<Void>> signUp(@Valid @ModelAttribute MemberSignUpDTO member, @RequestParam(name = "profileImg", required = false) MultipartFile file) {
@@ -94,26 +91,5 @@ public class MemberController {
 		MyProfileDTO profile = memberService.getMyProfile(user);
 		
 		return ResponseData.ok(profile, "회원 조회가 완료되었습니다.");
-	}
-	
-	@PostMapping("/sendcode/password")
-	public ResponseEntity<ResponseData<Void>> sendCodeForResetPwd(@Valid @RequestBody EmailSendRequestDTO request) {
-		
-		emailAuthService.sendCodeForResetPwd(request.getEmail());
-		
-		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
-	} 
-	
-	/**
-	 * 임시비밀번호를 발송합니다.
-	 * @param request 이메일
-	 * @return 공통 응답 메시지
-	 */
-	@PostMapping("/temporary-password")
-	public ResponseEntity<ResponseData<Void>> sendTempPassword(@Valid @RequestBody EmailSendRequestDTO request) {
-		
-		emailAuthService.sendTempPassword(request.getEmail());
-		
-		return ResponseData.ok(null, "임시비밀번호가 발송됐습니다."); 
 	}
 }

@@ -56,7 +56,7 @@ public class SecurityConfigure {
 					).permitAll();
 
 					/* ================= CORS Preflight ================= */
-					requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+					//requests.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
 
 					/* ================= 관리자 전용 ================= */
 					requests.requestMatchers("/api/admin/**")

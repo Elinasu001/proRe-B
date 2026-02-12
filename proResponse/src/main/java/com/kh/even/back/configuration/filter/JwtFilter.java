@@ -39,13 +39,15 @@ public class JwtFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 
 		String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+		log.info("[JWT] URI = {}", uri);
+		log.info("[JWT] Authorization header = {}", authorization);
 		if (authorization == null || uri.equals("/api/auth/login")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		String token = authorization.split(" ")[1];
-
+		log.info("[JWT] Token extracted = {}", token.substring(0, 20));
 		log.info("토큰 값 : {}", token);
 
 		try {

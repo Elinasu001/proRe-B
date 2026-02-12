@@ -53,26 +53,31 @@ public class EmailAuthController {
 		
 		return ResponseData.ok(result, message);
 	}
-	/*
+	
+	/**
+	 * 비밀번호 초기화를 위한 인증코드 발송
+	 * @param request
+	 * @return
+	 */
 	@PostMapping("/sendcode/password")
 	public ResponseEntity<ResponseData<Void>> sendCodeForResetPwd(@Valid @RequestBody EmailSendRequestDTO request) {
-		log.info("비밀번호 초기화 인증코드 : {}", request);
+		
 		emailAuthService.sendCodeForResetPwd(request.getEmail());
 		
 		return ResponseData.ok(null, "인증번호가 발송됐습니다.");
 	} 
 	
 	/**
-	 * 임시비밀번호를 발송합니다.
+	 * 임시비밀번호 발송
 	 * @param request 이메일
 	 * @return 공통 응답 메시지
-	 
+	 */
 	@PostMapping("/temporary-password")
 	public ResponseEntity<ResponseData<Void>> sendTempPassword(@Valid @RequestBody EmailSendRequestDTO request) {
-		log.info("임시 비밀번호 발송 : {}", request);
+		
 		emailAuthService.sendTempPassword(request.getEmail());
 		
 		return ResponseData.ok(null, "임시비밀번호가 발송됐습니다."); 
 	}
-	*/
+	
 }
